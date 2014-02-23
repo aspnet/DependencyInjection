@@ -6,29 +6,29 @@ namespace Microsoft.AspNet.DependencyInjection.NestedProviders
 {
     public class NestedProviderManager<T> : INestedProviderManager<T>
     {
-        private readonly INestedProvider<T>[] _providers;
+        private readonly INestedProvider<T>[] _syncProviders;
 
         public NestedProviderManager(IEnumerable<INestedProvider<T>> providers)
         {
-            _providers = providers.OrderBy(p => p.Order).ToArray();
+            _syncProviders = providers.OrderBy(p => p.Order).ToArray();
         }
 
-        public void Invoke(NestedProviderContext<T> context)
+        public void Invoke(T context)
         {
-            var caller = new CallNext(context, _providers);
+            var caller = new CallNext(context, _syncProviders);
 
             caller.CallNextProvider();
         }
 
         private class CallNext
         {
-            private readonly NestedProviderContext<T> _context;
+            private readonly T _context;
             private readonly INestedProvider<T>[] _providers;
             private readonly Action _next;
 
             private int _index;
 
-            public CallNext(NestedProviderContext<T> context, INestedProvider<T>[] providers)
+            public CallNext(T context, INestedProvider<T>[] providers)
             {
                 _context = context;
                 _next = CallNextProvider;
@@ -44,4 +44,5 @@ namespace Microsoft.AspNet.DependencyInjection.NestedProviders
             }
         }
     }
+
 }
