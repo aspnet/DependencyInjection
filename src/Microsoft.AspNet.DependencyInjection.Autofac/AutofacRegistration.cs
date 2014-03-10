@@ -68,14 +68,13 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
 
         private class AutofacServiceProvider :
                 IServiceProvider,
-                IServiceScopeFactory,
-                IDisposable
+                IServiceScopeFactory
         {
             private readonly ILifetimeScope _lifetimeScope;
 
-            public AutofacServiceProvider(ILifetimeScope componentContext)
+            public AutofacServiceProvider(ILifetimeScope lifetimeScope)
             {
-                _lifetimeScope = componentContext;
+                _lifetimeScope = lifetimeScope;
             }
 
             public object GetService(Type serviceType)
@@ -83,15 +82,34 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                 return _lifetimeScope.Resolve(serviceType);
             }
 
-            public IDisposable CreateScope(out IServiceProvider scope)
+            public IServiceScope CreateScope()
             {
-                scope = new AutofacServiceProvider(_lifetimeScope.BeginLifetimeScope());
-                return (IDisposable)scope;
+                return new AutofacServiceScope(_lifetimeScope.BeginLifetimeScope());
             }
 
-            public void Dispose()
+            private void Dispose()
             {
                 _lifetimeScope.Dispose();
+            }
+
+            private class AutofacServiceScope : IServiceScope
+            {
+                private readonly AutofacServiceProvider _serviceProvider;
+
+                public AutofacServiceScope(ILifetimeScope lifetimeScope)
+                {
+                    _serviceProvider = new AutofacServiceProvider(lifetimeScope);
+                }
+
+                public IServiceProvider ServiceProvider
+                {
+                    get { return _serviceProvider; }
+                }
+
+                public void Dispose()
+                {
+                    _serviceProvider.Dispose();
+                }
             }
         }
     }
