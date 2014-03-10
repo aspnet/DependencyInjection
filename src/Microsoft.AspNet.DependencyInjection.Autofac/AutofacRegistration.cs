@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                 params IEnumerable<IServiceDescriptor>[] moreDescriptors)
         {
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
+            builder.RegisterType<AutofacServiceProvider>().As<IServiceScopeFactory>();
 
             Register(builder, descriptors);
 
@@ -65,18 +66,50 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             return registrationBuilder;
         }
 
-        private class AutofacServiceProvider : IServiceProvider
+        private class AutofacServiceProvider :
+                IServiceProvider,
+                IServiceScopeFactory
         {
-            private readonly IComponentContext _componentContext;
+            private readonly ILifetimeScope _lifetimeScope;
 
-            public AutofacServiceProvider(IComponentContext componentContext)
+            public AutofacServiceProvider(ILifetimeScope lifetimeScope)
             {
-                _componentContext = componentContext;
+                _lifetimeScope = lifetimeScope;
             }
 
             public object GetService(Type serviceType)
             {
-                return _componentContext.Resolve(serviceType);
+                return _lifetimeScope.Resolve(serviceType);
+            }
+
+            public IServiceScope CreateScope()
+            {
+                return new AutofacServiceScope(_lifetimeScope.BeginLifetimeScope());
+            }
+
+            private void Dispose()
+            {
+                _lifetimeScope.Dispose();
+            }
+
+            private class AutofacServiceScope : IServiceScope
+            {
+                private readonly AutofacServiceProvider _serviceProvider;
+
+                public AutofacServiceScope(ILifetimeScope lifetimeScope)
+                {
+                    _serviceProvider = new AutofacServiceProvider(lifetimeScope);
+                }
+
+                public IServiceProvider ServiceProvider
+                {
+                    get { return _serviceProvider; }
+                }
+
+                public void Dispose()
+                {
+                    _serviceProvider.Dispose();
+                }
             }
         }
     }
