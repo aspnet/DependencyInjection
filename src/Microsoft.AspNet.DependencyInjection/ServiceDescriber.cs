@@ -36,6 +36,15 @@ namespace Microsoft.AspNet.DependencyInjection
                 LifecycleKind.Singleton);
         }
 
+        public ServiceDescriptor Configure(IServiceDescriptor descriptor)
+        {
+            return Describe(
+               descriptor.ServiceType,
+               descriptor.ImplementationType,
+               descriptor.ImplementationInstance,
+               descriptor.Lifecycle);
+        }
+
         private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
         {
             return Describe(
