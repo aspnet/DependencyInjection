@@ -1,29 +1,54 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    internal class ServiceProvider : IServiceProvider
+    internal class ServiceProvider : IServiceProvider, IDisposable
     {
         private readonly IServiceProvider _defaultServiceProvider;
-        private readonly IDictionary<Type, Func<object>> _services = new Dictionary<Type, Func<object>>();
-        private readonly IDictionary<Type, List<Func<object>>> _priorServices = new Dictionary<Type, List<Func<object>>>();
+        private readonly IDictionary<Type, IMultiServiceFactory> _factories;
+        private readonly ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
-        public ServiceProvider()
+        public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
+            : this(serviceDescriptors, defaultServiceProvider: null)
         {
-            _services[typeof(IServiceProvider)] = () => this;
         }
 
-        public ServiceProvider(IServiceProvider defaultServiceProvider)
+        public ServiceProvider(
+                IEnumerable<IServiceDescriptor> serviceDescriptors,
+                IServiceProvider defaultServiceProvider)
         {
             _defaultServiceProvider = defaultServiceProvider;
-            _services[typeof(IServiceProvider)] = () => this;
+
+            var groupedDescriptors = serviceDescriptors.GroupBy(descriptor => descriptor.ServiceType);
+            _factories = groupedDescriptors.ToDictionary(
+                grouping => grouping.Key,
+                grouping => (IMultiServiceFactory)new MultiServiceFactory(this, grouping.ToArray()));
+
+            _factories[typeof(IServiceProvider)] = new ServiceProviderFactory(this);
+            _factories[typeof(IServiceScopeFactory)] = new ServiceScopeFactoryFactory(this);
+        }
+
+        // This constructor is called exclusively to create a chile scope from the parent
+        private ServiceProvider(ServiceProvider parent)
+        {
+            _defaultServiceProvider = parent._defaultServiceProvider;
+
+            // Rescope all the factories
+            _factories = parent._factories.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Scope(this));
+
+            // Dispose this along with the parent scope
+            parent._disposables.Add(this);
         }
 
         /// <summary>
@@ -33,42 +58,56 @@ namespace Microsoft.AspNet.DependencyInjection
         /// <returns></returns>
         public virtual object GetService(Type serviceType)
         {
-            return GetSingleService(serviceType) ?? GetMultiService(serviceType) ?? GetDefaultService(serviceType);
+            return GetSingleService(serviceType) ??
+                GetMultiService(serviceType) ??
+                GetDefaultService(serviceType);
         }
 
         private object GetSingleService(Type serviceType)
         {
-            Func<object> serviceFactory;
-            return _services.TryGetValue(serviceType, out serviceFactory)
-                ? serviceFactory.Invoke()
+            IMultiServiceFactory serviceFactory;
+            return _factories.TryGetValue(serviceType, out serviceFactory)
+                ? serviceFactory.GetSingleService()
                 : null;
         }
 
-        private object GetMultiService(Type collectionType)
+        private IList GetMultiService(Type collectionType)
         {
             if (collectionType.GetTypeInfo().IsGenericType &&
                 collectionType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 Type serviceType = collectionType.GetTypeInfo().GenericTypeArguments.Single();
-                Type listType = typeof(List<>).MakeGenericType(serviceType);
-                var services = (IList)Activator.CreateInstance(listType);
 
-                Func<object> serviceFactory;
-                if (_services.TryGetValue(serviceType, out serviceFactory))
+                IMultiServiceFactory serviceFactory;
+
+                if (_factories.TryGetValue(serviceType, out serviceFactory))
                 {
-                    services.Add(serviceFactory());
+                    IList services;
+                    services = serviceFactory.GetMultiService();
 
-                    List<Func<object>> prior;
-                    if (_priorServices.TryGetValue(serviceType, out prior))
+                    // Try to get more services from _defaultServiceProvider
+                    IEnumerable extraServices = GetDefaultService(collectionType) as IEnumerable;
+                    if (extraServices != null)
                     {
-                        foreach (var factory in prior)
+                        foreach (var extraService in extraServices)
                         {
-                            services.Add(factory());
+                            services.Add(extraService);
                         }
                     }
+                    else
+                    {
+                        var extraService = GetDefaultService(serviceType);
+
+                        if (extraService != null)
+                        {
+                            services.Add(extraService);
+                        }
+                    }
+
+                    return services;
                 }
-                return services;
             }
+
             return null;
         }
 
@@ -77,122 +116,236 @@ namespace Microsoft.AspNet.DependencyInjection
             return _defaultServiceProvider != null ? _defaultServiceProvider.GetService(serviceType) : null;
         }
 
-        /// <summary>
-        /// Remove all occurrences of the given type from the provider.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public virtual ServiceProvider RemoveAll<T>()
+        public void Dispose()
         {
-            return RemoveAll(typeof(T));
-        }
-
-        /// <summary>
-        /// Remove all occurrences of the given type from the provider.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider RemoveAll(Type type)
-        {
-            _services.Remove(type);
-            _priorServices.Remove(type);
-            return this;
-        }
-
-        /// <summary>
-        /// Add an instance of type TService to the list of providers.
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider AddInstance<TService>(object instance)
-        {
-            return AddInstance(typeof(TService), instance);
-        }
-
-        /// <summary>
-        /// Add an instance of the given type to the list of providers.
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider AddInstance(Type service, object instance)
-        {
-            return Add(service, () => instance);
-        }
-
-        /// <summary>
-        /// Specify that services of the type TService should be fulfilled by the type TImplementation.
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <typeparam name="TImplementation"></typeparam>
-        /// <returns></returns>
-        public virtual ServiceProvider Add<TService, TImplementation>()
-        {
-            return Add(typeof(TService), typeof(TImplementation));
-        }
-
-        /// <summary>
-        /// Specify that services of the type serviceType should be fulfilled by the type implementationType.
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="implementationType"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider Add(Type serviceType, Type implementationType)
-        {
-            Func<IServiceProvider, object> factory = ActivatorUtilities.CreateFactory(implementationType);
-            return Add(serviceType, () => factory(this));
-        }
-
-        /// <summary>
-        /// Specify that services of the given type should be created with the given serviceFactory.
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="serviceFactory"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider Add(Type serviceType, Func<object> serviceFactory)
-        {
-            Func<object> existing;
-            if (_services.TryGetValue(serviceType, out existing))
+            foreach (var disposable in _disposables)
             {
-                List<Func<object>> prior;
-                if (_priorServices.TryGetValue(serviceType, out prior))
-                {
-                    prior.Add(existing);
-                }
-                else
-                {
-                    prior = new List<Func<object>> { existing };
-                    _priorServices.Add(serviceType, prior);
-                }
+                disposable.Dispose();
             }
-            _services[serviceType] = serviceFactory;
-            return this;
         }
 
-        public virtual ServiceProvider Add(IServiceDescriptor serviceDescriptor)
+        private Func<object> CreateSingletonServiceFactory(IServiceDescriptor descriptor)
         {
-            if (serviceDescriptor.ImplementationType != null)
+            if (descriptor.ImplementationType != null)
             {
-                return Add(
-                    serviceDescriptor.ServiceType,
-                    serviceDescriptor.ImplementationType);
+                Func<IServiceProvider, object> serviceFactory =
+                    ActivatorUtilities.CreateFactory(descriptor.ImplementationType);
+
+                var singletonServiceFactory = new Lazy<object>(() => CaptureDisposableService(serviceFactory(this)));
+                return () => singletonServiceFactory.Value;
             }
             else
             {
-                return AddInstance(
-                    serviceDescriptor.ServiceType,
-                    serviceDescriptor.ImplementationInstance);
+                Debug.Assert(descriptor.ImplementationInstance != null);
+
+                CaptureDisposableService(descriptor.ImplementationInstance);
+                return () => descriptor.ImplementationInstance;
             }
         }
 
-        public virtual ServiceProvider Add(params IEnumerable<IServiceDescriptor>[] serviceDescriptors)
+        private Func<object> CreateTransientServiceFactory(IServiceDescriptor descriptor)
         {
-            foreach (var descriptor in serviceDescriptors.SelectMany(descriptors => descriptors))
+            // A service with an ImplementationInsance cannot be transient
+            Debug.Assert(descriptor.ImplementationType != null);
+
+            Func<IServiceProvider, object> serviceFactory =
+                ActivatorUtilities.CreateFactory(descriptor.ImplementationType);
+
+            return () => CaptureDisposableService(serviceFactory(this));
+        }
+
+        private object CaptureDisposableService(object service)
+        {
+            IDisposable disposable = service as IDisposable;
+            if (disposable != null)
             {
-                Add(descriptor);
+                _disposables.Add(disposable);
             }
-            return this;
+
+            return service;
+        }
+
+        private interface IMultiServiceFactory
+        {
+            IMultiServiceFactory Scope(ServiceProvider scopedProvider);
+            object GetSingleService();
+            IList GetMultiService();
+        }
+
+        private class MultiServiceFactory : IMultiServiceFactory
+        {
+            private readonly ServiceProvider _provider;
+            private readonly IServiceDescriptor[] _descriptors;
+            private readonly Func<object>[] _factories;
+
+            public MultiServiceFactory(ServiceProvider provider, IServiceDescriptor[] descriptors)
+            {
+                Debug.Assert(provider != null);
+                Debug.Assert(descriptors.Length > 0);
+                Debug.Assert(descriptors.All(d => d.ServiceType == descriptors[0].ServiceType));
+
+                _provider = provider;
+                _descriptors = descriptors;
+                _factories = new Func<object>[descriptors.Length];
+                CreateSingletonFactories();
+                CreateNonSingletonFactories();
+            }
+
+            // Copy constructor
+            private MultiServiceFactory(
+                    ServiceProvider provider,
+                    IServiceDescriptor[] descriptors,
+                    Func<object>[] factories)
+            {
+                _provider = provider;
+                _descriptors = descriptors;
+                _factories = factories;
+            }
+
+            public IMultiServiceFactory Scope(ServiceProvider scopedProvider)
+            {
+                // Shallow-copy the _factories array since we replace the non-singletons
+                var factories = _factories.ToArray();
+                var scope = new MultiServiceFactory(scopedProvider, _descriptors, factories);
+
+                // Regenerate all factories that are not singletons
+                scope.CreateNonSingletonFactories();
+
+                return scope;
+            }
+
+            public object GetSingleService()
+            {
+                return _factories[0]();
+            }
+
+            public IList GetMultiService()
+            {
+                Type serviceType = _descriptors[0].ServiceType;
+                Type listType = typeof(List<>).MakeGenericType(serviceType);
+                var services = (IList)Activator.CreateInstance(listType);
+
+                foreach (var factory in _factories)
+                {
+                    services.Add(factory());
+                }
+
+                return services;
+            }
+
+            // CreateSingletonFactories is only called for the top-level container
+            // These top-level factories get copied by MultiServiceFactory.Scope 
+            private void CreateSingletonFactories()
+            {
+                for (int i = 0; i < _descriptors.Length; i++)
+                {
+                    if (_descriptors[i].Lifecycle == LifecycleKind.Singleton)
+                    {
+                        _factories[i] = _provider.CreateSingletonServiceFactory(_descriptors[i]);
+                    }
+                }
+            }
+
+            private void CreateNonSingletonFactories()
+            {
+                for (int i = 0; i < _descriptors.Length; i++)
+                {
+                    if (_descriptors[i].Lifecycle == LifecycleKind.Scoped)
+                    {
+                        // A scoped service is a singleton from the perspective of the scoped ServiceProvider
+                        _factories[i] = _provider.CreateSingletonServiceFactory(_descriptors[i]);
+                    }
+                    else if (_descriptors[i].Lifecycle == LifecycleKind.Transient)
+                    {
+                        _factories[i] = _provider.CreateTransientServiceFactory(_descriptors[i]);
+                    }
+                }
+            }
+        }
+
+        private class ServiceProviderFactory : IMultiServiceFactory
+        {
+            private readonly ServiceProvider _provider;
+
+            public ServiceProviderFactory(ServiceProvider provider)
+            {
+                _provider = provider;
+            }
+
+            public IMultiServiceFactory Scope(ServiceProvider scopedProvider)
+            {
+                return new ServiceProviderFactory(scopedProvider);
+            }
+
+            public object GetSingleService()
+            {
+                return _provider;
+            }
+
+            public IList GetMultiService()
+            {
+                return new List<IServiceProvider> { _provider };
+            }
+        }
+
+        private class ServiceScopeFactoryFactory : IMultiServiceFactory
+        {
+            private readonly ServiceProvider _provider;
+
+            public ServiceScopeFactoryFactory(ServiceProvider provider)
+            {
+                _provider = provider;
+            }
+
+            public IMultiServiceFactory Scope(ServiceProvider scopedProvider)
+            {
+                return new ServiceScopeFactoryFactory(scopedProvider);
+            }
+
+            public object GetSingleService()
+            {
+                return new ServiceScopeFactory(_provider);
+            }
+
+            public IList GetMultiService()
+            {
+                return new List<IServiceScopeFactory> { new ServiceScopeFactory(_provider) };
+            }
+
+            private class ServiceScopeFactory : IServiceScopeFactory
+            {
+                private readonly ServiceProvider _provider;
+
+                public ServiceScopeFactory(ServiceProvider provider)
+                {
+                    _provider = provider;
+                }
+
+                public IServiceScope CreateScope()
+                {
+                    return new ServiceScope(new ServiceProvider(_provider));
+                }
+
+                private class ServiceScope : IServiceScope
+                {
+                    private readonly ServiceProvider _scopedProvider;
+
+                    public ServiceScope(ServiceProvider scopedProvider)
+                    {
+                        _scopedProvider = scopedProvider;
+                    }
+
+                    public IServiceProvider ServiceProvider
+                    {
+                        get { return _scopedProvider.GetService<IServiceProvider>(); }
+                    }
+
+                    public void Dispose()
+                    {
+                        _scopedProvider.Dispose();
+                    }
+                }
+            }
         }
     }
 }
