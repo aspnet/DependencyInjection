@@ -12,29 +12,33 @@ namespace Microsoft.AspNet.DependencyInjection
         private readonly ServiceDescriber _describe;
 
         public ServiceCollection()
-            : this(new Configuration())
+            : this(fallbackServices: null)
         {
         }
 
-        public ServiceCollection(IConfiguration configuration)
+        public ServiceCollection(IServiceProvider fallbackServices)
+            : this(fallbackServices, new Configuration())
+        {
+        }
+
+        public ServiceCollection(IServiceProvider fallbackServices, IConfiguration configuration)
         {
             _descriptors = new List<IServiceDescriptor>();
             _describe = new ServiceDescriber(configuration);
         }
 
-        public IServiceProvider FallbackServices { get; set; }
+        public IServiceProvider FallbackServices { get; private set; }
 
-        public void Add(IServiceDescriptor descriptor)
+        public ServiceCollection Add(IServiceDescriptor descriptor)
         {
             _descriptors.Add(descriptor);
+            return this;
         }
 
-        public void Add(
-                IEnumerable<IServiceDescriptor> descriptors,
-                params IEnumerable<IServiceDescriptor>[] moreDescriptors)
+        public ServiceCollection Add(IEnumerable<IServiceDescriptor> descriptors)
         {
             _descriptors.AddRange(descriptors);
-            _descriptors.AddRange(moreDescriptors.SelectMany(d => d));
+            return this;
         }
 
         public ServiceCollection AddTransient<TService, TImplementation>()
