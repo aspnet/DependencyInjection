@@ -4,13 +4,12 @@ using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {
-    public class ServiceProviderContainerTests : AllContainerTestsBase
+    public class ServiceProviderContainerTests : ScopingContainerTestBase
     {
         protected override IServiceProvider CreateContainer()
         {
-            return new ServiceCollection()
-                .Add(TestServices.DefaultServices())
-                .BuildServiceProvider();
+            return TestServices.DefaultServices()
+                .BuildServiceProvider(new FakeFallbackServiceProvider());
         }
     }
 }
