@@ -48,10 +48,21 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             {
                 if (descriptor.ImplementationType != null)
                 {
-                    builder
-                        .RegisterType(descriptor.ImplementationType)
-                        .As(descriptor.ServiceType)
-                        .ConfigureLifecycle(descriptor.Lifecycle);
+                    // Test if the an open generic type is being registered
+                    if (descriptor.ImplementationType.ContainsGenericParameters)
+                    {
+                        builder
+                            .RegisterGeneric(descriptor.ImplementationType)
+                            .As(descriptor.ServiceType)
+                            .ConfigureLifecycle(descriptor.Lifecycle);
+                    }
+                    else
+                    {
+                        builder
+                            .RegisterType(descriptor.ImplementationType)
+                            .As(descriptor.ServiceType)
+                            .ConfigureLifecycle(descriptor.Lifecycle);
+                    }
                 }
                 else
                 {
@@ -63,8 +74,8 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             }
         }
 
-        private static IRegistrationBuilder<object, T, SingleRegistrationStyle> ConfigureLifecycle<T>(
-                this IRegistrationBuilder<object, T, SingleRegistrationStyle> registrationBuilder,
+        private static IRegistrationBuilder<object, T, U> ConfigureLifecycle<T, U>(
+                this IRegistrationBuilder<object, T, U> registrationBuilder,
                 LifecycleKind lifecycleKind)
         {
             switch (lifecycleKind)
