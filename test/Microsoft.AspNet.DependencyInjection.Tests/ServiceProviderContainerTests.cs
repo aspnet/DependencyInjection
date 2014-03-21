@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
+using Xunit;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {

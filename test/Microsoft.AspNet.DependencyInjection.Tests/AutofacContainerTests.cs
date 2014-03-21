@@ -21,16 +21,5 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
         }
-
-        [Fact]
-        public void OpenGenericServicesCanBeRegisetered()
-        {
-            var container = CreateContainer();
-
-            var genericService = container.GetService<IFakeOpenGenericService<IFakeSingletonService>>();
-            var singletonService = container.GetService<IFakeSingletonService>();
-
-            Assert.Equal(singletonService, genericService.SimpleMethod());
-        }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.DependencyInjection.MultiServiceFactories
+﻿namespace Microsoft.AspNet.DependencyInjection.Table
 {
     internal class ServiceScopeFactory : IServiceScopeFactory
     {
