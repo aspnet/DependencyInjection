@@ -2,7 +2,6 @@
 using Microsoft.AspNet.DependencyInjection.Ninject;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 using Ninject;
-using Xunit;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {
@@ -10,34 +9,16 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
-            IKernel kernel = new StandardKernel();
-
-            NinjectRegistration.Populate(
-                kernel,
-                TestServices.DefaultServices(),
-                new FakeFallbackServiceProvider());
-
-            return kernel.Get<IServiceProvider>();
+            return CreateContainer(new FakeFallbackServiceProvider());
         }
 
-        [Fact]
-        public void NestedScopedServiceCanBeResolvedFromFallbackProvider()
+        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
         {
-            var container = CreateContainer();
+            IKernel kernel = new StandardKernel();
 
-            var outerScopeFactory = container.GetService<IServiceScopeFactory>();
-            using (var outerScope = outerScopeFactory.CreateScope())
-            {
-                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
-                using (var innerScope = innerScopeFactory.CreateScope())
-                {
-                    var outerScopedService = outerScope.ServiceProvider.GetService<string>();
-                    var innerScopedService = innerScope.ServiceProvider.GetService<string>();
+            NinjectRegistration.Populate(kernel, TestServices.DefaultServices(), fallbackProvider);
 
-                    Assert.Equal("scope-FakeFallbackServiceProvider", outerScopedService);
-                    Assert.Equal("scope-scope-FakeFallbackServiceProvider", innerScopedService);
-                }
-            }
+            return kernel.Get<IServiceProvider>();
         }
     }
 }

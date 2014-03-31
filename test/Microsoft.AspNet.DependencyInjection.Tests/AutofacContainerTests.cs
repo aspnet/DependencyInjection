@@ -1,9 +1,7 @@
 ﻿using System;
 using Autofac;
-using Microsoft.AspNet.DependencyInjection;
 using Microsoft.AspNet.DependencyInjection.Autofac;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
-using Xunit;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {
@@ -11,12 +9,17 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
+            return CreateContainer(new FakeFallbackServiceProvider());
+        }
+
+        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
+        {
             var builder = new ContainerBuilder();
 
             AutofacRegistration.Populate(
                 builder,
-                new FakeFallbackServiceProvider(),
-                TestServices.DefaultServices());
+                TestServices.DefaultServices(),
+                fallbackProvider);
 
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
