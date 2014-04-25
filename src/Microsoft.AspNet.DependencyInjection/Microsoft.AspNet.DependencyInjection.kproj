@@ -39,6 +39,7 @@
     <Compile Include="NestedProviders\INestedProviderManagerAsync.cs" />
     <Compile Include="NestedProviders\NestedProviderManager.cs" />
     <Compile Include="NestedProviders\NestedProviderManagerAsync.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceCollection.cs" />
     <Compile Include="ServiceDescriber.cs" />
     <Compile Include="ServiceDescriptor.cs" />
