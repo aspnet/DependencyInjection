@@ -8,20 +8,23 @@ namespace Microsoft.AspNet.DependencyInjection
     {
         public OptionsAccessor(IEnumerable<IOptionsSetup<TOptions>> setups)
         {
+            // REVIEW: do we need to defer setup until Options is first accessed?
             if (setups == null)
             {
-                throw new ArgumentNullException("setups");
+                Options = new TOptions();
             }
-            // REVIEW: do we need to defer setup until Options is first accessed?
-            Options = setups
-                .OrderBy(setup => setup.Order)
-                .Aggregate(
-                    new TOptions(),
-                    (options, setup) =>
-                    {
-                        setup.Setup(options);
-                        return options;
-                    });
+            else
+            {
+                Options = setups
+                    .OrderBy(setup => setup.Order)
+                    .Aggregate(
+                        new TOptions(),
+                        (options, setup) =>
+                        {
+                            setup.Setup(options);
+                            return options;
+                        });
+            }
         }
 
         public TOptions Options { get; private set; }
