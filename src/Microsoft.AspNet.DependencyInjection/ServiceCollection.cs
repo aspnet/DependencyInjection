@@ -71,6 +71,8 @@ namespace Microsoft.AspNet.DependencyInjection
             return this;
         }
 
+        // TODO: Move AddSetup to yet to be created IServiceCollection
+        // https://github.com/aspnet/DependencyInjection/issues/73
         public ServiceCollection AddSetup(Type setupType)
         {
             var serviceTypes = setupType.GetInterfaces()
@@ -106,7 +108,6 @@ namespace Microsoft.AspNet.DependencyInjection
                 Add(new ServiceDescriptor
                 {
                     ServiceType = serviceType,
-                    ImplementationType = setupType,
                     ImplementationInstance = setupInstance,
                     Lifecycle = LifecycleKind.Singleton
                 });
