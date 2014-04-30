@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 //using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.DependencyInjection
@@ -10,17 +11,12 @@ namespace Microsoft.AspNet.DependencyInjection
 
         IServiceCollection Add(IEnumerable<IServiceDescriptor> descriptors);
 
-        IServiceCollection AddTransient<TService, TImplementation>();
+        IServiceCollection AddTransient(Type service, Type implementationType);
 
-        IServiceCollection AddScoped<TService, TImplementation>();
+        IServiceCollection AddScoped(Type service, Type implementationType);
 
-        IServiceCollection AddSingleton<TService, TImplementation>();
+        IServiceCollection AddSingleton(Type service, Type implementationType);
 
-        IServiceCollection AddSingleton<TService>();
-
-        IServiceCollection AddTransient<TService>();
-
-        IServiceCollection AddScoped<TService>();
-
+        IServiceCollection AddInstance(Type service, object implementationInstance);
     }
 }

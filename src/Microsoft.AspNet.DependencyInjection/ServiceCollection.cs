@@ -33,45 +33,27 @@ namespace Microsoft.AspNet.DependencyInjection
             return this;
         }
 
-        public IServiceCollection AddTransient<TService, TImplementation>()
+        public IServiceCollection AddTransient(Type service, Type implementationType)
         {
-            Add(_describe.Transient<TService, TImplementation>());
+            Add(_describe.Transient(service, implementationType));
             return this;
         }
 
-        public IServiceCollection AddScoped<TService, TImplementation>()
+        public IServiceCollection AddScoped(Type service, Type implementationType)
         {
-            Add(_describe.Scoped<TService, TImplementation>());
+            Add(_describe.Scoped(service, implementationType));
             return this;
         }
 
-        public IServiceCollection AddSingleton<TService, TImplementation>()
+        public IServiceCollection AddSingleton(Type service, Type implementationType)
         {
-            Add(_describe.Singleton<TService, TImplementation>());
+            Add(_describe.Singleton(service, implementationType));
             return this;
         }
 
-        public IServiceCollection AddSingleton<TService>()
+        public IServiceCollection AddInstance(Type service, object implementationInstance)
         {
-            AddSingleton<TService, TService>();
-            return this;
-        }
-        
-        public IServiceCollection AddTransient<TService>()
-        {
-            AddTransient<TService, TService>();
-            return this;
-        }
-
-        public IServiceCollection AddScoped<TService>()
-        {
-            AddScoped<TService, TService>();
-            return this;
-        }
-
-        public IServiceCollection AddInstance<TService>(TService implementationInstance)
-        {
-            Add(_describe.Instance<TService>(implementationInstance));
+            Add(_describe.Instance(service, implementationInstance));
             return this;
         }
 
