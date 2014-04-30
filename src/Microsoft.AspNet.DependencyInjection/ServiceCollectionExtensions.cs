@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.DependencyInjection
             }
 
             var serviceTypes = setupType.GetInterfaces()
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof (IOptionsSetup<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.Add(new ServiceDescriptor
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.DependencyInjection
                 throw new ArgumentNullException("services");
             }
 
-            return services.AddSetup(typeof(TSetup));
+            return services.AddSetup(typeof (TSetup));
         }
 
         public static IServiceCollection AddSetup(this IServiceCollection services, object setupInstance)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.DependencyInjection
 
             var setupType = setupInstance.GetType();
             var serviceTypes = setupType.GetInterfaces()
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof (IOptionsSetup<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.Add(new ServiceDescriptor
@@ -64,5 +64,27 @@ namespace Microsoft.AspNet.DependencyInjection
             return services;
         }
 
+
+        public static IServiceCollection SetupOptions<TOptions>(this IServiceCollection services,
+            Action<TOptions> setupAction,
+            int order)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException("services");
+            }
+            services.AddSetup(new OptionsSetup<TOptions>(setupAction) {Order = order});
+            return services;
+        }
+
+        public static IServiceCollection SetupOptions<TOptions>(this IServiceCollection services,
+            Action<TOptions> setupAction)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException("services");
+            }
+            return services.SetupOptions<TOptions>(setupAction, order: 0);
+        }
     }
 }
