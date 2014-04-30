@@ -41,9 +41,21 @@ namespace Microsoft.AspNet.DependencyInjection
             return this;
         }
 
+        public ServiceCollection AddTransient(Type service, Type implementationType)
+        {
+            Add(_describe.Transient(service, implementationType));
+            return this;
+        }
+
         public ServiceCollection AddScoped<TService, TImplementation>()
         {
             Add(_describe.Scoped<TService, TImplementation>());
+            return this;
+        }
+
+        public ServiceCollection AddScoped(Type service, Type implementationType)
+        {
+            Add(_describe.Scoped(service, implementationType));
             return this;
         }
 
@@ -53,21 +65,45 @@ namespace Microsoft.AspNet.DependencyInjection
             return this;
         }
 
+        public ServiceCollection AddSingleton(Type service, Type implementationType)
+        {
+            Add(_describe.Singleton(service, implementationType));
+            return this;
+        }
+
         public ServiceCollection AddSingleton<TService>()
         {
             AddSingleton<TService, TService>();
             return this;
         }
-        
+
+        public ServiceCollection AddSingleton(Type service)
+        {
+            AddSingleton(service, service);
+            return this;
+        }
+
         public ServiceCollection AddTransient<TService>()
         {
             AddTransient<TService, TService>();
             return this;
         }
 
+        public ServiceCollection AddTransient(Type service)
+        {
+            AddTransient(service, service);
+            return this;
+        }
+
         public ServiceCollection AddScoped<TService>()
         {
             AddScoped<TService, TService>();
+            return this;
+        }
+
+        public ServiceCollection AddScoped(Type service)
+        {
+            AddScoped(service, service);
             return this;
         }
 
@@ -118,6 +154,12 @@ namespace Microsoft.AspNet.DependencyInjection
         public ServiceCollection AddInstance<TService>(TService implementationInstance)
         {
             Add(_describe.Instance<TService>(implementationInstance));
+            return this;
+        }
+
+        public ServiceCollection AddInstance(Type service, object implementationInstace)
+        {
+            Add(_describe.Instance(service, implementationInstace));
             return this;
         }
 

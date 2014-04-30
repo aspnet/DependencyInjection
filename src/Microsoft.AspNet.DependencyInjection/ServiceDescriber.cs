@@ -22,9 +22,19 @@ namespace Microsoft.AspNet.DependencyInjection
             return Describe<TService, TImplementation>(LifecycleKind.Transient);
         }
 
+        public ServiceDescriptor Transient(Type service, Type implementationType)
+        {
+            return Describe(service, implementationType, LifecycleKind.Transient);
+        }
+
         public ServiceDescriptor Scoped<TService, TImplementation>()
         {
             return Describe<TService, TImplementation>(LifecycleKind.Scoped);
+        }
+
+        public ServiceDescriptor Scoped(Type service, Type implementationType)
+        {
+            return Describe(service, implementationType, LifecycleKind.Scoped);
         }
 
         public ServiceDescriptor Singleton<TService, TImplementation>()
@@ -32,10 +42,20 @@ namespace Microsoft.AspNet.DependencyInjection
             return Describe<TService, TImplementation>(LifecycleKind.Singleton);
         }
 
+        public ServiceDescriptor Singleton(Type service, Type implementationType)
+        {
+            return Describe(service, implementationType, LifecycleKind.Singleton);
+        }
+
         public ServiceDescriptor Instance<TService>(object implementationInstance)
         {
+            return Instance(typeof(TService), implementationInstance);
+        }
+
+        public ServiceDescriptor Instance(Type service, object implementationInstance)
+        {
             return Describe(
-                typeof(TService),
+                service,
                 null, // implementationType
                 implementationInstance,
                 LifecycleKind.Singleton);
@@ -46,6 +66,18 @@ namespace Microsoft.AspNet.DependencyInjection
             return Describe(
                 typeof(TService),
                 typeof(TImplementation),
+                null, // implementationInstance
+                lifecycle);
+        }
+
+        private ServiceDescriptor Describe(
+                Type serviceType,
+                Type implementationType,
+                LifecycleKind lifecycle)
+        {
+            return Describe(
+                serviceType,
+                implementationType,
                 null, // implementationInstance
                 lifecycle);
         }
