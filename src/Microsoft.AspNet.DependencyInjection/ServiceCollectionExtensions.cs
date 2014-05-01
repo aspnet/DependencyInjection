@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.DependencyInjection
 
         public static IServiceCollection AddSetup([NotNull]this IServiceCollection services, Type setupType)
         {
-            var serviceTypes = setupType.GetInterfaces()
+            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof (IOptionsSetup<>));
             foreach (var serviceType in serviceTypes)
             {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.DependencyInjection
         public static IServiceCollection AddSetup([NotNull]this IServiceCollection services, [NotNull]object setupInstance)
         {
             var setupType = setupInstance.GetType();
-            var serviceTypes = setupType.GetInterfaces()
+            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof (IOptionsSetup<>));
             foreach (var serviceType in serviceTypes)
             {
