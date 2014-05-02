@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivatorUtilities.cs" />
+    <Compile Include="ConfigOptionsSetup.cs" />
     <Compile Include="ConfigOptions.cs" />
     <Compile Include="DefaultOptionSetupOrder.cs" />
     <Compile Include="IConfigOptions.cs" />

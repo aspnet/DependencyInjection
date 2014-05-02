@@ -16,8 +16,12 @@
 // permissions and limitations under the License.
 
 using System;
+using Microsoft.AspNet.ConfigurationModel;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
+using Xunit;
+using System.Collections.Generic;
+using Microsoft.AspNet.ConfigurationModel.Sources;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {
@@ -31,6 +35,65 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
         {
             return TestServices.DefaultServices().BuildServiceProvider(fallbackProvider);
+        }
+
+        //[Theory]
+        //[InlineData("string", "100", "true", 100, true)]
+        //[InlineData("string", "-1", "false", -1, false)]
+        //[InlineData("string", "bogus", "blah", 0, false)]
+        //public void CanSetupConfigOptionsWithConfigAccessor(string str, string intConfig, string boolConfig, int i, bool b)
+        //{
+        //    var services = new ServiceCollection();
+        //    services.AddSingleton<IOptionsAccessor<FakeConfigOptions>, ConfigOptionsAccessor<FakeConfigOptions>>();
+        //    var dic = new Dictionary<string, string>
+        //    { 
+        //        {"int", intConfig},
+        //        {"string", str},
+        //        {"bool", boolConfig }
+        //    };
+        //    var config = new Configuration { new MemoryConfigurationSource(dic) };
+        //    services.AddInstance<IConfiguration>(config);
+
+        //    var provider = services.BuildServiceProvider();
+
+        //    var accessor = provider.GetService<IOptionsAccessor<FakeConfigOptions>>();
+        //    Assert.NotNull(accessor);
+
+        //    var options = accessor.Options;
+        //    Assert.NotNull(options);
+        //    Assert.Equal(str, options.String);
+        //    Assert.Equal(b, options.Bool);
+        //    Assert.Equal(i, options.Int);
+        //}
+
+        [Theory]
+        [InlineData("string", "100", "true", 100, true)]
+        [InlineData("string", "-1", "false", -1, false)]
+        [InlineData("string", "bogus", "blah", 0, false)]
+        public void CanSetupConfigOptionsWithSetup(string str, string intConfig, string boolConfig, int i, bool b)
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IOptionsAccessor<FakeConfigOptions>, OptionsAccessor<FakeConfigOptions>>();
+            services.AddSetup<ConfigOptionsSetup<FakeConfigOptions>>();
+            var dic = new Dictionary<string, string>
+            { 
+                {"int", intConfig},
+                {"string", str},
+                {"bool", boolConfig }
+            };
+            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            services.AddInstance<IConfiguration>(config);
+
+            var provider = services.BuildServiceProvider();
+
+            var accessor = provider.GetService<IOptionsAccessor<FakeConfigOptions>>();
+            Assert.NotNull(accessor);
+
+            var options = accessor.Options;
+            Assert.NotNull(options);
+            Assert.Equal(str, options.String);
+            Assert.Equal(b, options.Bool);
+            Assert.Equal(i, options.Int);
         }
     }
 }
