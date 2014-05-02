@@ -45,9 +45,7 @@ namespace Microsoft.AspNet.DependencyInjection
                 try
                 {
 // No convert on portable
-#if NET45
-                    prop.SetValue(this, Convert.ChangeType(configValue, prop.PropertyType));
-#elif K10 
+#if NET45 || K10
                     prop.SetValue(this, Convert.ChangeType(configValue, prop.PropertyType));
 #endif
                 }

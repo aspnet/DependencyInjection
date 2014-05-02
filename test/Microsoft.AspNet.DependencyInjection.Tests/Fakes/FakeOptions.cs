@@ -17,7 +17,7 @@
 
 namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 {
-    public class FakeOptions
+    public class FakeOptions : ConfigOptions
     {
         public FakeOptions()
         {
@@ -25,5 +25,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
         }
 
         public string Message { get; set; }
+        public int Int { get; set; }
+        public bool Bool { get; set; }
+        public bool ReadOnly { get; private set; }
     }
 }

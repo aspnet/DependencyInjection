@@ -17,11 +17,11 @@
 
 using System;
 using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.AspNet.ConfigurationModel.Sources;
 using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 using Xunit;
 using System.Collections.Generic;
-using Microsoft.AspNet.ConfigurationModel.Sources;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {
@@ -37,61 +37,39 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             return TestServices.DefaultServices().BuildServiceProvider(fallbackProvider);
         }
 
-        //[Theory]
-        //[InlineData("string", "100", "true", 100, true)]
-        //[InlineData("string", "-1", "false", -1, false)]
-        //[InlineData("string", "bogus", "blah", 0, false)]
-        //public void CanSetupConfigOptionsWithConfigAccessor(string str, string intConfig, string boolConfig, int i, bool b)
-        //{
-        //    var services = new ServiceCollection();
-        //    services.AddSingleton<IOptionsAccessor<FakeConfigOptions>, ConfigOptionsAccessor<FakeConfigOptions>>();
-        //    var dic = new Dictionary<string, string>
-        //    { 
-        //        {"int", intConfig},
-        //        {"string", str},
-        //        {"bool", boolConfig }
-        //    };
-        //    var config = new Configuration { new MemoryConfigurationSource(dic) };
-        //    services.AddInstance<IConfiguration>(config);
-
-        //    var provider = services.BuildServiceProvider();
-
-        //    var accessor = provider.GetService<IOptionsAccessor<FakeConfigOptions>>();
-        //    Assert.NotNull(accessor);
-
-        //    var options = accessor.Options;
-        //    Assert.NotNull(options);
-        //    Assert.Equal(str, options.String);
-        //    Assert.Equal(b, options.Bool);
-        //    Assert.Equal(i, options.Int);
-        //}
-
+        // TODO: figure out how to move this test into all container test base (config causes issues)
         [Theory]
-        [InlineData("string", "100", "true", 100, true)]
-        [InlineData("string", "-1", "false", -1, false)]
-        [InlineData("string", "bogus", "blah", 0, false)]
+        [InlineData("#", "100", "true", 100, true)]
+        [InlineData("#", "-1", "false", -1, false)]
+        [InlineData("#", "bogus", "blah", 0, false)]
         public void CanSetupConfigOptionsWithSetup(string str, string intConfig, string boolConfig, int i, bool b)
         {
             var services = new ServiceCollection();
-            services.AddSingleton<IOptionsAccessor<FakeConfigOptions>, OptionsAccessor<FakeConfigOptions>>();
-            services.AddSetup<ConfigOptionsSetup<FakeConfigOptions>>();
+            services.AddSingleton<IOptionsAccessor<FakeOptions>, OptionsAccessor<FakeOptions>>();
+            services.SetupOptions<FakeOptions>(o => o.Message += "a", (int)DefaultOptionSetupOrder.Framework);
+            services.AddSetup<ConfigOptionsSetup<FakeOptions>>();
+            services.AddSetup<FakeOptionsSetupC>();
+            services.AddSetup(new FakeOptionsSetupB());
+            services.AddSetup(typeof(FakeOptionsSetupA));
+            services.SetupOptions<FakeOptions>(o => o.Message += "z", 10000);
+
             var dic = new Dictionary<string, string>
             { 
-                {"int", intConfig},
-                {"string", str},
-                {"bool", boolConfig }
+                {"INT", intConfig},
+                {"message", str},
+                {"bOOl", boolConfig }
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
             services.AddInstance<IConfiguration>(config);
 
             var provider = services.BuildServiceProvider();
 
-            var accessor = provider.GetService<IOptionsAccessor<FakeConfigOptions>>();
+            var accessor = provider.GetService<IOptionsAccessor<FakeOptions>>();
             Assert.NotNull(accessor);
 
             var options = accessor.Options;
             Assert.NotNull(options);
-            Assert.Equal(str, options.String);
+            Assert.Equal(str+"BCz", options.Message); // This verifies that the setup changes made before config are blown away
             Assert.Equal(b, options.Bool);
             Assert.Equal(i, options.Int);
         }
