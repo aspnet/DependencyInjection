@@ -18,6 +18,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.AspNet.ConfigurationModel;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
@@ -26,10 +27,12 @@ namespace Microsoft.AspNet.DependencyInjection
         private object _lock = new object();
         private TOptions _options;
         private IEnumerable<IOptionsSetup<TOptions>> _setups;
+        private IConfiguration _config;
 
-        public OptionsAccessor(IEnumerable<IOptionsSetup<TOptions>> setups)
+        public OptionsAccessor(IEnumerable<IOptionsSetup<TOptions>> setups, IConfiguration config)
         {
             _setups = setups;
+            _config = config;
         }
 
         public TOptions Options
@@ -40,16 +43,14 @@ namespace Microsoft.AspNet.DependencyInjection
                 {
                     if (_options == null)
                     {
-                        if (_setups == null)
-                        {
-                            _options = new TOptions();
-                        }
-                        else
+                        _options = new TOptions();
+                        Read(_options, _config);
+                        if (_setups != null)
                         {
                             _options = _setups
                                 .OrderBy(setup => setup.Order)
                                 .Aggregate(
-                                    new TOptions(),
+                                    _options,
                                     (options, setup) =>
                                     {
                                         setup.Setup(options);
@@ -60,6 +61,37 @@ namespace Microsoft.AspNet.DependencyInjection
                     }
                 }
                 return _options;
+            }
+        }
+
+        public static void Read(object obj, IConfiguration config)
+        {
+            if (config == null || obj == null)
+            {
+                return;
+            }
+            var type = obj.GetType();
+            var props = type.GetTypeInfo().DeclaredProperties;
+            foreach (var prop in props)
+            {
+                if (!prop.CanWrite)
+                {
+                    continue;
+                }
+                var configValue = config.Get(prop.Name);
+                if (configValue == null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    prop.SetValue(obj, Convert.ChangeType(configValue, prop.PropertyType));
+                }
+                catch
+                {
+                    // TODO: what do we do about errors?
+                }
             }
         }
     }
