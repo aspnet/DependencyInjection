@@ -95,7 +95,6 @@ namespace Microsoft.AspNet.DependencyInjection
             return services;
         }
 
-
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction,
             int order)
@@ -107,7 +106,7 @@ namespace Microsoft.AspNet.DependencyInjection
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction)
         {
-            return services.SetupOptions<TOptions>(setupAction, order: 0);
+            return services.SetupOptions<TOptions>(setupAction, order: (int)DefaultOptionSetupOrder.Default);
         }
     }
 }

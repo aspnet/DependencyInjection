@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
     public class FakeOptionsSetupA : IOptionsSetup<FakeOptions>
     {
         public int Order {
-            get { return -1; }
+            get { return (int)DefaultOptionSetupOrder.Framework; }
         }
 
         public void Setup(FakeOptions options)

@@ -32,6 +32,28 @@ namespace Microsoft.AspNet.DependencyInjection
             _setups = setups;
         }
 
+        public virtual TOptions SetupOptions(TOptions options)
+        {
+            if (_setups != null)
+            {
+                return _setups
+                    .OrderBy(setup => setup.Order)
+                    .Aggregate(
+                        options,
+                        (op, setup) =>
+                        {
+                            setup.Setup(op);
+                            return op;
+                        });
+            }
+            return options;
+        }
+
+        public virtual TOptions BuildOptions()
+        {
+            return SetupOptions(new TOptions());
+        }
+
         public TOptions Options
         {
             get
@@ -40,23 +62,7 @@ namespace Microsoft.AspNet.DependencyInjection
                 {
                     if (_options == null)
                     {
-                        if (_setups == null)
-                        {
-                            _options = new TOptions();
-                        }
-                        else
-                        {
-                            _options = _setups
-                                .OrderBy(setup => setup.Order)
-                                .Aggregate(
-                                    new TOptions(),
-                                    (options, setup) =>
-                                    {
-                                        setup.Setup(options);
-                                        return options;
-                                    });
-                            // Consider: null out setups without creating race condition?
-                        }
+                        _options = BuildOptions();
                     }
                 }
                 return _options;

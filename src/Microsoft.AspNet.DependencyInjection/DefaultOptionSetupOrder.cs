@@ -15,18 +15,12 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
+namespace Microsoft.AspNet.DependencyInjection
 {
-    public class FakeOptions : ConfigOptions
+    public enum DefaultOptionSetupOrder
     {
-        public FakeOptions()
-        {
-            Message = "";
-        }
-
-        public string Message { get; set; }
-        public int Int { get; set; }
-        public bool Bool { get; set; }
-        public bool ReadOnly { get; private set; }
+        Framework = -200,
+        Configuration = -100,
+        Default = 0,
     }
 }
