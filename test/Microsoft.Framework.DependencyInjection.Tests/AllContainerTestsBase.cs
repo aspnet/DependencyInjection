@@ -90,5 +90,34 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Contains("FakeOneMultipleServiceAnotherMethod", multipleValues);
             Assert.Contains("FakeTwoMultipleServiceAnotherMethod", multipleValues);
         }
+
+        [Fact]
+        public void FactoryServicesCanBeCreatedByGetService()
+        {
+            // Arrange
+            var container = CreateContainer();
+
+            // Act
+            var service = container.GetService<IFactoryService>();
+
+            // Assert
+            Assert.Equal(42, service.Value);
+            Assert.NotNull(service.FakeService);
+        }
+
+        [Fact]
+        public void FactoryServicesAreCreatedAsPartOfCreatingObjectGraph()
+        {
+            // Arrange
+            var container = CreateContainer();
+
+            // Act
+            var service = container.GetService<ServiceAcceptingFactoryService>();
+            var factoryService = service.FactoryService;
+
+            // Assert
+            Assert.Equal(42, factoryService.Value);
+            Assert.NotNull(factoryService.FakeService);
+        }
     }
 }

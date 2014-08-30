@@ -13,5 +13,10 @@ namespace Microsoft.Framework.DependencyInjection
         // Exactly one of the two following properties should be set
         public Type ImplementationType { get; set; } // nullable
         public object ImplementationInstance { get; set; } // nullable
+
+        /// <summary>
+        /// Gets or sets the factory used for creating service instances.
+        /// </summary>
+        public Func<IServiceProvider, object> ImplementationFactory { get; set; }
     }
 }

@@ -30,6 +30,11 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(service, implementationType, LifecycleKind.Transient);
         }
 
+        public ServiceDescriptor Transient<TService>(Func<IServiceProvider, object> implementationFactory)
+        {
+            return Describe<TService>(implementationFactory, LifecycleKind.Transient);
+        }
+
         public ServiceDescriptor Scoped<TService, TImplementation>()
         {
             return Describe<TService, TImplementation>(LifecycleKind.Scoped);
@@ -38,6 +43,11 @@ namespace Microsoft.Framework.DependencyInjection
         public ServiceDescriptor Scoped(Type service, Type implementationType)
         {
             return Describe(service, implementationType, LifecycleKind.Scoped);
+        }
+
+        public ServiceDescriptor Scoped<TService>(Func<IServiceProvider, object> implementationFactory)
+        {
+            return Describe<TService>(implementationFactory, LifecycleKind.Scoped);
         }
 
         public ServiceDescriptor Singleton<TService, TImplementation>()
@@ -50,6 +60,11 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(service, implementationType, LifecycleKind.Singleton);
         }
 
+        public ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory)
+        {
+            return Describe<TService>(implementationFactory, LifecycleKind.Singleton);
+        }
+
         public ServiceDescriptor Instance<TService>(object implementationInstance)
         {
             return Instance(typeof(TService), implementationInstance);
@@ -59,9 +74,10 @@ namespace Microsoft.Framework.DependencyInjection
         {
             return Describe(
                 service,
-                null, // implementationType
-                implementationInstance,
-                LifecycleKind.Singleton);
+                implementationType: null,
+                implementationInstance: implementationInstance,
+                implementationFactory: null,
+                lifecycle: LifecycleKind.Singleton);
         }
 
         private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
@@ -69,8 +85,9 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(
                 typeof(TService),
                 typeof(TImplementation),
-                null, // implementationInstance
-                lifecycle);
+                implementationInstance: null,
+                implementationFactory: null,
+                lifecycle: lifecycle);
         }
 
         private ServiceDescriptor Describe(
@@ -81,19 +98,33 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(
                 serviceType,
                 implementationType,
-                null, // implementationInstance
-                lifecycle);
+                implementationInstance: null,
+                implementationFactory: null,
+                lifecycle: lifecycle);
+        }
+
+        private ServiceDescriptor Describe<TService>(
+                Func<IServiceProvider, object> implementationFactory,
+                LifecycleKind lifecycle)
+        {
+            return Describe(
+                typeof(TService),
+                implementationType: null,
+                implementationInstance: null,
+                implementationFactory: implementationFactory,
+                lifecycle: lifecycle);
         }
 
         public ServiceDescriptor Describe(
                 Type serviceType,
                 Type implementationType,
                 object implementationInstance,
+                Func<IServiceProvider, object> implementationFactory,
                 LifecycleKind lifecycle)
         {
             var serviceTypeName = serviceType.FullName;
             var implementationTypeName = _configuration.Get(serviceTypeName);
-            if (!String.IsNullOrEmpty(implementationTypeName))
+            if (!string.IsNullOrEmpty(implementationTypeName))
             {
                 try
                 {
@@ -110,6 +141,7 @@ namespace Microsoft.Framework.DependencyInjection
                 ServiceType = serviceType,
                 ImplementationType = implementationType,
                 ImplementationInstance = implementationInstance,
+                ImplementationFactory = implementationFactory,
                 Lifecycle = lifecycle
             };
         }

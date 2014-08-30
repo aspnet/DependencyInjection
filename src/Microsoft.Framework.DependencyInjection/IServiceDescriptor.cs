@@ -14,5 +14,10 @@ namespace Microsoft.Framework.DependencyInjection
         Type ServiceType { get; }
         Type ImplementationType { get; } // nullable
         object ImplementationInstance { get; } // nullable
+
+        /// <summary>
+        /// Gets the factory used for creating service instances.
+        /// </summary>
+        Func<IServiceProvider, object> ImplementationFactory { get; }
     }
 }
