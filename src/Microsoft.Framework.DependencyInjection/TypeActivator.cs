@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -9,58 +11,74 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
+        private IDictionary<ParamTypeLookupKey, InstanceCreator> _creatorByParamsType = new Dictionary<ParamTypeLookupKey, InstanceCreator>();
+
         public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
-            int bestLength = -1;
-            ConstructorMatcher bestMatcher = null;
-
-            foreach (var matcher in instanceType
-                .GetTypeInfo()
-                .DeclaredConstructors
-                .Where(c => !c.IsStatic)
-                .Select(constructor => new ConstructorMatcher(constructor)))
+            var paramTypes = new Type[parameters.Length];
+            for (int i = 0; i < paramTypes.Length; i++)
             {
-                var length = matcher.Match(parameters);
-                if (length == -1)
+                paramTypes[i] = parameters[i].GetType();
+            }
+            var paramTypeKey = new ParamTypeLookupKey(instanceType, paramTypes);
+
+            InstanceCreator creator;
+            if (!_creatorByParamsType.TryGetValue(paramTypeKey, out creator))
+            {
+                var bestLength = -1;
+                foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors.Where(c => !c.IsStatic))
                 {
-                    continue;
+                    InstanceCreator prototype;
+                    int applyExactLength = InstanceCreator.TryCreate(constructor, parameters, out prototype);
+                    if (applyExactLength > bestLength)
+                    {
+                        creator = prototype;
+                        bestLength = applyExactLength;
+
+                        if (bestLength == parameters.Length)
+                        {
+                            // best possible result, break
+                            break;
+                        }
+                    }
                 }
-                if (bestLength < length)
+
+                if (creator != null)
                 {
-                    bestLength = length;
-                    bestMatcher = matcher;
+                    lock (_creatorByParamsType)
+                    {
+                        if (!_creatorByParamsType.ContainsKey(paramTypeKey))
+                        {
+                            _creatorByParamsType.Add(paramTypeKey, creator);
+                        }
+                    }
                 }
             }
 
-            if (bestMatcher == null)
+            if (creator == null)
             {
                 throw new Exception(
                     string.Format(
-                        "TODO: unable to locate suitable constructor for {0}. " + 
+                        "TODO: unable to locate suitable constructor for {0}. " +
                         "Ensure 'instanceType' is concrete and all parameters are accepted by a constructor.",
                         instanceType));
             }
 
-            return bestMatcher.CreateInstance(services);
+            return creator.CreateInstance(services, parameters);
         }
 
-        class ConstructorMatcher
+        private class InstanceCreator
         {
             private readonly ConstructorInfo _constructor;
-            private readonly ParameterInfo[] _parameters;
-            private readonly object[] _parameterValues;
-            private readonly bool[] _parameterValuesSet;
+            private readonly int[] _paramPermutation;
+            private readonly Type[] _serviceClosure;
 
-            public ConstructorMatcher(ConstructorInfo constructor)
+            public static int TryCreate(ConstructorInfo constructor, object[] givenParameters, out InstanceCreator creator)
             {
-                _constructor = constructor;
-                _parameters = _constructor.GetParameters();
-                _parameterValuesSet = new bool[_parameters.Length];
-                _parameterValues = new object[_parameters.Length];
-            }
-
-            public int Match(object[] givenParameters)
-            {
+                var constructorParams = constructor.GetParameters();
+                var serviceClosure = new Type[constructorParams.Length];
+                var parameterValuesSet = new bool[constructorParams.Length];
+                var paramPermutation = new int[givenParameters.Length];
 
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
@@ -69,14 +87,14 @@ namespace Microsoft.Framework.DependencyInjection
                     var givenType = givenParameters[givenIndex] == null ? null : givenParameters[givenIndex].GetType().GetTypeInfo();
                     var givenMatched = false;
 
-                    for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
+                    for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != constructorParams.Length; ++applyIndex)
                     {
-                        if (_parameterValuesSet[applyIndex] == false &&
-                            _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
+                        if (parameterValuesSet[applyIndex] == false &&
+                            constructorParams[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
                         {
                             givenMatched = true;
-                            _parameterValuesSet[applyIndex] = true;
-                            _parameterValues[applyIndex] = givenParameters[givenIndex];
+                            paramPermutation[givenIndex] = applyIndex;
+                            parameterValuesSet[applyIndex] = true;
                             if (applyIndexStart == applyIndex)
                             {
                                 applyIndexStart++;
@@ -90,27 +108,113 @@ namespace Microsoft.Framework.DependencyInjection
 
                     if (givenMatched == false)
                     {
+                        creator = null;
                         return -1;
                     }
                 }
+
+                // for unassigned parameters, sevice closure is needed
+                for (int i = 0; i < constructorParams.Length; i++)
+                {
+                    if (!parameterValuesSet[i])
+                    {
+                        serviceClosure[i] = constructorParams[i].ParameterType;
+                    }
+                }
+
+                creator = new InstanceCreator(constructor, paramPermutation, serviceClosure);
                 return applyExactLength;
             }
 
-            public object CreateInstance(IServiceProvider _services)
+            private InstanceCreator(ConstructorInfo constructor, int[] paramPermutation, Type[] serviceClosure)
             {
-                for (var index = 0; index != _parameters.Length; ++index)
+                _constructor = constructor;
+                _paramPermutation = paramPermutation;
+                _serviceClosure = serviceClosure;
+            }
+
+            public object CreateInstance(IServiceProvider services, object[] parameters)
+            {
+                var rearrangedParams = new object[_serviceClosure.Length];
+
+                for (int i = 0; i < _paramPermutation.Length; i++)
                 {
-                    if (_parameterValuesSet[index] == false)
+                    var selectedIndex = _paramPermutation[i];
+                    rearrangedParams[selectedIndex] = parameters[i];
+                }
+
+                for (int i = 0; i < _serviceClosure.Length; i++)
+                {
+                    var closureType = _serviceClosure[i];
+                    if (closureType != null)
                     {
-                        var value = _services.GetService(_parameters[index].ParameterType);
-                        if (value == null)
+                        var paramValue = services.GetService(closureType);
+                        if (paramValue == null)
                         {
-                            throw new Exception(string.Format("TODO: unable to resolve service {1} to create {0}", _constructor.DeclaringType, _parameters[index].ParameterType));
+                            throw new Exception(string.Format("TODO: unable to resolve service {1} to create {0}", _constructor.DeclaringType, closureType));
                         }
-                        _parameterValues[index] = value;
+                        rearrangedParams[i] = paramValue;
                     }
                 }
-                return _constructor.Invoke(_parameterValues);
+
+                return _constructor.Invoke(rearrangedParams);
+            }
+        }
+
+        private class ParamTypeLookupKey
+        {
+            private readonly Type _instanceType;
+            private readonly Type[] _paramsType;
+            private readonly int _hashCache;
+
+            public ParamTypeLookupKey(Type instanceType, Type[] paramsType)
+            {
+                if (instanceType == null || paramsType == null)
+                {
+                    throw new InvalidOperationException("Invalid parameters");
+                }
+
+                _instanceType = instanceType;
+                _paramsType = paramsType;
+
+                // evaluate hashcode and cache it
+                int hashCode = 0;
+                unchecked
+                {
+                    for (int i = 0; i < _paramsType.Length; i++)
+                    {
+                        hashCode = (hashCode + _paramsType[i].GetHashCode()) * 6793;
+                    }
+                    hashCode += _instanceType.GetHashCode();
+                }
+                _hashCache = hashCode;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as ParamTypeLookupKey;
+
+                if (other == null ||
+                    _instanceType != other._instanceType ||
+                    _paramsType.Length != other._paramsType.Length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < _paramsType.Length; i++)
+                {
+                    if (_paramsType[i] != other._paramsType[i])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public override int GetHashCode()
+            {
+                return _hashCache;
             }
         }
     }
