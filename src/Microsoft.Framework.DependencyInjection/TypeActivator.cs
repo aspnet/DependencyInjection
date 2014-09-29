@@ -167,7 +167,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             private readonly Type _instanceType;
             private readonly Type[] _paramsType;
-            private readonly int _hashCache;
 
             public ParamTypeLookupKey(Type instanceType, Type[] paramsType)
             {
@@ -178,18 +177,6 @@ namespace Microsoft.Framework.DependencyInjection
 
                 _instanceType = instanceType;
                 _paramsType = paramsType;
-
-                // evaluate hashcode and cache it
-                int hashCode = 0;
-                unchecked
-                {
-                    for (var i = 0; i < _paramsType.Length; i++)
-                    {
-                        hashCode = (hashCode + _paramsType[i].GetHashCode()) * 6793;
-                    }
-                    hashCode += _instanceType.GetHashCode();
-                }
-                _hashCache = hashCode;
             }
 
             public override bool Equals(object obj)
@@ -216,7 +203,17 @@ namespace Microsoft.Framework.DependencyInjection
 
             public override int GetHashCode()
             {
-                return _hashCache;
+                // evaluate hashcode and cache it
+                int hashCode = 0;
+                unchecked
+                {
+                    for (var i = 0; i < _paramsType.Length; i++)
+                    {
+                        hashCode = (hashCode + _paramsType[i].GetHashCode()) * 6793;
+                    }
+                    hashCode += _instanceType.GetHashCode();
+                }
+                return hashCode;
             }
         }
     }
