@@ -11,51 +11,53 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
-        private IDictionary<ParamTypeLookupKey, InstanceCreator> _creatorByParamsType = new Dictionary<ParamTypeLookupKey, InstanceCreator>();
+        private IDictionary<ParamTypeLookupKey, InstanceFactory> _creatorByParamsType = new Dictionary<ParamTypeLookupKey, InstanceFactory>();
 
         public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
             var paramTypes = new Type[parameters.Length];
-            for (int i = 0; i < paramTypes.Length; i++)
+            for (var i = 0; i < paramTypes.Length; i++)
             {
                 paramTypes[i] = parameters[i].GetType();
             }
             var paramTypeKey = new ParamTypeLookupKey(instanceType, paramTypes);
 
-            InstanceCreator creator;
-            if (!_creatorByParamsType.TryGetValue(paramTypeKey, out creator))
+            InstanceFactory factory;
+            if (!_creatorByParamsType.TryGetValue(paramTypeKey, out factory))
             {
                 var bestLength = -1;
-                foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors.Where(c => !c.IsStatic))
+                foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
                 {
-                    InstanceCreator prototype;
-                    int applyExactLength = InstanceCreator.TryCreate(constructor, parameters, out prototype);
-                    if (applyExactLength > bestLength)
+                    if (!constructor.IsStatic)
                     {
-                        creator = prototype;
-                        bestLength = applyExactLength;
-
-                        if (bestLength == parameters.Length)
+                        var applyExactLength = InstanceFactory.CreateFactory(constructor, parameters, out var prototype);
+                        if (applyExactLength > bestLength)
                         {
-                            // best possible result, break
-                            break;
+                            factory = prototype;
+                            bestLength = applyExactLength;
+
+                            if (bestLength == parameters.Length)
+                            {
+                                // best possible result, break
+                                break;
+                            }
                         }
                     }
                 }
 
-                if (creator != null)
+                if (factory != null)
                 {
                     lock (_creatorByParamsType)
                     {
                         if (!_creatorByParamsType.ContainsKey(paramTypeKey))
                         {
-                            _creatorByParamsType.Add(paramTypeKey, creator);
+                            _creatorByParamsType.Add(paramTypeKey, factory);
                         }
                     }
                 }
             }
 
-            if (creator == null)
+            if (factory == null)
             {
                 throw new Exception(
                     string.Format(
@@ -64,19 +66,19 @@ namespace Microsoft.Framework.DependencyInjection
                         instanceType));
             }
 
-            return creator.CreateInstance(services, parameters);
+            return factory.CreateInstance(services, parameters);
         }
 
-        private class InstanceCreator
+        private class InstanceFactory
         {
             private readonly ConstructorInfo _constructor;
             private readonly int[] _paramPermutation;
-            private readonly Type[] _serviceClosure;
+            private readonly Type[] _dependencyInjectedTypes;
 
-            public static int TryCreate(ConstructorInfo constructor, object[] givenParameters, out InstanceCreator creator)
+            public static int CreateFactory(ConstructorInfo constructor, object[] givenParameters, out InstanceFactory creator)
             {
                 var constructorParams = constructor.GetParameters();
-                var serviceClosure = new Type[constructorParams.Length];
+                var dependencyInjectedTypes = new Type[constructorParams.Length];
                 var parameterValuesSet = new bool[constructorParams.Length];
                 var paramPermutation = new int[givenParameters.Length];
 
@@ -113,29 +115,29 @@ namespace Microsoft.Framework.DependencyInjection
                     }
                 }
 
-                // for unassigned parameters, sevice closure is needed
-                for (int i = 0; i < constructorParams.Length; i++)
+                // Find parameters that remains unassigned, we need to get these parameters from service provider
+                for (var i = 0; i < constructorParams.Length; i++)
                 {
                     if (!parameterValuesSet[i])
                     {
-                        serviceClosure[i] = constructorParams[i].ParameterType;
+                        dependencyInjectedTypes[i] = constructorParams[i].ParameterType;
                     }
                 }
 
-                creator = new InstanceCreator(constructor, paramPermutation, serviceClosure);
+                creator = new InstanceFactory(constructor, paramPermutation, dependencyInjectedTypes);
                 return applyExactLength;
             }
 
-            private InstanceCreator(ConstructorInfo constructor, int[] paramPermutation, Type[] serviceClosure)
+            private InstanceFactory(ConstructorInfo constructor, int[] paramPermutation, Type[] dependencyInjectedTypes)
             {
                 _constructor = constructor;
                 _paramPermutation = paramPermutation;
-                _serviceClosure = serviceClosure;
+                _dependencyInjectedTypes = dependencyInjectedTypes;
             }
 
             public object CreateInstance(IServiceProvider services, object[] parameters)
             {
-                var rearrangedParams = new object[_serviceClosure.Length];
+                var rearrangedParams = new object[_dependencyInjectedTypes.Length];
 
                 for (int i = 0; i < _paramPermutation.Length; i++)
                 {
@@ -143,9 +145,9 @@ namespace Microsoft.Framework.DependencyInjection
                     rearrangedParams[selectedIndex] = parameters[i];
                 }
 
-                for (int i = 0; i < _serviceClosure.Length; i++)
+                for (int i = 0; i < _dependencyInjectedTypes.Length; i++)
                 {
-                    var closureType = _serviceClosure[i];
+                    var closureType = _dependencyInjectedTypes[i];
                     if (closureType != null)
                     {
                         var paramValue = services.GetService(closureType);
@@ -181,7 +183,7 @@ namespace Microsoft.Framework.DependencyInjection
                 int hashCode = 0;
                 unchecked
                 {
-                    for (int i = 0; i < _paramsType.Length; i++)
+                    for (var i = 0; i < _paramsType.Length; i++)
                     {
                         hashCode = (hashCode + _paramsType[i].GetHashCode()) * 6793;
                     }
