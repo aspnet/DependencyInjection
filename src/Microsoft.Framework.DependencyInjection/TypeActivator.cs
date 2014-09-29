@@ -11,7 +11,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
-        private IDictionary<ParamTypeLookupKey, InstanceFactory> _creatorByParamsType = new Dictionary<ParamTypeLookupKey, InstanceFactory>();
+        private IDictionary<ParamTypeLookupKey, InstanceFactory> _factoriesByParamsType = new Dictionary<ParamTypeLookupKey, InstanceFactory>();
 
         public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
@@ -23,7 +23,7 @@ namespace Microsoft.Framework.DependencyInjection
             var paramTypeKey = new ParamTypeLookupKey(instanceType, paramTypes);
 
             InstanceFactory factory;
-            if (!_creatorByParamsType.TryGetValue(paramTypeKey, out factory))
+            if (!_factoriesByParamsType.TryGetValue(paramTypeKey, out factory))
             {
                 var bestLength = -1;
                 foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
@@ -47,11 +47,11 @@ namespace Microsoft.Framework.DependencyInjection
 
                 if (factory != null)
                 {
-                    lock (_creatorByParamsType)
+                    lock (_factoriesByParamsType)
                     {
-                        if (!_creatorByParamsType.ContainsKey(paramTypeKey))
+                        if (!_factoriesByParamsType.ContainsKey(paramTypeKey))
                         {
-                            _creatorByParamsType.Add(paramTypeKey, factory);
+                            _factoriesByParamsType.Add(paramTypeKey, factory);
                         }
                     }
                 }
@@ -75,7 +75,7 @@ namespace Microsoft.Framework.DependencyInjection
             private readonly int[] _paramPermutation;
             private readonly Type[] _dependencyInjectedTypes;
 
-            public static int CreateFactory(ConstructorInfo constructor, object[] givenParameters, out InstanceFactory creator)
+            public static int CreateFactory(ConstructorInfo constructor, object[] givenParameters, out InstanceFactory factory)
             {
                 var constructorParams = constructor.GetParameters();
                 var dependencyInjectedTypes = new Type[constructorParams.Length];
@@ -110,7 +110,7 @@ namespace Microsoft.Framework.DependencyInjection
 
                     if (givenMatched == false)
                     {
-                        creator = null;
+                        factory = null;
                         return -1;
                     }
                 }
@@ -124,7 +124,7 @@ namespace Microsoft.Framework.DependencyInjection
                     }
                 }
 
-                creator = new InstanceFactory(constructor, paramPermutation, dependencyInjectedTypes);
+                factory = new InstanceFactory(constructor, paramPermutation, dependencyInjectedTypes);
                 return applyExactLength;
             }
 
