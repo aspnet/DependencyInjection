@@ -11,7 +11,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
-        private IDictionary<ParamTypeLookupKey, InstanceFactory> _factoriesByParamsType = new Dictionary<ParamTypeLookupKey, InstanceFactory>();
+        private ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory> _factoriesByParamsType = new ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory>();
 
         public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
@@ -47,13 +47,7 @@ namespace Microsoft.Framework.DependencyInjection
 
                 if (factory != null)
                 {
-                    lock (_factoriesByParamsType)
-                    {
-                        if (!_factoriesByParamsType.ContainsKey(paramTypeKey))
-                        {
-                            _factoriesByParamsType.Add(paramTypeKey, factory);
-                        }
-                    }
+                    _factoriesByParamsType.TryAdd(paramTypeKey, factory);
                 }
             }
 
