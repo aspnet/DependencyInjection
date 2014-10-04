@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
 {
-    public class FactoryService : IFactoryService
+    public class TransientFactoryService : IFactoryService
     {
         public IFakeService FakeService { get; set; }
 

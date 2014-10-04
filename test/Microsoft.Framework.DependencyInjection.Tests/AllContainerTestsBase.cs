@@ -112,12 +112,25 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var container = CreateContainer();
 
             // Act
-            var service = container.GetService<ServiceAcceptingFactoryService>();
-            var factoryService = service.FactoryService;
+            var service1 = container.GetService<ServiceAcceptingFactoryService>();
+            var service2 = container.GetService<ServiceAcceptingFactoryService>();
 
             // Assert
-            Assert.Equal(42, factoryService.Value);
-            Assert.NotNull(factoryService.FakeService);
+            Assert.Equal(42, service1.TransientService.Value);
+            Assert.NotNull(service1.TransientService.FakeService);
+
+            Assert.Equal(42, service2.TransientService.Value);
+            Assert.NotNull(service2.TransientService.FakeService);
+
+            Assert.NotNull(service1.ScopedService.FakeService);
+
+            // Scoping does not currently work with StuctureMap
+            if (GetType() != typeof(StructureMapContainerTests))
+            {
+                // Verify scoping works
+                Assert.NotSame(service1.TransientService, service2.TransientService);
+                Assert.Same(service1.ScopedService, service2.ScopedService);
+            }
         }
     }
 }

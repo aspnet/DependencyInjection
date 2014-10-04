@@ -7,11 +7,15 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 {
     public class ServiceAcceptingFactoryService
     {
-        public ServiceAcceptingFactoryService(IFactoryService service)
+        public ServiceAcceptingFactoryService(ScopedFactoryService scopedService,
+                                              IFactoryService transientService)
         {
-            FactoryService = service;
+            ScopedService = scopedService;
+            TransientService = transientService;
         }
 
-        public IFactoryService FactoryService { get; private set; }
+        public ScopedFactoryService ScopedService { get; private set; }
+
+        public IFactoryService TransientService { get; private set; }
     }
 }

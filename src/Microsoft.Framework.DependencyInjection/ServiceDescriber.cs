@@ -32,7 +32,12 @@ namespace Microsoft.Framework.DependencyInjection
 
         public ServiceDescriptor Transient<TService>(Func<IServiceProvider, object> implementationFactory)
         {
-            return Describe<TService>(implementationFactory, LifecycleKind.Transient);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Transient);
+        }
+
+        public ServiceDescriptor Transient(Type service, Func<IServiceProvider, object> implementationFactory)
+        {
+            return Describe(service, implementationFactory, LifecycleKind.Transient);
         }
 
         public ServiceDescriptor Scoped<TService, TImplementation>()
@@ -47,7 +52,12 @@ namespace Microsoft.Framework.DependencyInjection
 
         public ServiceDescriptor Scoped<TService>(Func<IServiceProvider, object> implementationFactory)
         {
-            return Describe<TService>(implementationFactory, LifecycleKind.Scoped);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Scoped);
+        }
+
+        public ServiceDescriptor Scoped(Type service, Func<IServiceProvider, object> implementationFactory)
+        {
+            return Describe(service, implementationFactory, LifecycleKind.Scoped);
         }
 
         public ServiceDescriptor Singleton<TService, TImplementation>()
@@ -62,22 +72,22 @@ namespace Microsoft.Framework.DependencyInjection
 
         public ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory)
         {
-            return Describe<TService>(implementationFactory, LifecycleKind.Singleton);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Singleton);
+        }
+
+        public ServiceDescriptor Singleton(Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        {
+            return Describe(serviceType, implementationFactory, LifecycleKind.Singleton);
         }
 
         public ServiceDescriptor Instance<TService>(object implementationInstance)
         {
-            return Instance(typeof(TService), implementationInstance);
+            return Describe(typeof(TService), implementationInstance, LifecycleKind.Singleton);
         }
 
         public ServiceDescriptor Instance(Type service, object implementationInstance)
         {
-            return Describe(
-                service,
-                implementationType: null,
-                implementationInstance: implementationInstance,
-                implementationFactory: null,
-                lifecycle: LifecycleKind.Singleton);
+            return Describe(service, implementationInstance, LifecycleKind.Singleton);
         }
 
         private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
@@ -85,42 +95,15 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(
                 typeof(TService),
                 typeof(TImplementation),
-                implementationInstance: null,
-                implementationFactory: null,
                 lifecycle: lifecycle);
         }
 
-        private ServiceDescriptor Describe(
-                Type serviceType,
-                Type implementationType,
-                LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, object instance, LifecycleKind lifecycle)
         {
-            return Describe(
-                serviceType,
-                implementationType,
-                implementationInstance: null,
-                implementationFactory: null,
-                lifecycle: lifecycle);
+            return new ServiceDescriptor(serviceType, instance, lifecycle);
         }
 
-        private ServiceDescriptor Describe<TService>(
-                Func<IServiceProvider, object> implementationFactory,
-                LifecycleKind lifecycle)
-        {
-            return Describe(
-                typeof(TService),
-                implementationType: null,
-                implementationInstance: null,
-                implementationFactory: implementationFactory,
-                lifecycle: lifecycle);
-        }
-
-        public ServiceDescriptor Describe(
-                Type serviceType,
-                Type implementationType,
-                object implementationInstance,
-                Func<IServiceProvider, object> implementationFactory,
-                LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle)
         {
             var serviceTypeName = serviceType.FullName;
             var implementationTypeName = _configuration.Get(serviceTypeName);
@@ -136,14 +119,12 @@ namespace Microsoft.Framework.DependencyInjection
                 }
             }
 
-            return new ServiceDescriptor
-            {
-                ServiceType = serviceType,
-                ImplementationType = implementationType,
-                ImplementationInstance = implementationInstance,
-                ImplementationFactory = implementationFactory,
-                Lifecycle = lifecycle
-            };
+            return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+        }
+
+        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle)
+        {
+            return new ServiceDescriptor(serviceType, implementationFactory, lifecycle);
         }
     }
 }
