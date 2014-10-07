@@ -14,10 +14,10 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
-        private ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory> _factoriesByparameterTypes
+        private readonly ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory> _factoriesByparameterTypes
             = new ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory>();
 
-        public object CreateInstance(IServiceProvider services, Type instanceType, object[] parameters)
+        public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
             // We may be able to save an allocation here by modifying ParamTypeLookupKey class to know how to
             // compare (object[] parameters)

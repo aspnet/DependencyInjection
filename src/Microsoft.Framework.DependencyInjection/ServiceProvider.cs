@@ -34,7 +34,26 @@ namespace Microsoft.Framework.DependencyInjection
                 IEnumerable<IServiceDescriptor> serviceDescriptors,
                 IServiceProvider fallbackServiceProvider)
         {
-            _table = new ServiceTable(serviceDescriptors);
+            _table = new ServiceTable();
+
+            var typeActivator = new TypeActivator();
+            foreach (var descriptor in serviceDescriptors)
+            {
+                var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
+                if (!serviceTypeInfo.IsGenericTypeDefinition)
+                {
+                    _table.Add(descriptor.ServiceType, new Service(descriptor, typeActivator));
+                }
+                else
+                {
+                    _table.Add(descriptor.ServiceType, new GenericService(descriptor, typeActivator));
+                }
+            }
+
+            // Starup optimization point:
+            // Now that all the services are registered - assuming that not all cores are busy,
+            // we can actually fork a thread to actively precompile the expressions to activate services
+
             _fallback = fallbackServiceProvider;
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());

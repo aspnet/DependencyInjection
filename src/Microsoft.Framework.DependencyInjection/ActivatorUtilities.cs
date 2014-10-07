@@ -11,6 +11,7 @@ namespace Microsoft.Framework.DependencyInjection
     /// <summary>
     /// Helper code for the various activator services.
     /// </summary>
+    [Obsolete("This class is marked for removal for the next iteration, please ITypeActivaor instead")]
     public static class ActivatorUtilities
     {
         /// <summary>
