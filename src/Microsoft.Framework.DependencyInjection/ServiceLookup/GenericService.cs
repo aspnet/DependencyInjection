@@ -9,10 +9,12 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     internal class GenericService : IGenericService
     {
         private readonly IServiceDescriptor _descriptor;
+        private readonly TypeActivator _activator;
 
-        public GenericService(IServiceDescriptor descriptor)
+        public GenericService(IServiceDescriptor descriptor, TypeActivator activator)
         {
             _descriptor = descriptor;
+            _activator = activator;
         }
 
         public LifecycleKind Lifecycle
@@ -33,7 +35,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 Lifecycle = Lifecycle
             };
 
-            return new Service(closedServiceDescriptor);
+            return new Service(closedServiceDescriptor, _activator);
         }
     }
 }

@@ -3,80 +3,174 @@
 
 using System;
 using System.Linq;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
+
+using InstanceFactory = System.Func<System.IServiceProvider, object[], object>;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
+        private readonly ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory> _factoriesByparameterTypes
+            = new ConcurrentDictionary<ParamTypeLookupKey, InstanceFactory>();
+
         public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
-            int bestLength = -1;
-            ConstructorMatcher bestMatcher = null;
-
-            foreach (var matcher in instanceType
-                .GetTypeInfo()
-                .DeclaredConstructors
-                .Where(c => !c.IsStatic)
-                .Select(constructor => new ConstructorMatcher(constructor)))
+            // We may be able to save an allocation here by modifying ParamTypeLookupKey class to know how to
+            // compare (object[] parameters)
+            // Note that this change would complicate the logic of ParamTypeLookupKey quite a bit and it does
+            // not improve performace of no param calls. Let's look at the usage data before making the move
+            Type[] paramTypes;
+            if (parameters.Length == 0)
             {
-                var length = matcher.Match(parameters);
-                if (length == -1)
+                paramTypes = null;
+            }
+            else
+            {
+                paramTypes = new Type[parameters.Length];
+                for (var i = 0; i < paramTypes.Length; i++)
                 {
-                    continue;
-                }
-                if (bestLength < length)
-                {
-                    bestLength = length;
-                    bestMatcher = matcher;
+                    paramTypes[i] = parameters[i].GetType();
                 }
             }
 
-            if (bestMatcher == null)
+            var paramTypeKey = new ParamTypeLookupKey(instanceType, paramTypes);
+
+            InstanceFactory factory;
+            if (!_factoriesByparameterTypes.TryGetValue(paramTypeKey, out factory))
+            {
+                var bestLength = -1;
+                InstanceFactoryBuilder bestBuilder = null;
+                var parametersCount = parameters == null ? 0 : parameters.Length;
+                foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
+                {
+                    if (!constructor.IsStatic)
+                    {
+                        InstanceFactoryBuilder candidate;
+                        var applyExactLength = InstanceFactoryBuilder.Create(constructor, parameters, out candidate);
+                        if (applyExactLength > bestLength)
+                        {
+                            bestBuilder = candidate;
+                            bestLength = applyExactLength;
+
+                            if (bestLength == parametersCount)
+                            {
+                                // best possible result, break
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (bestBuilder == null)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Internal error: cannot determine creation logic for type {0}, perhaps there is no accessible constructor?", instanceType.FullName));
+                }
+
+                factory = bestBuilder.Build();
+                _factoriesByparameterTypes.TryAdd(paramTypeKey, factory);
+            }
+
+            if (factory == null)
             {
                 throw new Exception(
                     string.Format(
-                        "TODO: unable to locate suitable constructor for {0}. " + 
+                        "TODO: unable to locate suitable constructor for {0}. " +
                         "Ensure 'instanceType' is concrete and all parameters are accepted by a constructor.",
                         instanceType));
             }
 
-            return bestMatcher.CreateInstance(services);
+            return factory(services, parameters);
         }
 
-        class ConstructorMatcher
+        private class InstanceFactoryBuilder
         {
             private readonly ConstructorInfo _constructor;
-            private readonly ParameterInfo[] _parameters;
-            private readonly object[] _parameterValues;
-            private readonly bool[] _parameterValuesSet;
+            private readonly Type[] _constructorParamTypes;
+            private readonly int[] _paramMapping;
 
-            public ConstructorMatcher(ConstructorInfo constructor)
+            private static readonly MethodInfo GetServiceMethod = typeof(InstanceFactoryBuilder).GetTypeInfo().GetDeclaredMethod("GetService");
+
+            private InstanceFactoryBuilder(ConstructorInfo constructor, Type[] constructorParamTypes, int[] paramMapping)
             {
                 _constructor = constructor;
-                _parameters = _constructor.GetParameters();
-                _parameterValuesSet = new bool[_parameters.Length];
-                _parameterValues = new object[_parameters.Length];
+                _constructorParamTypes = constructorParamTypes;
+                _paramMapping = paramMapping;
             }
 
-            public int Match(object[] givenParameters)
+            /// <summary>
+            /// Instance creation logic is built into an one line lambda expression such as
+            /// (serviceProvider, parameters) => new MyClass((T1) parameters[0], (T2) serviceProvider.GetService(T2), (T3) parameters[1])
+            /// </summary>
+            public InstanceFactory Build()
             {
+                var serviceProviderParam = Expression.Parameter(typeof(IServiceProvider));
+                var createArgsParam = Expression.Parameter(typeof(object[]));
+
+                var constructorExpressions = new List<Expression>();
+                for (int i = 0; i < _constructorParamTypes.Length; i++)
+                {
+                    Expression selected;
+                    var mappedIndex = _paramMapping[i];
+                    if (mappedIndex >= 0)
+                    {
+                        // get it from args
+                        // note that the method that we build is
+                        // technically null safe against null value for the second parameter (of type object[])
+                        // since in that case all mapped index would have stayed as -1 when the builder is created
+                        // and this clause is never called
+                        selected = Expression.ArrayIndex(createArgsParam, Expression.Constant(mappedIndex));
+                    }
+                    else
+                    {
+                        // get it from service provider
+                        var GetServiceGenericMethod = GetServiceMethod.MakeGenericMethod(_constructorParamTypes[i]);
+                        selected = Expression.Call(GetServiceGenericMethod, serviceProviderParam);
+                    }
+
+                    constructorExpressions.Add(Expression.Convert(selected, _constructorParamTypes[i]));
+                }
+
+                var createInstanceExpression = Expression.New(_constructor, constructorExpressions);
+                var callback = Expression.Lambda<InstanceFactory>(createInstanceExpression,
+                    new[] { serviceProviderParam, createArgsParam });
+
+                return callback.Compile();
+            }
+
+            public static int Create(ConstructorInfo constructor, object[] givenParameters, out InstanceFactoryBuilder factory)
+            {
+                var constructorParams = constructor.GetParameters();
+                var constructorParamTypes = new Type[constructorParams.Length];
+                var parameterValuesSet = new bool[constructorParams.Length];
+                var paramMapping = new int[constructorParams.Length];
+
+                for (var i = 0; i < constructorParams.Length; i++)
+                {
+                    constructorParamTypes[i] = constructorParams[i].ParameterType;
+                    paramMapping[i] = -1;
+                }
 
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
-                for (var givenIndex = 0; givenIndex != givenParameters.Length; ++givenIndex)
+                var givenParametersCount = givenParameters == null ? 0 : givenParameters.Length;
+                for (var givenIndex = 0; givenIndex != givenParametersCount; ++givenIndex)
                 {
                     var givenType = givenParameters[givenIndex] == null ? null : givenParameters[givenIndex].GetType().GetTypeInfo();
                     var givenMatched = false;
 
-                    for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
+                    for (var applyIndex = applyIndexStart; !givenMatched && applyIndex != constructorParams.Length; ++applyIndex)
                     {
-                        if (_parameterValuesSet[applyIndex] == false &&
-                            _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
+                        if (!parameterValuesSet[applyIndex] &&
+                            constructorParams[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
                         {
                             givenMatched = true;
-                            _parameterValuesSet[applyIndex] = true;
-                            _parameterValues[applyIndex] = givenParameters[givenIndex];
+                            paramMapping[applyIndex] = givenIndex;
+                            parameterValuesSet[applyIndex] = true;
                             if (applyIndexStart == applyIndex)
                             {
                                 applyIndexStart++;
@@ -88,29 +182,95 @@ namespace Microsoft.Framework.DependencyInjection
                         }
                     }
 
-                    if (givenMatched == false)
+                    if (!givenMatched)
                     {
+                        factory = null;
                         return -1;
                     }
                 }
+
+                factory = new InstanceFactoryBuilder(constructor, constructorParamTypes, paramMapping);
                 return applyExactLength;
             }
 
-            public object CreateInstance(IServiceProvider _services)
+            /// <summary>
+            /// This method is here to workaround a bug in CoreCLR
+            /// At runtime the compiled expression is unable to call System.IServiceProvider.GetService
+            /// because somehow the runtime environment would decide that the caller has no permission to do so
+            /// </summary>
+            private static object GetService<T>(IServiceProvider provider)
             {
-                for (var index = 0; index != _parameters.Length; ++index)
+                return provider.GetService(typeof(T));
+            }
+        }
+
+        private struct ParamTypeLookupKey
+        {
+            private readonly Type _instanceType;
+            private readonly Type[] _parameterTypes;
+
+            public ParamTypeLookupKey(
+                [NotNull]
+                Type instanceType,
+                Type[] parameterTypes)
+            {
+                _instanceType = instanceType;
+                _parameterTypes = parameterTypes;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = (ParamTypeLookupKey) obj;
+
+                if (_instanceType != other._instanceType)
                 {
-                    if (_parameterValuesSet[index] == false)
+                    return false;
+                }
+
+                if (_parameterTypes != other._parameterTypes)
+                {
+                    if (_parameterTypes ==null || other._parameterTypes == null)
                     {
-                        var value = _services.GetService(_parameters[index].ParameterType);
-                        if (value == null)
+                        return false;
+                    }
+
+                    if (_parameterTypes.Length != other._parameterTypes.Length)
+                    {
+                        return false;
+                    }
+
+                    for (int i = 0; i < _parameterTypes.Length; i++)
+                    {
+                        if (_parameterTypes[i] != other._parameterTypes[i])
                         {
-                            throw new Exception(string.Format("TODO: unable to resolve service {1} to create {0}", _constructor.DeclaringType, _parameters[index].ParameterType));
+                            return false;
                         }
-                        _parameterValues[index] = value;
                     }
                 }
-                return _constructor.Invoke(_parameterValues);
+
+                return true;
+            }
+
+            public override int GetHashCode()
+            {
+                int hashCode = 0;
+                unchecked
+                {
+                    if (_parameterTypes != null)
+                    {
+                        for (var i = 0; i < _parameterTypes.Length; i++)
+                        {
+                            hashCode = (hashCode + _parameterTypes[i].GetHashCode()) * 6793;
+                        }
+                    }
+                    hashCode += _instanceType.GetHashCode();
+                }
+                return hashCode;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("Instance: {0} Args: [{1}]", _instanceType.FullName, string.Join(", ", _parameterTypes.ToString()));
             }
         }
     }

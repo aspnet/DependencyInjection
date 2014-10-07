@@ -14,23 +14,10 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         private readonly Dictionary<Type, ServiceEntry> _services;
         private readonly Dictionary<Type, List<IGenericService>> _genericServices;
 
-        public ServiceTable(IEnumerable<IServiceDescriptor> descriptors)
+        public ServiceTable()
         {
             _services = new Dictionary<Type, ServiceEntry>();
             _genericServices = new Dictionary<Type, List<IGenericService>>();
-
-            foreach (var descriptor in descriptors)
-            {
-                var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
-                if (!serviceTypeInfo.IsGenericTypeDefinition)
-                {
-                    Add(descriptor.ServiceType, new Service(descriptor));
-                }
-                else
-                {
-                    Add(descriptor.ServiceType, new GenericService(descriptor));
-                }
-            }
         }
 
         public bool TryGetEntry(Type serviceType, out ServiceEntry entry)

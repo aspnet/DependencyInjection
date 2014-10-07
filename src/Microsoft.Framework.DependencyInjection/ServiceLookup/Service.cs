@@ -6,10 +6,12 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     internal class Service : IService
     {
         private readonly IServiceDescriptor _descriptor;
+        private readonly TypeActivator _activator;
 
-        public Service(IServiceDescriptor descriptor)
+        public Service(IServiceDescriptor descriptor, TypeActivator activator)
         {
             _descriptor = descriptor;
+            _activator = activator;
         }
 
         public IService Next { get; set; }
@@ -27,7 +29,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             }
             else
             {
-                return ActivatorUtilities.CreateInstance(provider, _descriptor.ImplementationType);
+                return _activator.CreateInstance(provider, _descriptor.ImplementationType);
             }
         }
     }
