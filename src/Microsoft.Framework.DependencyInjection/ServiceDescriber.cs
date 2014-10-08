@@ -82,12 +82,12 @@ namespace Microsoft.Framework.DependencyInjection
 
         public ServiceDescriptor Instance<TService>(object implementationInstance)
         {
-            return Describe(typeof(TService), implementationInstance, LifecycleKind.Singleton);
+            return Describe(typeof(TService), implementationInstance);
         }
 
         public ServiceDescriptor Instance(Type service, object implementationInstance)
         {
-            return Describe(service, implementationInstance, LifecycleKind.Singleton);
+            return Describe(service, implementationInstance);
         }
 
         private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
@@ -98,33 +98,53 @@ namespace Microsoft.Framework.DependencyInjection
                 lifecycle: lifecycle);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, object instance, LifecycleKind lifecycle)
-        {
-            return new ServiceDescriptor(serviceType, instance, lifecycle);
-        }
-
         public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle)
         {
-            var serviceTypeName = serviceType.FullName;
-            var implementationTypeName = _configuration.Get(serviceTypeName);
-            if (!string.IsNullOrEmpty(implementationTypeName))
-            {
-                try
-                {
-                    implementationType = Type.GetType(implementationTypeName);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(string.Format("TODO: unable to locate implementation {0} for service {1}", implementationTypeName, serviceTypeName), ex);
-                }
-            }
+            implementationType = GetRemappedImplementationType(serviceType) ?? implementationType;
 
             return new ServiceDescriptor(serviceType, implementationType, lifecycle);
         }
 
         public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle)
         {
+            var implementationType = GetRemappedImplementationType(serviceType);
+            if (implementationType != null)
+            {
+                return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+            }
+
             return new ServiceDescriptor(serviceType, implementationFactory, lifecycle);
+        }
+
+        private ServiceDescriptor Describe(Type serviceType, object instance)
+        {
+            var implementationType = GetRemappedImplementationType(serviceType);
+            if (implementationType != null)
+            {
+                return new ServiceDescriptor(serviceType, implementationType, LifecycleKind.Singleton);
+            }
+
+            return new ServiceDescriptor(serviceType, instance);
+        }
+
+        private Type GetRemappedImplementationType(Type serviceType)
+        {
+            // Allow the user to change the implementation source via configuration.
+            var serviceTypeName = serviceType.FullName;
+            var implementationTypeName = _configuration.Get(serviceTypeName);
+            if (!string.IsNullOrEmpty(implementationTypeName))
+            {
+                var type = Type.GetType(implementationTypeName, throwOnError: false);
+                if (type == null)
+                {
+                    var message = string.Format("TODO: unable to locate implementation {0} for service {1}", implementationTypeName, serviceTypeName);
+                    throw new InvalidOperationException(message);
+                }
+
+                return type;
+            }
+
+            return null;
         }
     }
 }

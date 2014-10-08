@@ -20,13 +20,13 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="instance"/>.
+        /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="instance"/>
+        /// as a <see cref="LifecycleKind.Singleton"/>.
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="instance">The instance implementing the service.</param>
-        /// <param name="lifecycle">The <see cref="LifecycleKind"/> of the service.</param>
-        public ServiceDescriptor(Type serviceType, object instance, LifecycleKind lifecycle)
-            : this(serviceType, lifecycle)
+        public ServiceDescriptor(Type serviceType, object instance)
+            : this(serviceType, LifecycleKind.Singleton)
         {
             ImplementationInstance = instance;
         }
