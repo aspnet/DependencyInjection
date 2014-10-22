@@ -114,7 +114,10 @@ namespace Microsoft.Framework.DependencyInjection
                                 _parameterValues[index] = _parameters[index].DefaultValue;
                             }
                         }
-                        _parameterValues[index] = value;
+                        else
+                        {
+                            _parameterValues[index] = value;
+                        }
                     }
                 }
                 return _constructor.Invoke(_parameterValues);

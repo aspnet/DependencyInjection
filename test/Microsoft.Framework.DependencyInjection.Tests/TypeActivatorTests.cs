@@ -69,6 +69,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var anotherClass = typeActivator.CreateInstance<ClassWithOptionalArgsCtor>(serviceProvider);
 
             Assert.NotNull(anotherClass);
+            Assert.Equal("BLARGH", anotherClass.Whatever);
         }
 
     }

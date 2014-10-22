@@ -7,6 +7,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
     {
         public ClassWithOptionalArgsCtor(string whatever = "BLARGH")
         {
+            Whatever = whatever;
         }
+
+        public string Whatever { get; set; }
     }
 }
