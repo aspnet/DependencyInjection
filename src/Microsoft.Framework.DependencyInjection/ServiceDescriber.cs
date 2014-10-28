@@ -20,34 +20,34 @@ namespace Microsoft.Framework.DependencyInjection
             _configuration = configuration;
         }
 
-        public ServiceDescriptor Transient<TService, TImplementation>()
+        public ServiceDescriptor Transient<TService, TImplementation>(OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Transient);
+            return Describe<TService, TImplementation>(LifecycleKind.Transient, mode);
         }
 
-        public ServiceDescriptor Transient(Type service, Type implementationType)
+        public ServiceDescriptor Transient(Type service, Type implementationType, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(service, implementationType, LifecycleKind.Transient);
+            return Describe(service, implementationType, LifecycleKind.Transient, mode);
         }
 
-        public ServiceDescriptor Transient<TService>(Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Transient<TService>(Func<IServiceProvider, object> implementationFactory, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Transient);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Transient, mode);
         }
 
-        public ServiceDescriptor Transient(Type service, Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Transient(Type service, Func<IServiceProvider, object> implementationFactory, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(service, implementationFactory, LifecycleKind.Transient);
+            return Describe(service, implementationFactory, LifecycleKind.Transient, mode);
         }
 
-        public ServiceDescriptor Scoped<TService, TImplementation>()
+        public ServiceDescriptor Scoped<TService, TImplementation>(OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Scoped);
+            return Describe<TService, TImplementation>(LifecycleKind.Scoped, mode);
         }
 
-        public ServiceDescriptor Scoped(Type service, Type implementationType)
+        public ServiceDescriptor Scoped(Type service, Type implementationType, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(service, implementationType, LifecycleKind.Scoped);
+            return Describe(service, implementationType, LifecycleKind.Scoped, mode);
         }
 
         public ServiceDescriptor Scoped<TService>(Func<IServiceProvider, object> implementationFactory)
@@ -60,66 +60,67 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(service, implementationFactory, LifecycleKind.Scoped);
         }
 
-        public ServiceDescriptor Singleton<TService, TImplementation>()
+        public ServiceDescriptor Singleton<TService, TImplementation>(OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Singleton);
+            return Describe<TService, TImplementation>(LifecycleKind.Singleton, mode);
         }
 
-        public ServiceDescriptor Singleton(Type service, Type implementationType)
+        public ServiceDescriptor Singleton(Type service, Type implementationType, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(service, implementationType, LifecycleKind.Singleton);
+            return Describe(service, implementationType, LifecycleKind.Singleton, mode);
         }
 
-        public ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Singleton);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Singleton, mode);
         }
 
-        public ServiceDescriptor Singleton(Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Singleton(Type serviceType, Func<IServiceProvider, object> implementationFactory, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Describe(serviceType, implementationFactory, LifecycleKind.Singleton);
+            return Describe(serviceType, implementationFactory, LifecycleKind.Singleton, mode);
         }
 
-        public ServiceDescriptor Instance<TService>(object implementationInstance)
+        public ServiceDescriptor Instance<TService>(object implementationInstance, OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Instance(typeof(TService), implementationInstance);
+            return Instance(typeof(TService), implementationInstance, mode);
         }
 
-        public ServiceDescriptor Instance(Type serviceType, object implementationInstance)
+        public ServiceDescriptor Instance(Type serviceType, object implementationInstance, OverrideMode mode = OverrideMode.OverrideMany)
         {
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)
             {
-                return new ServiceDescriptor(serviceType, implementationType, LifecycleKind.Singleton);
+                return new ServiceDescriptor(serviceType, implementationType, LifecycleKind.Singleton, mode);
             }
 
-            return new ServiceDescriptor(serviceType, implementationInstance);
+            return new ServiceDescriptor(serviceType, implementationInstance, mode);
         }
 
-        private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
+        private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle, OverrideMode mode)
         {
             return Describe(
                 typeof(TService),
                 typeof(TImplementation),
-                lifecycle: lifecycle);
+                lifecycle: lifecycle,
+                mode: mode);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle, OverrideMode mode = OverrideMode.DefaultMany)
         {
             implementationType = GetRemappedImplementationType(serviceType) ?? implementationType;
 
-            return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+            return new ServiceDescriptor(serviceType, implementationType, lifecycle, mode);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle, OverrideMode mode = OverrideMode.DefaultMany)
         {
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)
             {
-                return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+                return new ServiceDescriptor(serviceType, implementationType, lifecycle, mode);
             }
 
-            return new ServiceDescriptor(serviceType, implementationFactory, lifecycle);
+            return new ServiceDescriptor(serviceType, implementationFactory, lifecycle, mode);
         }
 
         private Type GetRemappedImplementationType(Type serviceType)
