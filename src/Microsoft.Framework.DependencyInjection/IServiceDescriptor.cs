@@ -41,5 +41,12 @@ namespace Microsoft.Framework.DependencyInjection
         /// Gets the factory used for creating service instances.
         /// </summary>
         Func<IServiceProvider, object> ImplementationFactory { get; }
+
+        /// <summary>
+        /// Used to select which services are added to the collection
+        /// </summary>
+        OverrideMode OverrideMode { get; }
     }
+
+
 }

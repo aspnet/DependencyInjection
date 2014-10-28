@@ -9,142 +9,165 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
                                                       [NotNull] Type service, 
-                                                      [NotNull] Type implementationType)
+                                                      [NotNull] Type implementationType, 
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Transient);
+            return Add(collection, service, implementationType, LifecycleKind.Transient, mode);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service, 
-                                                      [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                      [NotNull] Func<IServiceProvider, object> implementationFactory,
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Transient);
+            return Add(collection, service, implementationFactory, LifecycleKind.Transient, mode);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
-                                                   [NotNull] Type implementationType)
+                                                   [NotNull] Type implementationType,
+                                                   OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Scoped);
+            return Add(collection, service, implementationType, LifecycleKind.Scoped, mode);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
-                                                   [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                   [NotNull] Func<IServiceProvider, object> implementationFactory,
+                                                   OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Scoped);
+            return Add(collection, service, implementationFactory, LifecycleKind.Scoped, mode);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
-                                                      [NotNull] Type implementationType)
+                                                      [NotNull] Type implementationType,
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Singleton);
+            return Add(collection, service, implementationType, LifecycleKind.Singleton, mode);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
-                                                      [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                      [NotNull] Func<IServiceProvider, object> implementationFactory,
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Singleton);
+            return Add(collection, service, implementationFactory, LifecycleKind.Singleton, mode);
         }
 
         public static IServiceCollection AddInstance([NotNull] this IServiceCollection collection,
                                                      [NotNull] Type service,
-                                                     [NotNull] object implementationInstance)
+                                                     [NotNull] object implementationInstance,
+                                                     OverrideMode mode = OverrideMode.OverrideMany)
         {
-            var serviceDescriptor = new ServiceDescriptor(service, implementationInstance);
+            var serviceDescriptor = new ServiceDescriptor(service, implementationInstance, mode);
             return collection.Add(serviceDescriptor);
         }
 
-        public static IServiceCollection AddTransient<TService, TImplementation>([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddTransient<TService, TImplementation>([NotNull] this IServiceCollection services,
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddTransient(typeof(TService), typeof(TImplementation));
+            return services.AddTransient(typeof(TService), typeof(TImplementation), mode);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection services,
-                                                      [NotNull] Type serviceType)
+                                                      [NotNull] Type serviceType,
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddTransient(serviceType, serviceType);
-        }
-
-        public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services)
-        {
-            return services.AddTransient(typeof(TService));
+            return services.AddTransient(serviceType, serviceType, mode);
         }
 
         public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services,
-                                                                [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddTransient(typeof(TService), implementationFactory);
+            return services.AddTransient(typeof(TService), mode);
         }
 
-        public static IServiceCollection AddScoped<TService, TImplementation>([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services,
+                                                                [NotNull] Func<IServiceProvider, object> implementationFactory,
+                                                                OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddScoped(typeof(TService), typeof(TImplementation));
+            return services.AddTransient(typeof(TService), implementationFactory, mode);
+        }
+
+        public static IServiceCollection AddScoped<TService, TImplementation>([NotNull] this IServiceCollection services,
+            OverrideMode mode = OverrideMode.OverrideMany)
+        {
+            return services.AddScoped(typeof(TService), typeof(TImplementation), mode);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection services,
-                                                   [NotNull] Type serviceType)
+                                                   [NotNull] Type serviceType,
+                                                   OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddScoped(serviceType, serviceType);
+            return services.AddScoped(serviceType, serviceType, mode);
         }
 
         public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services,
-                                                             [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                             [NotNull] Func<IServiceProvider, object> implementationFactory,
+                                                             OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddScoped(typeof(TService), implementationFactory);
+            return services.AddScoped(typeof(TService), implementationFactory, mode);
         }
 
-        public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services,
+            OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddScoped(typeof(TService));
+            return services.AddScoped(typeof(TService), mode);
         }
 
-        public static IServiceCollection AddSingleton<TService, TImplementation>([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddSingleton<TService, TImplementation>([NotNull] this IServiceCollection services,
+            OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddSingleton(typeof(TService), typeof(TImplementation));
+            return services.AddSingleton(typeof(TService), typeof(TImplementation), mode);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection services, 
-                                                      [NotNull] Type serviceType)
+                                                      [NotNull] Type serviceType,
+                                                      OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddSingleton(serviceType, serviceType);
-        }
-
-        public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services)
-        {
-            return services.AddSingleton(typeof(TService));
+            return services.AddSingleton(serviceType, serviceType, mode);
         }
 
         public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services,
-                                                                [NotNull] Func<IServiceProvider, object> implementationFactory)
+            OverrideMode mode = OverrideMode.OverrideMany)
         {
-            return services.AddSingleton(typeof(TService), implementationFactory);
+            return services.AddSingleton(typeof(TService), mode);
+        }
+
+        public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services,
+                                                                [NotNull] Func<IServiceProvider, object> implementationFactory,
+                                                                OverrideMode mode = OverrideMode.OverrideMany)
+
+        {
+            return services.AddSingleton(typeof(TService), implementationFactory, mode);
         }
 
         public static IServiceCollection AddInstance<TService>([NotNull] this IServiceCollection services, 
-                                                               [NotNull] TService implementationInstance)
+                                                               [NotNull] TService implementationInstance,
+                                                               OverrideMode mode = OverrideMode.OverrideMany)
             where TService : class
         {
-            return services.AddInstance(typeof(TService), implementationInstance);
+            return services.AddInstance(typeof(TService), implementationInstance, mode);
         }
 
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Type implementationType,
-                                              LifecycleKind lifeCycle)
+                                              LifecycleKind lifeCycle,
+                                              OverrideMode mode)
         {
-            var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle);
+            var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle, mode);
             return collection.Add(descriptor);
         }
 
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Func<IServiceProvider, object> implementationFactory,
-                                              LifecycleKind lifeCycle)
+                                              LifecycleKind lifeCycle,
+                                              OverrideMode mode)
         {
-            var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle);
+            var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle, mode);
             return collection.Add(descriptor);
         }
     }

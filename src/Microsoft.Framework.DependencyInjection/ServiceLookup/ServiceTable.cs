@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
@@ -21,25 +22,67 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             _services = new Dictionary<Type, ServiceEntry>();
             _genericServices = new Dictionary<Type, List<IGenericService>>();
 
-            foreach (var descriptor in descriptors)
+            // For each service type
+            foreach (var serviceType in descriptors.Select(d => d.ServiceType).Distinct())
             {
-                var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
-                if (serviceTypeInfo.IsGenericTypeDefinition)
+                // REVIEW: whether this can be reused
+                var serviceTypeDescriptors = descriptors.Where(d => d.ServiceType == serviceType);
+
+                // Look for override single and stop
+                var overrideSingle = serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.OverrideSingle).LastOrDefault();
+                if (overrideSingle != null)
                 {
-                    Add(descriptor.ServiceType, new GenericService(descriptor));
+                    Add(overrideSingle);
+                    continue;
                 }
-                else if (descriptor.ImplementationInstance != null)
+
+                // Override Many and stop if any found
+                bool foundAny = false;
+                foreach (var descriptor in serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.OverrideMany))
                 {
-                    Add(descriptor.ServiceType, new InstanceService(descriptor));
+                    foundAny = true;
+                    Add(descriptor);
                 }
-                else if (descriptor.ImplementationFactory != null)
+                if (foundAny)
                 {
-                    Add(descriptor.ServiceType, new FactoryService(descriptor));
+                    continue;
                 }
-                else
+
+                // Look for DefaultSingle and stop
+                var defaultSingle = serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.DefaultSingle).LastOrDefault();
+                if (defaultSingle != null)
                 {
-                    Add(descriptor.ServiceType, new Service(descriptor));
+                    Add(defaultSingle);
+                    continue;
                 }
+
+                // Finally add any DefaultMany
+                var defaultMany = serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.DefaultMany);
+                foreach (var descriptor in defaultMany)
+                {
+                    Add(descriptor);
+                }
+            }
+        }
+
+        private void Add(IServiceDescriptor descriptor)
+        {
+            var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
+            if (serviceTypeInfo.IsGenericTypeDefinition)
+            {
+                Add(descriptor.ServiceType, new GenericService(descriptor));
+            }
+            else if (descriptor.ImplementationInstance != null)
+            {
+                Add(descriptor.ServiceType, new InstanceService(descriptor));
+            }
+            else if (descriptor.ImplementationFactory != null)
+            {
+                Add(descriptor.ServiceType, new FactoryService(descriptor));
+            }
+            else
+            {
+                Add(descriptor.ServiceType, new Service(descriptor));
             }
         }
 
