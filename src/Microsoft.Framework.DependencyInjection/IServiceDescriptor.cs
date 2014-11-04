@@ -43,9 +43,9 @@ namespace Microsoft.Framework.DependencyInjection
         Func<IServiceProvider, object> ImplementationFactory { get; }
 
         /// <summary>
-        /// Used to select which services are added to the collection
+        /// Fallback services are only added to the service container if the service does not exist
         /// </summary>
-        OverrideMode OverrideMode { get; }
+        bool IsFallback { get; }
     }
 
 

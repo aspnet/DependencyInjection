@@ -23,44 +23,25 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             _genericServices = new Dictionary<Type, List<IGenericService>>();
 
             // For each service type
-            foreach (var serviceType in descriptors.Select(d => d.ServiceType).Distinct())
+            foreach (var group in descriptors.GroupBy(d => d.ServiceType))
             {
-                // REVIEW: whether this can be reused
-                var serviceTypeDescriptors = descriptors.Where(d => d.ServiceType == serviceType);
+                var serviceType = group.Key;
 
-                // Look for override single and stop
-                var overrideSingle = serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.OverrideSingle).LastOrDefault();
-                if (overrideSingle != null)
+                // Add all non fallback services
+                bool lookForFallback = true;
+                foreach (var descriptor in group.Where(d => !d.IsFallback))
                 {
-                    Add(overrideSingle);
-                    continue;
-                }
-
-                // Override Many and stop if any found
-                bool foundAny = false;
-                foreach (var descriptor in serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.OverrideMany))
-                {
-                    foundAny = true;
+                    lookForFallback = false;
                     Add(descriptor);
                 }
-                if (foundAny)
+                if (lookForFallback)
                 {
-                    continue;
-                }
-
-                // Look for DefaultSingle and stop
-                var defaultSingle = serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.DefaultSingle).LastOrDefault();
-                if (defaultSingle != null)
-                {
-                    Add(defaultSingle);
-                    continue;
-                }
-
-                // Finally add any DefaultMany
-                var defaultMany = serviceTypeDescriptors.Where(d => d.OverrideMode == OverrideMode.DefaultMany);
-                foreach (var descriptor in defaultMany)
-                {
-                    Add(descriptor);
+                    // If no non fallback services were added, add the fallback services, TODO: should only do this if GetService returns null
+                    var fallback = group.Where(d => d.IsFallback).LastOrDefault();
+                    if (fallback != null)
+                    {
+                        Add(fallback);
+                    }
                 }
             }
         }
