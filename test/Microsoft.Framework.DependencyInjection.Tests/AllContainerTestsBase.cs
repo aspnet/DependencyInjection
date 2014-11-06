@@ -132,5 +132,32 @@ namespace Microsoft.Framework.DependencyInjection.Tests
                 Assert.Same(service1.ScopedService, service2.ScopedService);
             }
         }
+
+        [Fact]
+        public void FallbackServicesNotInIEnumerable()
+        {
+            // Arrange
+            var container = CreateContainer();
+
+            // Act
+            var enums = container.GetService<IEnumerable<IFallbackManyService>>();
+
+            // Assert
+            Assert.NotNull(enums);
+            Assert.Equal(2, enums.Count());
+        }
+
+        [Fact]
+        public void CanOverrideFallbackService()
+        {
+            // Arrange
+            var container = CreateContainer();
+
+            // Act
+            var s = container.GetService<IFallbackSingleService>();
+            Assert.NotNull(s);
+            Assert.Equal(typeof(NonFallbackService), s.GetType());
+        }
+
     }
 }

@@ -22,6 +22,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 IEnumerable<IServiceDescriptor> descriptors,
                 IServiceProvider fallbackServiceProvider)
         {
+            descriptors = descriptors.RemoveDuplicateFallbackServices(fallbackServiceProvider);
             kernel.Load(new KNinjectModule(descriptors, fallbackServiceProvider));
         }
 

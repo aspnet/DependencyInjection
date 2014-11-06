@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
@@ -17,53 +16,30 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         private readonly Dictionary<Type, List<IGenericService>> _genericServices;
         private readonly ConcurrentDictionary<Type, Func<ServiceProvider, object>> _realizedServices = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
 
-        public ServiceTable(IEnumerable<IServiceDescriptor> descriptors)
+        public ServiceTable(IEnumerable<IServiceDescriptor> descriptors, IServiceProvider fallback)
         {
             _services = new Dictionary<Type, ServiceEntry>();
             _genericServices = new Dictionary<Type, List<IGenericService>>();
 
-            // For each service type
-            foreach (var group in descriptors.GroupBy(d => d.ServiceType))
+            foreach (var descriptor in descriptors.RemoveDuplicateFallbackServices(fallback))
             {
-                var serviceType = group.Key;
-
-                // Add all non fallback services
-                bool lookForFallback = true;
-                foreach (var descriptor in group.Where(d => !d.IsFallback))
+                var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
+                if (serviceTypeInfo.IsGenericTypeDefinition)
                 {
-                    lookForFallback = false;
-                    Add(descriptor);
+                    Add(descriptor.ServiceType, new GenericService(descriptor));
                 }
-                if (lookForFallback)
+                else if (descriptor.ImplementationInstance != null)
                 {
-                    // If no non fallback services were added, add the fallback services, TODO: should only do this if GetService returns null
-                    var fallback = group.Where(d => d.IsFallback).LastOrDefault();
-                    if (fallback != null)
-                    {
-                        Add(fallback);
-                    }
+                    Add(descriptor.ServiceType, new InstanceService(descriptor));
                 }
-            }
-        }
-
-        private void Add(IServiceDescriptor descriptor)
-        {
-            var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
-            if (serviceTypeInfo.IsGenericTypeDefinition)
-            {
-                Add(descriptor.ServiceType, new GenericService(descriptor));
-            }
-            else if (descriptor.ImplementationInstance != null)
-            {
-                Add(descriptor.ServiceType, new InstanceService(descriptor));
-            }
-            else if (descriptor.ImplementationFactory != null)
-            {
-                Add(descriptor.ServiceType, new FactoryService(descriptor));
-            }
-            else
-            {
-                Add(descriptor.ServiceType, new Service(descriptor));
+                else if (descriptor.ImplementationFactory != null)
+                {
+                    Add(descriptor.ServiceType, new FactoryService(descriptor));
+                }
+                else
+                {
+                    Add(descriptor.ServiceType, new Service(descriptor));
+                }
             }
         }
 

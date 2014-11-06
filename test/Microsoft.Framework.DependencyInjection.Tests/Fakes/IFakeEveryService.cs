@@ -11,10 +11,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             IFakeSingletonService,
             IFakeFallbackService,
             IFakeOpenGenericService<string>,
-            IDefaultManyService,
-            IDefaultSingleService,
-            IOverrideManyService,
-            IOverrideSingleService
+            IFallbackManyService,
+            IFallbackSingleService
     {
     }
 }
