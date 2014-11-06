@@ -21,21 +21,5 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             return TestServices.DefaultServices().BuildServiceProvider(fallbackProvider);
         }
-
-        [Fact]
-        public void FallbackServiceNotUsedIfFallbackProviderHasService()
-        {
-            var services = new ServiceCollection();
-            var root = new FakeService();
-            services.AddInstance(root);
-            var inner = services.BuildServiceProvider();
-
-            services = new ServiceCollection();
-            var outerFallback = new FakeService();
-            services.AddInstance(outerFallback, isFallback:  true);
-
-            var outer = services.BuildServiceProvider(inner);
-            Assert.Equal(root, outer.GetService<FakeService>());
-        }
     }
 }

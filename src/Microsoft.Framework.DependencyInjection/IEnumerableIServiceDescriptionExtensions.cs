@@ -9,6 +9,19 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class IEnumerableServiceDescriptorExtensions
     {
+        private static bool IsDefinedInFallback(IServiceProvider fallback, Type type)
+        {
+            if (fallback == null)
+            {
+                return false;
+            }
+            var scopeFactory = fallback.GetService<IServiceScopeFactory>();
+            using (var scope = scopeFactory.CreateScope())
+            {
+                return scope.ServiceProvider.GetService(type) != null;
+            }
+        }
+
         public static IEnumerable<IServiceDescriptor> RemoveDuplicateFallbackServices(this IEnumerable<IServiceDescriptor> descriptors, IServiceProvider fallback)
         {
             var results = new List<IServiceDescriptor>();
@@ -24,17 +37,14 @@ namespace Microsoft.Framework.DependencyInjection
                     lookForFallback = false;
                     results.Add(descriptor);
                 }
-                if (lookForFallback)
+                // If no non fallback services were added, 
+                // add the fallback only if the parent service provider has not defined
+                if (lookForFallback && !IsDefinedInFallback(fallback, serviceType))
                 {
-                    // If no non fallback services were added, add the fallback services, TODO: should only do this if GetService returns null
-                    // TODO: run this inside a scope
-                    if (fallback == null || fallback.GetService(serviceType) == null)
+                    var lastFallback = group.Where(d => d.IsFallback).LastOrDefault();
+                    if (lastFallback != null)
                     {
-                        var lastFallback = group.Where(d => d.IsFallback).LastOrDefault();
-                        if (lastFallback != null)
-                        {
-                            results.Add(lastFallback);
-                        }
+                        results.Add(lastFallback);
                     }
                 }
             }
