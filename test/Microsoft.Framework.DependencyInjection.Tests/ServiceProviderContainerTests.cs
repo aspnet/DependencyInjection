@@ -4,6 +4,9 @@
 using System;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
+using Xunit;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Framework.DependencyInjection.Tests
 {

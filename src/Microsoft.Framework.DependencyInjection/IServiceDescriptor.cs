@@ -41,5 +41,12 @@ namespace Microsoft.Framework.DependencyInjection
         /// Gets the factory used for creating service instances.
         /// </summary>
         Func<IServiceProvider, object> ImplementationFactory { get; }
+
+        /// <summary>
+        /// Fallback services are only added to the service container if the service does not exist
+        /// </summary>
+        bool IsFallback { get; }
     }
+
+
 }
