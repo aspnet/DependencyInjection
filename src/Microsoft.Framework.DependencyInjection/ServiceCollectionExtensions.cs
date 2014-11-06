@@ -10,154 +10,154 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
                                                       [NotNull] Type service, 
                                                       [NotNull] Type implementationType, 
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Transient, mode);
+            return Add(collection, service, implementationType, LifecycleKind.Transient, isFallback);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service, 
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Transient, mode);
+            return Add(collection, service, implementationFactory, LifecycleKind.Transient, isFallback);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
                                                    [NotNull] Type implementationType,
-                                                   OverrideMode mode = OverrideMode.OverrideMany)
+                                                   bool isFallback = false)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Scoped, mode);
+            return Add(collection, service, implementationType, LifecycleKind.Scoped, isFallback);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
                                                    [NotNull] Func<IServiceProvider, object> implementationFactory,
-                                                   OverrideMode mode = OverrideMode.OverrideMany)
+                                                   bool isFallback = false)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Scoped, mode);
+            return Add(collection, service, implementationFactory, LifecycleKind.Scoped, isFallback);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Type implementationType,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Singleton, mode);
+            return Add(collection, service, implementationType, LifecycleKind.Singleton, isFallback);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Singleton, mode);
+            return Add(collection, service, implementationFactory, LifecycleKind.Singleton, isFallback);
         }
 
         public static IServiceCollection AddInstance([NotNull] this IServiceCollection collection,
                                                      [NotNull] Type service,
                                                      [NotNull] object implementationInstance,
-                                                     OverrideMode mode = OverrideMode.OverrideMany)
+                                                     bool isFallback = false)
         {
-            var serviceDescriptor = new ServiceDescriptor(service, implementationInstance, mode);
+            var serviceDescriptor = new ServiceDescriptor(service, implementationInstance, isFallback);
             return collection.Add(serviceDescriptor);
         }
 
         public static IServiceCollection AddTransient<TService, TImplementation>([NotNull] this IServiceCollection services,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return services.AddTransient(typeof(TService), typeof(TImplementation), mode);
+            return services.AddTransient(typeof(TService), typeof(TImplementation), isFallback);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection services,
                                                       [NotNull] Type serviceType,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return services.AddTransient(serviceType, serviceType, mode);
+            return services.AddTransient(serviceType, serviceType, isFallback);
         }
 
         public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return services.AddTransient(typeof(TService), mode);
+            return services.AddTransient(typeof(TService), isFallback);
         }
 
         public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services,
                                                                 [NotNull] Func<IServiceProvider, object> implementationFactory,
-                                                                OverrideMode mode = OverrideMode.OverrideMany)
+                                                                bool isFallback = false)
         {
-            return services.AddTransient(typeof(TService), implementationFactory, mode);
+            return services.AddTransient(typeof(TService), implementationFactory, isFallback);
         }
 
         public static IServiceCollection AddScoped<TService, TImplementation>([NotNull] this IServiceCollection services,
-            OverrideMode mode = OverrideMode.OverrideMany)
+            bool isFallback = false)
         {
-            return services.AddScoped(typeof(TService), typeof(TImplementation), mode);
+            return services.AddScoped(typeof(TService), typeof(TImplementation), isFallback);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection services,
                                                    [NotNull] Type serviceType,
-                                                   OverrideMode mode = OverrideMode.OverrideMany)
+                                                   bool isFallback = false)
         {
-            return services.AddScoped(serviceType, serviceType, mode);
+            return services.AddScoped(serviceType, serviceType, isFallback);
         }
 
         public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services,
                                                              [NotNull] Func<IServiceProvider, object> implementationFactory,
-                                                             OverrideMode mode = OverrideMode.OverrideMany)
+                                                             bool isFallback = false)
         {
-            return services.AddScoped(typeof(TService), implementationFactory, mode);
+            return services.AddScoped(typeof(TService), implementationFactory, isFallback);
         }
 
         public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services,
-            OverrideMode mode = OverrideMode.OverrideMany)
+            bool isFallback = false)
         {
-            return services.AddScoped(typeof(TService), mode);
+            return services.AddScoped(typeof(TService), isFallback);
         }
 
         public static IServiceCollection AddSingleton<TService, TImplementation>([NotNull] this IServiceCollection services,
-            OverrideMode mode = OverrideMode.OverrideMany)
+            bool isFallback = false)
         {
-            return services.AddSingleton(typeof(TService), typeof(TImplementation), mode);
+            return services.AddSingleton(typeof(TService), typeof(TImplementation), isFallback);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection services, 
                                                       [NotNull] Type serviceType,
-                                                      OverrideMode mode = OverrideMode.OverrideMany)
+                                                      bool isFallback = false)
         {
-            return services.AddSingleton(serviceType, serviceType, mode);
+            return services.AddSingleton(serviceType, serviceType, isFallback);
         }
 
         public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services,
-            OverrideMode mode = OverrideMode.OverrideMany)
+            bool isFallback = false)
         {
-            return services.AddSingleton(typeof(TService), mode);
+            return services.AddSingleton(typeof(TService), isFallback);
         }
 
         public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services,
                                                                 [NotNull] Func<IServiceProvider, object> implementationFactory,
-                                                                OverrideMode mode = OverrideMode.OverrideMany)
+                                                                bool isFallback = false)
 
         {
-            return services.AddSingleton(typeof(TService), implementationFactory, mode);
+            return services.AddSingleton(typeof(TService), implementationFactory, isFallback);
         }
 
         public static IServiceCollection AddInstance<TService>([NotNull] this IServiceCollection services, 
                                                                [NotNull] TService implementationInstance,
-                                                               OverrideMode mode = OverrideMode.OverrideMany)
+                                                               bool isFallback = false)
             where TService : class
         {
-            return services.AddInstance(typeof(TService), implementationInstance, mode);
+            return services.AddInstance(typeof(TService), implementationInstance, isFallback);
         }
 
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Type implementationType,
                                               LifecycleKind lifeCycle,
-                                              OverrideMode mode)
+                                              bool isFallback)
         {
-            var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle, mode);
+            var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle, isFallback);
             return collection.Add(descriptor);
         }
 
@@ -165,9 +165,9 @@ namespace Microsoft.Framework.DependencyInjection
                                               Type service,
                                               Func<IServiceProvider, object> implementationFactory,
                                               LifecycleKind lifeCycle,
-                                              OverrideMode mode)
+                                              bool isFallback)
         {
-            var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle, mode);
+            var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle, isFallback);
             return collection.Add(descriptor);
         }
     }

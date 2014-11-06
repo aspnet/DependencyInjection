@@ -17,8 +17,8 @@ namespace Microsoft.Framework.DependencyInjection
         public ServiceDescriptor([NotNull] Type serviceType, 
                                  [NotNull] Type implementationType, 
                                  LifecycleKind lifecycle,
-                                 OverrideMode mode = OverrideMode.OverrideMany)
-            : this(serviceType, lifecycle, mode)
+                                 bool isFallback = false)
+            : this(serviceType, lifecycle, isFallback)
         {
             ImplementationType = implementationType;
         }
@@ -31,8 +31,8 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="instance">The instance implementing the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType,
                                  [NotNull] object instance,
-                                 OverrideMode mode = OverrideMode.OverrideMany)
-            : this(serviceType, LifecycleKind.Singleton, mode)
+                                 bool isFallback = false)
+            : this(serviceType, LifecycleKind.Singleton, isFallback)
         {
             ImplementationInstance = instance;
         }
@@ -46,17 +46,17 @@ namespace Microsoft.Framework.DependencyInjection
         public ServiceDescriptor([NotNull] Type serviceType,
                                  [NotNull] Func<IServiceProvider, object> factory,
                                  LifecycleKind lifecycle,
-                                 OverrideMode mode = OverrideMode.OverrideMany)
-            : this(serviceType, lifecycle, mode)
+                                 bool isFallback = false)
+            : this(serviceType, lifecycle, isFallback)
         {
             ImplementationFactory = factory;
         }
 
-        private ServiceDescriptor(Type serviceType, LifecycleKind lifecycle, OverrideMode mode)
+        private ServiceDescriptor(Type serviceType, LifecycleKind lifecycle, bool isFallback)
         {
             Lifecycle = lifecycle;
             ServiceType = serviceType;
-            OverrideMode = mode;
+            IsFallback = isFallback;
         }
 
         /// <inheritdoc />
@@ -75,6 +75,6 @@ namespace Microsoft.Framework.DependencyInjection
         public Func<IServiceProvider, object> ImplementationFactory { get; private set; }
 
         /// <inheritdoc />
-        public OverrideMode OverrideMode { get; private set; }
+        public bool IsFallback { get; private set; }
     }
 }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
 {
-    public interface IDefaultSingleService
+    public interface IFallbackManyService
     {
     }
 }

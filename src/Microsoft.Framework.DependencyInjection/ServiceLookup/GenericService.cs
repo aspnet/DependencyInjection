@@ -26,7 +26,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             Type closedImplementationType =
                 _descriptor.ImplementationType.MakeGenericType(genericArguments);
 
-            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifecycle, _descriptor.OverrideMode);
+            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifecycle, _descriptor.IsFallback);
             return new Service(closedServiceDescriptor);
         }
     }

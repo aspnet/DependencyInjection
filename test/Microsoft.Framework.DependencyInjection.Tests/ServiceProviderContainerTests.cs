@@ -22,95 +22,20 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             return TestServices.DefaultServices().BuildServiceProvider(fallbackProvider);
         }
 
-        [Theory]
-        [InlineData(OverrideMode.DefaultMany)]
-        [InlineData(OverrideMode.DefaultSingle)]
-        [InlineData(OverrideMode.OverrideMany)]
-        [InlineData(OverrideMode.OverrideSingle)]
-        public void CanSingleServiceAnymode(OverrideMode mode)
-        {
-            var services = new ServiceCollection();
-            services.AddTransient<FakeService>(mode);
-
-            var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetService<FakeService>());
-        }
-
         [Fact]
-        public void OverrideSingleWins()
+        public void FallbackServiceNotUsedIfFallbackProviderHasService()
         {
             var services = new ServiceCollection();
-            var defaultSingle = new FakeService();
-            var defaultMany = new FakeService();
-            var overrideSingle = new FakeService();
-            var overrideMany = new FakeService();
-            services.AddInstance<FakeService>(defaultSingle, OverrideMode.DefaultSingle);
-            services.AddInstance<FakeService>(defaultMany, OverrideMode.DefaultMany);
-            services.AddInstance<FakeService>(overrideSingle, OverrideMode.OverrideSingle);
-            services.AddInstance<FakeService>(overrideMany, OverrideMode.OverrideMany);
+            var root = new FakeService();
+            services.AddInstance(root);
+            var inner = services.BuildServiceProvider();
 
-            var provider = services.BuildServiceProvider();
-            Assert.Equal(overrideSingle, provider.GetService<FakeService>());
+            services = new ServiceCollection();
+            var outerFallback = new FakeService();
+            services.AddInstance(outerFallback, isFallback:  true);
+
+            var outer = services.BuildServiceProvider(inner);
+            Assert.Equal(root, outer.GetService<FakeService>());
         }
-
-        [Fact]
-        public void OverrideManyWinsOverDefaults()
-        {
-            var services = new ServiceCollection();
-            var defaultSingle = new FakeService();
-            var defaultMany = new FakeService();
-            var overrideMany = new FakeService();
-            services.AddInstance<FakeService>(defaultSingle, OverrideMode.DefaultSingle);
-            services.AddInstance<FakeService>(defaultMany, OverrideMode.DefaultMany);
-            services.AddInstance<FakeService>(overrideMany, OverrideMode.OverrideMany);
-            services.AddInstance<FakeService>(overrideMany, OverrideMode.OverrideMany);
-
-            var provider = services.BuildServiceProvider();
-            Assert.Equal(overrideMany, provider.GetService<FakeService>());
-            var many = provider.GetService<IEnumerable<FakeService>>();
-            Assert.Equal(2, many.Count());
-        }
-
-        [Fact]
-        public void OverrideSingleBlocksIEnumerable()
-        {
-            var services = new ServiceCollection();
-            var overrideSingle = new FakeService();
-            var overrideMany = new FakeService();
-            services.AddInstance<FakeService>(overrideSingle, OverrideMode.OverrideSingle);
-            services.AddInstance<FakeService>(overrideMany, OverrideMode.OverrideMany);
-
-            var provider = services.BuildServiceProvider();
-            Assert.Equal(1, provider.GetService<IEnumerable<FakeService>>().Count());
-        }
-
-        [Fact]
-        public void DefaultSingleWinsOverDefaultMany()
-        {
-            var services = new ServiceCollection();
-            var defaultSingle = new FakeService();
-            var defaultMany = new FakeService();
-            services.AddInstance<FakeService>(defaultSingle, OverrideMode.DefaultSingle);
-            services.AddInstance<FakeService>(defaultMany, OverrideMode.DefaultMany);
-
-            var provider = services.BuildServiceProvider();
-            Assert.Equal(defaultSingle, provider.GetService<FakeService>());
-        }
-
-        [Fact]
-        public void DefaultManyAllowsIEnumerable()
-        {
-            var services = new ServiceCollection();
-            var defaultMany = new FakeService();
-            services.AddInstance<FakeService>(defaultMany, OverrideMode.DefaultMany);
-            services.AddInstance<FakeService>(defaultMany, OverrideMode.DefaultMany);
-
-            var provider = services.BuildServiceProvider();
-            Assert.Equal(defaultMany, provider.GetService<FakeService>());
-            var many = provider.GetService<IEnumerable<FakeService>>();
-            Assert.Equal(2, many.Count());
-        }
-
-
     }
 }

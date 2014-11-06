@@ -37,8 +37,8 @@ namespace Microsoft.Framework.DependencyInjection
                 IServiceProvider fallbackServiceProvider)
         {
             _root = this;
-            _table = new ServiceTable(serviceDescriptors);
             _fallback = fallbackServiceProvider;
+            _table = new ServiceTable(serviceDescriptors, _fallback);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
             _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
