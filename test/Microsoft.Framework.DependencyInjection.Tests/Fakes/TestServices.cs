@@ -57,6 +57,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             yield return describer.Transient<IFallbackManyService, FakeService>(isFallback: true);
             yield return describer.Transient<IFallbackManyService, FakeService>(isFallback: true);
             yield return describer.Transient<IFallbackManyService, NonFallbackService>(isFallback: false);
+
+            yield return describer.Singleton<IFakeFallbackService, FallbackService>(isFallback: true);
         }
     }
 }
