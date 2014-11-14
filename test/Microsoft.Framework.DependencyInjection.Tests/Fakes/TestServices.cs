@@ -49,6 +49,16 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             });
 
             yield return describer.Transient<ServiceAcceptingFactoryService, ServiceAcceptingFactoryService>();
+
+            yield return describer.Singleton<IFallbackSingleService, FakeService>(isFallback: true);
+            yield return describer.Singleton<IFallbackSingleService, NonFallbackService>();
+
+            yield return describer.Transient<IFallbackManyService, NonFallbackService>();
+            yield return describer.Transient<IFallbackManyService, FakeService>(isFallback: true);
+            yield return describer.Transient<IFallbackManyService, FakeService>(isFallback: true);
+            yield return describer.Transient<IFallbackManyService, NonFallbackService>(isFallback: false);
+
+            yield return describer.Singleton<IFakeFallbackService, FallbackService>(isFallback: true);
         }
     }
 }

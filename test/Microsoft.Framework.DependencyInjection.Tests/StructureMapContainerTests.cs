@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using StructureMap;
 
@@ -13,7 +14,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var container = new Container(builder =>
             {
-                foreach (var descriptor in TestServices.DefaultServices())
+                foreach (var descriptor in TestServices.DefaultServices().RemoveDuplicateFallbackServices(null))
                 {
                     if (descriptor.ImplementationType != null)
                     {

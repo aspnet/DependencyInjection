@@ -10,7 +10,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             IFakeServiceInstance,
             IFakeSingletonService,
             IFakeFallbackService,
-            IFakeOpenGenericService<string>
+            IFakeOpenGenericService<string>,
+            IFallbackManyService,
+            IFallbackSingleService
     {
     }
 }

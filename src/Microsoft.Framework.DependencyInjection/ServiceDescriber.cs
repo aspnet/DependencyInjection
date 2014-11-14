@@ -20,34 +20,34 @@ namespace Microsoft.Framework.DependencyInjection
             _configuration = configuration;
         }
 
-        public ServiceDescriptor Transient<TService, TImplementation>()
+        public ServiceDescriptor Transient<TService, TImplementation>(bool isFallback = false)
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Transient);
+            return Describe<TService, TImplementation>(LifecycleKind.Transient, isFallback);
         }
 
-        public ServiceDescriptor Transient(Type service, Type implementationType)
+        public ServiceDescriptor Transient(Type service, Type implementationType, bool isFallback = false)
         {
-            return Describe(service, implementationType, LifecycleKind.Transient);
+            return Describe(service, implementationType, LifecycleKind.Transient, isFallback);
         }
 
-        public ServiceDescriptor Transient<TService>(Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Transient<TService>(Func<IServiceProvider, object> implementationFactory, bool isFallback = false)
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Transient);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Transient, isFallback);
         }
 
-        public ServiceDescriptor Transient(Type service, Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Transient(Type service, Func<IServiceProvider, object> implementationFactory, bool isFallback = false)
         {
-            return Describe(service, implementationFactory, LifecycleKind.Transient);
+            return Describe(service, implementationFactory, LifecycleKind.Transient, isFallback);
         }
 
-        public ServiceDescriptor Scoped<TService, TImplementation>()
+        public ServiceDescriptor Scoped<TService, TImplementation>(bool isFallback = false)
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Scoped);
+            return Describe<TService, TImplementation>(LifecycleKind.Scoped, isFallback);
         }
 
-        public ServiceDescriptor Scoped(Type service, Type implementationType)
+        public ServiceDescriptor Scoped(Type service, Type implementationType, bool isFallback = false)
         {
-            return Describe(service, implementationType, LifecycleKind.Scoped);
+            return Describe(service, implementationType, LifecycleKind.Scoped, isFallback);
         }
 
         public ServiceDescriptor Scoped<TService>(Func<IServiceProvider, object> implementationFactory)
@@ -60,66 +60,67 @@ namespace Microsoft.Framework.DependencyInjection
             return Describe(service, implementationFactory, LifecycleKind.Scoped);
         }
 
-        public ServiceDescriptor Singleton<TService, TImplementation>()
+        public ServiceDescriptor Singleton<TService, TImplementation>(bool isFallback = false)
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Singleton);
+            return Describe<TService, TImplementation>(LifecycleKind.Singleton, isFallback);
         }
 
-        public ServiceDescriptor Singleton(Type service, Type implementationType)
+        public ServiceDescriptor Singleton(Type service, Type implementationType, bool isFallback = false)
         {
-            return Describe(service, implementationType, LifecycleKind.Singleton);
+            return Describe(service, implementationType, LifecycleKind.Singleton, isFallback);
         }
 
-        public ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory, bool isFallback = false)
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Singleton);
+            return Describe(typeof(TService), implementationFactory, LifecycleKind.Singleton, isFallback);
         }
 
-        public ServiceDescriptor Singleton(Type serviceType, Func<IServiceProvider, object> implementationFactory)
+        public ServiceDescriptor Singleton(Type serviceType, Func<IServiceProvider, object> implementationFactory, bool isFallback = false)
         {
-            return Describe(serviceType, implementationFactory, LifecycleKind.Singleton);
+            return Describe(serviceType, implementationFactory, LifecycleKind.Singleton, isFallback);
         }
 
-        public ServiceDescriptor Instance<TService>(object implementationInstance)
+        public ServiceDescriptor Instance<TService>(object implementationInstance, bool isFallback = false)
         {
-            return Instance(typeof(TService), implementationInstance);
+            return Instance(typeof(TService), implementationInstance, isFallback);
         }
 
-        public ServiceDescriptor Instance(Type serviceType, object implementationInstance)
+        public ServiceDescriptor Instance(Type serviceType, object implementationInstance, bool isFallback = false)
         {
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)
             {
-                return new ServiceDescriptor(serviceType, implementationType, LifecycleKind.Singleton);
+                return new ServiceDescriptor(serviceType, implementationType, LifecycleKind.Singleton, isFallback);
             }
 
-            return new ServiceDescriptor(serviceType, implementationInstance);
+            return new ServiceDescriptor(serviceType, implementationInstance, isFallback);
         }
 
-        private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
+        private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle, bool isFallback)
         {
             return Describe(
                 typeof(TService),
                 typeof(TImplementation),
-                lifecycle: lifecycle);
+                lifecycle,
+                isFallback);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle, bool isFallback = false)
         {
             implementationType = GetRemappedImplementationType(serviceType) ?? implementationType;
 
-            return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+            return new ServiceDescriptor(serviceType, implementationType, lifecycle, isFallback);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle, bool isFallback = false)
         {
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)
             {
-                return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+                return new ServiceDescriptor(serviceType, implementationType, lifecycle, isFallback);
             }
 
-            return new ServiceDescriptor(serviceType, implementationFactory, lifecycle);
+            return new ServiceDescriptor(serviceType, implementationFactory, lifecycle, isFallback);
         }
 
         private Type GetRemappedImplementationType(Type serviceType)

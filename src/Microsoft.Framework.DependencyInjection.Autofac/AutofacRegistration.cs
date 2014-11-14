@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using Autofac;
 using Autofac.Builder;
+using System.Linq;
+using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Framework.DependencyInjection.Autofac
 {
@@ -31,14 +33,15 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
             builder.RegisterType<AutofacServiceScopeFactory>().As<IServiceScopeFactory>();
 
-            Register(builder, descriptors);
+            Register(builder, descriptors, fallbackServiceProvider);
         }
 
         private static void Register(
                 ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> descriptors)
+                IEnumerable<IServiceDescriptor> descriptors,
+                IServiceProvider fallback)
         {
-            foreach (var descriptor in descriptors)
+            foreach (var descriptor in descriptors.RemoveDuplicateFallbackServices(fallback))
             {
                 if (descriptor.ImplementationType != null)
                 {
@@ -78,6 +81,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                         .As(descriptor.ServiceType)
                         .ConfigureLifecycle(descriptor.Lifecycle);
                 }
+
             }
         }
 

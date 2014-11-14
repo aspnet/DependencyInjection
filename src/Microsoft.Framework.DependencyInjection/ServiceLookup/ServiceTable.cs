@@ -16,12 +16,12 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         private readonly Dictionary<Type, List<IGenericService>> _genericServices;
         private readonly ConcurrentDictionary<Type, Func<ServiceProvider, object>> _realizedServices = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
 
-        public ServiceTable(IEnumerable<IServiceDescriptor> descriptors)
+        public ServiceTable(IEnumerable<IServiceDescriptor> descriptors, IServiceProvider fallback)
         {
             _services = new Dictionary<Type, ServiceEntry>();
             _genericServices = new Dictionary<Type, List<IGenericService>>();
 
-            foreach (var descriptor in descriptors)
+            foreach (var descriptor in descriptors.RemoveDuplicateFallbackServices(fallback))
             {
                 var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
                 if (serviceTypeInfo.IsGenericTypeDefinition)
