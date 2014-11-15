@@ -26,9 +26,7 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
-        public ServiceProvider(
-                IEnumerable<IServiceDescriptor> serviceDescriptors,
-                bool generateManifest = false)
+        public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
         {
             _root = this;
             _table = new ServiceTable(serviceDescriptors);
