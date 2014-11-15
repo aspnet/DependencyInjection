@@ -130,6 +130,20 @@ namespace Microsoft.Framework.DependencyInjection
             return services.AddInstance(typeof(TService), implementationInstance);
         }
 
+        public static IServiceCollection Import([NotNull] this IServiceCollection services,
+                                                [NotNull] IServiceProvider fallbackProvider)
+        {
+            var manifest = fallbackProvider.GetService<IServiceManifest>();
+            if (manifest != null)
+            {
+                foreach (var service in manifest.Services)
+                {
+                    services.AddTransient(service, sp => fallbackProvider.GetService(service));
+                }
+            }
+            return services;
+        }
+
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Type implementationType,

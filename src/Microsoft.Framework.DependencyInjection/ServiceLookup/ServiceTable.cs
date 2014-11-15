@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
@@ -109,5 +110,11 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 genericEntry.Add(genericService);
             }
         }
+
+        public IServiceManifest GetManifest()
+        {
+            return new ServiceManifest(_services.Keys.Where(serviceType => serviceType != typeof(IServiceManifest)));
+        }
+
     }
 }

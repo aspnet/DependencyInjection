@@ -27,14 +27,10 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
-        public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
-            : this(serviceDescriptors, fallbackServiceProvider: null)
-        {
-        }
-
         public ServiceProvider(
                 IEnumerable<IServiceDescriptor> serviceDescriptors,
-                IServiceProvider fallbackServiceProvider)
+                IServiceProvider fallbackServiceProvider = null,
+                bool generateManifest = false)
         {
             _root = this;
             _table = new ServiceTable(serviceDescriptors);
@@ -43,6 +39,11 @@ namespace Microsoft.Framework.DependencyInjection
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
             _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
             _table.Add(typeof(IEnumerable<>), new OpenIEnumerableService(_table));
+
+            if (generateManifest) {
+                _table.Add(typeof(IServiceManifest), 
+                    new InstanceService(new ServiceDescriber().Instance<IServiceManifest>(_table.GetManifest())));
+            }
         }
 
         // This constructor is called exclusively to create a child scope from the parent

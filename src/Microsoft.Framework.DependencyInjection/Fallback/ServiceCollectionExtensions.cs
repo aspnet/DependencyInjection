@@ -20,5 +20,13 @@ namespace Microsoft.Framework.DependencyInjection.Fallback
         {
             return new ServiceProvider(collection, fallbackServices);
         }
+
+        // TODO: How to name overload that generates a manifest
+        public static IServiceProvider BuildFallbackServiceProvider(
+                this IEnumerable<IServiceDescriptor> collection)
+        {
+            return new ServiceProvider(collection, null, generateManifest:true);
+        }
+
     }
 }

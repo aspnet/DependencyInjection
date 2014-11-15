@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
+using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -124,5 +125,50 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Same(_instance, descriptor.ImplementationInstance);
             Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
         }
+
+        [Fact]
+        public void ImportAddsServices()
+        {
+            // Arrange
+            var fallbackServices = new ServiceCollection();
+            fallbackServices.AddSingleton<IFakeSingletonService, FakeService>();
+            var instance = new FakeService();
+            fallbackServices.AddInstance<IFakeServiceInstance>(instance);
+            fallbackServices.AddTransient<IFakeService, FakeService>();
+
+            var services = new ServiceCollection();
+            services.Import(fallbackServices.BuildFallbackServiceProvider());
+
+            // Act
+            var provider = services.BuildServiceProvider();
+            var singleton = provider.GetRequiredService<IFakeSingletonService>();
+            var transient = provider.GetRequiredService<IFakeService>();
+
+            // Assert
+            Assert.Equal(singleton, provider.GetRequiredService<IFakeSingletonService>());
+            Assert.NotEqual(transient, provider.GetRequiredService<IFakeService>());
+            Assert.Equal(instance, provider.GetRequiredService<IFakeServiceInstance>());
+        }
+
+        [Fact]
+        public void CanHideImportedServices()
+        {
+            // Arrange
+            var fallbackServices = new ServiceCollection();
+            var fallbackInstance = new FakeService();
+            fallbackServices.AddInstance<IFakeService>(fallbackInstance);
+
+            var services = new ServiceCollection();
+            var realInstance = new FakeService();
+            services.Import(fallbackServices.BuildFallbackServiceProvider());
+            services.AddInstance<IFakeService>(realInstance);
+
+            // Act
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            Assert.Equal(realInstance, provider.GetRequiredService<IFakeService>());
+        }
+
     }
 }
