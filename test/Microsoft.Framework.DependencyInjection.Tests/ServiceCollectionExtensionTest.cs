@@ -170,5 +170,27 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Equal(realInstance, provider.GetRequiredService<IFakeService>());
         }
 
+        [Fact]
+        public void ImportIgnoresAndDoesNotExplodeWithNoManifest()
+        {
+            // Arrange
+            var fallbackServices = new ServiceCollection();
+            fallbackServices.AddSingleton<IFakeSingletonService, FakeService>();
+            var instance = new FakeService();
+            fallbackServices.AddInstance<IFakeServiceInstance>(instance);
+            fallbackServices.AddTransient<IFakeService, FakeService>();
+
+            var services = new ServiceCollection();
+            services.Import(fallbackServices.BuildServiceProvider());
+
+            // Act
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            Assert.Null(provider.GetService<IFakeSingletonService>());
+            Assert.Null(provider.GetService<IFakeService>());
+            Assert.Null(provider.GetService<IFakeServiceInstance>());
+        }
+
     }
 }
