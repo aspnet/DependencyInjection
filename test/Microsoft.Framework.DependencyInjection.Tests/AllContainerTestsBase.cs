@@ -105,7 +105,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.NotNull(service.FakeService);
         }
 
-        //[Fact(Skip = "not sure why this fails for ninject?")]
         [Fact]
         public void FactoryServicesAreCreatedAsPartOfCreatingObjectGraph()
         {
