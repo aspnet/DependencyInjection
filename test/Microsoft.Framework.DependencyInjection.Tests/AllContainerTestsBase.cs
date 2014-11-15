@@ -126,7 +126,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.NotNull(service1.ScopedService.FakeService);
 
             // Scoping does not currently work with StuctureMap
-            if (GetType() != typeof(StructureMapContainerTests) && GetType() != typeof(NinjectContainerTests))
+            if (GetType() != typeof(StructureMapContainerTests))
             {
                 // Verify scoping works
                 Assert.NotSame(service1.TransientService, service2.TransientService);

@@ -15,23 +15,16 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
     {
         private readonly IResolutionRoot _resolver;
         private readonly IEnumerable<IParameter> _inheritedParameters;
-        private readonly IServiceProvider _fallbackProvider;
 
         public NinjectServiceScopeFactory(IContext context)
         {
             _resolver = context.Kernel.Get<IResolutionRoot>();
             _inheritedParameters = context.Parameters.Where(p => p.ShouldInherit);
-
-            var scopeParameter = _inheritedParameters.GetScopeParameter();
-            if (scopeParameter != null)
-            {
-                _fallbackProvider = scopeParameter.FallbackProvider;
-            }
         }
 
         public IServiceScope CreateScope()
         {
-            return new NinjectServiceScope(_resolver, _inheritedParameters, _fallbackProvider);
+            return new NinjectServiceScope(_resolver, _inheritedParameters);
         }
 
         private class NinjectServiceScope : IServiceScope
@@ -42,22 +35,11 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 
             public NinjectServiceScope(
                 IResolutionRoot resolver,
-                IEnumerable<IParameter> inheritedParameters,
-                IServiceProvider parentFallbackProvider)
+                IEnumerable<IParameter> inheritedParameters)
             {
-                if (parentFallbackProvider != null)
-                {
-                    var scopeFactory = parentFallbackProvider.GetService<IServiceScopeFactory>();
-                    if (scopeFactory != null)
-                    {
-                        _fallbackScope = scopeFactory.CreateScope();
-                        _scope = new KScopeParameter(_fallbackScope.ServiceProvider);
-                    }
-                }
-
                 if (_scope == null)
                 {
-                    _scope = new KScopeParameter(parentFallbackProvider);
+                    _scope = new KScopeParameter();
                 }
 
                 inheritedParameters = inheritedParameters.AddOrReplaceScopeParameter(_scope);
