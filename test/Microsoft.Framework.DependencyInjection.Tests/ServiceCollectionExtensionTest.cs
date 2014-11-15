@@ -5,6 +5,7 @@ using System;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 using Microsoft.Framework.DependencyInjection.Fallback;
+using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -136,8 +137,11 @@ namespace Microsoft.Framework.DependencyInjection
             fallbackServices.AddInstance<IFakeServiceInstance>(instance);
             fallbackServices.AddTransient<IFakeService, FakeService>();
 
+            fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
+                new Type[] { typeof(IFakeServiceInstance), typeof(IFakeService), typeof(IFakeSingletonService) }));
+
             var services = new ServiceCollection();
-            services.Import(fallbackServices.BuildFallbackServiceProvider());
+            services.Import(fallbackServices.BuildServiceProvider());
 
             // Act
             var provider = services.BuildServiceProvider();
@@ -160,7 +164,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             var services = new ServiceCollection();
             var realInstance = new FakeService();
-            services.Import(fallbackServices.BuildFallbackServiceProvider());
+            fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
+                new Type[] { typeof(IFakeService) }));
             services.AddInstance<IFakeService>(realInstance);
 
             // Act

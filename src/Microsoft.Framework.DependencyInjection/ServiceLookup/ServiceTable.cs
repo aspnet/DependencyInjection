@@ -110,11 +110,5 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 genericEntry.Add(genericService);
             }
         }
-
-        public IServiceManifest GetManifest()
-        {
-            return new ServiceManifest(_services.Keys.Where(serviceType => serviceType != typeof(IServiceManifest)));
-        }
-
     }
 }

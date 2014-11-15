@@ -8,25 +8,9 @@ namespace Microsoft.Framework.DependencyInjection.Fallback
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceProvider BuildServiceProvider(
-                this IEnumerable<IServiceDescriptor> collection)
+        public static IServiceProvider BuildServiceProvider(this IEnumerable<IServiceDescriptor> collection)
         {
-            return BuildServiceProvider(collection, fallbackServices: null);
+            return new ServiceProvider(collection);
         }
-
-        public static IServiceProvider BuildServiceProvider(
-                this IEnumerable<IServiceDescriptor> collection,
-                IServiceProvider fallbackServices)
-        {
-            return new ServiceProvider(collection, fallbackServices);
-        }
-
-        // TODO: How to name overload that generates a manifest
-        public static IServiceProvider BuildFallbackServiceProvider(
-                this IEnumerable<IServiceDescriptor> collection)
-        {
-            return new ServiceProvider(collection, null, generateManifest:true);
-        }
-
     }
 }
