@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Framework.DependencyInjection.Fallback
 {
@@ -12,5 +14,27 @@ namespace Microsoft.Framework.DependencyInjection.Fallback
         {
             return new ServiceProvider(collection);
         }
+
+        public static IServiceProvider BuildFallbackServiceProvider(this IEnumerable<IServiceDescriptor> collection)
+        {
+            // Build the manifest
+            var manifestTypes = collection.Where(t => t.ServiceType.GenericTypeArguments.Length == 0 && t.ServiceType != typeof(IServiceManifest))
+                .Select(t => t.ServiceType);
+            return new ServiceProvider(collection.Concat(new IServiceDescriptor[]
+            {
+                new ServiceDescriber().Instance<IServiceManifest>(new ServiceManifest(manifestTypes))
+            }));
+        }
+
+        private class ServiceManifest : IServiceManifest
+        {
+            public ServiceManifest(IEnumerable<Type> services)
+            {
+                Services = services;
+            }
+
+            public IEnumerable<Type> Services { get; private set; }
+        }
+
     }
 }
