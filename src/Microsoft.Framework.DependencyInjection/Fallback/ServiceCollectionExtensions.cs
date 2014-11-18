@@ -19,7 +19,7 @@ namespace Microsoft.Framework.DependencyInjection.Fallback
         {
             // Build the manifest
             var manifestTypes = collection.Where(t => t.ServiceType.GenericTypeArguments.Length == 0 && t.ServiceType != typeof(IServiceManifest))
-                .Select(t => t.ServiceType);
+                .Select(t => t.ServiceType).Distinct();
             return new ServiceProvider(collection.Concat(new IServiceDescriptor[]
             {
                 new ServiceDescriber().Instance<IServiceManifest>(new ServiceManifest(manifestTypes))
