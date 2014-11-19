@@ -22,9 +22,16 @@ namespace Microsoft.Framework.DependencyInjection
             fallbackServices.AddInstance<IFakeServiceInstance>(instance);
             fallbackServices.AddTransient<IFakeService, FakeService>();
             fallbackServices.AddSingleton<IFactoryService>(serviceProvider => instance);
+            fallbackServices.AddTransient<IFakeScopedService, FakeService>(); // Don't register in manifest
 
             fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
-                new Type[] { typeof(IFakeServiceInstance), typeof(IFakeService), typeof(IFakeSingletonService) }));
+                new Type[] {
+                    typeof(IFakeServiceInstance),
+                    typeof(IFakeService),
+                    typeof(IFakeSingletonService),
+                    typeof(IFactoryService),
+                    typeof(INonexistentService)
+                }));
 
             var services = new ServiceCollection();
             services.Import(fallbackServices.BuildServiceProvider());
@@ -40,6 +47,8 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.NotSame(transient, provider.GetRequiredService<IFakeService>());
             Assert.Same(instance, provider.GetRequiredService<IFakeServiceInstance>());
             Assert.Same(instance, provider.GetRequiredService<IFactoryService>());
+            Assert.Null(provider.GetService<INonexistentService>());
+            Assert.Null(provider.GetService<IFakeScopedService>()); // Make sure we don't leak non manifest services
         }
 
         [Fact]
