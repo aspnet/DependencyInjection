@@ -4,8 +4,6 @@
 using System;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Framework.DependencyInjection
 {

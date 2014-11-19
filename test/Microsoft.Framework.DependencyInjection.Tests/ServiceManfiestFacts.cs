@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.DependencyInjection.ServiceLookup;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
@@ -23,6 +21,7 @@ namespace Microsoft.Framework.DependencyInjection
             var instance = new FakeService();
             fallbackServices.AddInstance<IFakeServiceInstance>(instance);
             fallbackServices.AddTransient<IFakeService, FakeService>();
+            fallbackServices.AddSingleton<IFactoryService>(serviceProvider => instance);
 
             fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
                 new Type[] { typeof(IFakeServiceInstance), typeof(IFakeService), typeof(IFakeSingletonService) }));
@@ -34,11 +33,13 @@ namespace Microsoft.Framework.DependencyInjection
             var provider = services.BuildServiceProvider();
             var singleton = provider.GetRequiredService<IFakeSingletonService>();
             var transient = provider.GetRequiredService<IFakeService>();
+            var factory = provider.GetRequiredService<IFactoryService>();
 
             // Assert
-            Assert.Equal(singleton, provider.GetRequiredService<IFakeSingletonService>());
-            Assert.NotEqual(transient, provider.GetRequiredService<IFakeService>());
-            Assert.Equal(instance, provider.GetRequiredService<IFakeServiceInstance>());
+            Assert.Same(singleton, provider.GetRequiredService<IFakeSingletonService>());
+            Assert.NotSame(transient, provider.GetRequiredService<IFakeService>());
+            Assert.Same(instance, provider.GetRequiredService<IFakeServiceInstance>());
+            Assert.Same(instance, provider.GetRequiredService<IFactoryService>());
         }
 
         [Fact]
@@ -63,7 +64,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void ImportExplodesWithNoManifest()
+        public void ImportThrowsWithNoManifest()
         {
             // Arrange
             var fallbackServices = new ServiceCollection();

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.DependencyInjection.ServiceLookup;
 using System;
+using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -131,6 +131,13 @@ namespace Microsoft.Framework.DependencyInjection
             return services.AddInstance(typeof(TService), implementationInstance);
         }
 
+        /// <summary>
+        /// Imports all services from defined using an the fallbackProvider's IServiceManifest, throws if no manifest is found.
+        /// Getting any imported services will result in delegating to the fallbackProvider's GetService()
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="fallbackProvider"></param>
+        /// <returns></returns>
         public static IServiceCollection Import([NotNull] this IServiceCollection services,
                                                 [NotNull] IServiceProvider fallbackProvider)
         {

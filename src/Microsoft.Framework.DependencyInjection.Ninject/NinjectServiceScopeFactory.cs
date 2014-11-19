@@ -36,11 +36,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 IResolutionRoot resolver,
                 IEnumerable<IParameter> inheritedParameters)
             {
-                if (_scope == null)
-                {
-                    _scope = new KScopeParameter();
-                }
-
+                _scope = new KScopeParameter();
                 inheritedParameters = inheritedParameters.AddOrReplaceScopeParameter(_scope);
                 _serviceProvider = new NinjectServiceProvider(resolver, inheritedParameters.ToArray());
             }
