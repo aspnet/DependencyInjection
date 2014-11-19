@@ -19,9 +19,10 @@ namespace Microsoft.Framework.DependencyInjection
             var fallbackServices = new ServiceCollection();
             fallbackServices.AddSingleton<IFakeSingletonService, FakeService>();
             var instance = new FakeService();
+            var factoryInstance = new FakeFactoryService(instance);
             fallbackServices.AddInstance<IFakeServiceInstance>(instance);
             fallbackServices.AddTransient<IFakeService, FakeService>();
-            fallbackServices.AddSingleton<IFactoryService>(serviceProvider => instance);
+            fallbackServices.AddSingleton<IFactoryService>(serviceProvider => factoryInstance);
             fallbackServices.AddTransient<IFakeScopedService, FakeService>(); // Don't register in manifest
 
             fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
@@ -46,7 +47,8 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Same(singleton, provider.GetRequiredService<IFakeSingletonService>());
             Assert.NotSame(transient, provider.GetRequiredService<IFakeService>());
             Assert.Same(instance, provider.GetRequiredService<IFakeServiceInstance>());
-            Assert.Same(instance, provider.GetRequiredService<IFactoryService>());
+            Assert.Same(factoryInstance, factory);
+            Assert.Same(factory.FakeService, instance);
             Assert.Null(provider.GetService<INonexistentService>());
             Assert.Null(provider.GetService<IFakeScopedService>()); // Make sure we don't leak non manifest services
         }
@@ -99,6 +101,18 @@ namespace Microsoft.Framework.DependencyInjection
             }
 
             public IEnumerable<Type> Services { get; private set; }
+        }
+
+        private class FakeFactoryService : IFactoryService
+        { 
+            public FakeFactoryService(FakeService service)
+            {
+                FakeService = service;
+            }
+
+            public IFakeService FakeService { get; private set; }
+
+            public int Value { get; private set; }
         }
     }
 }
