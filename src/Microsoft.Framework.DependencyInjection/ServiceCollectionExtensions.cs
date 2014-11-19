@@ -134,13 +134,11 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection Import([NotNull] this IServiceCollection services,
                                                 [NotNull] IServiceProvider fallbackProvider)
         {
-            var manifest = fallbackProvider.GetService<IServiceManifest>();
-            if (manifest != null)
+            var manifest = fallbackProvider.GetRequiredService<IServiceManifest>();
+            foreach (var service in manifest.Services)
             {
-                foreach (var service in manifest.Services)
-                {
-                    services.AddTransient(service, sp => fallbackProvider.GetService(service));
-                }
+                // REVIEW: should this be Singleton instead?
+                services.AddTransient(service, sp => fallbackProvider.GetService(service));
             }
             return services;
         }

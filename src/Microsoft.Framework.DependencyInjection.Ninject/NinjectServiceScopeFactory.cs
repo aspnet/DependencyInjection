@@ -31,7 +31,6 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
         {
             private readonly KScopeParameter _scope;
             private readonly IServiceProvider _serviceProvider;
-            private readonly IServiceScope _fallbackScope;
 
             public NinjectServiceScope(
                 IResolutionRoot resolver,
@@ -54,11 +53,6 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
             public void Dispose()
             {
                 _scope.Dispose();
-
-                if (_fallbackScope != null)
-                {
-                    _fallbackScope.Dispose();
-                }
             }
         }
     }

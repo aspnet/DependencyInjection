@@ -97,7 +97,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void ImportIgnoresAndDoesNotExplodeWithNoManifest()
+        public void ImportExplodesWithNoManifest()
         {
             // Arrange
             var fallbackServices = new ServiceCollection();
@@ -107,15 +107,12 @@ namespace Microsoft.Framework.DependencyInjection
             fallbackServices.AddTransient<IFakeService, FakeService>();
 
             var services = new ServiceCollection();
-            services.Import(fallbackServices.BuildServiceProvider());
-
             // Act
-            var provider = services.BuildServiceProvider();
+            var exp = Assert.Throws<Exception>(() => services.Import(fallbackServices.BuildServiceProvider()));
+
 
             // Assert
-            Assert.Null(provider.GetService<IFakeSingletonService>());
-            Assert.Null(provider.GetService<IFakeService>());
-            Assert.Null(provider.GetService<IFakeServiceInstance>());
+            Assert.True(exp.Message.Contains("No service for type 'Microsoft.Framework.DependencyInjection.ServiceLookup.IServiceManifest'"));
         }
 
         [Theory]

@@ -15,30 +15,5 @@ namespace Microsoft.Framework.DependencyInjection.Fallback
         {
             return new ServiceProvider(services);
         }
-
-        public static IServiceProvider BuildFallbackServiceProvider(this IEnumerable<IServiceDescriptor> services)
-        {
-            // Build the manifest
-            var manifestTypes = services.Where(t => t.ServiceType.GetTypeInfo().GenericTypeParameters.Length == 0
-                    && t.ServiceType != typeof(IServiceManifest)
-                    && t.ServiceType != typeof(IServiceProvider))
-                    .Select(t => t.ServiceType).Distinct();
-            return new ServiceProvider(services.Concat(new IServiceDescriptor[]
-            {
-                new ServiceDescriber()
-                    .Instance<IServiceManifest>(
-                        new ServiceManifest(manifestTypes))
-            }));
-        }
-
-        private class ServiceManifest : IServiceManifest
-        {
-            public ServiceManifest(IEnumerable<Type> services)
-            {
-                Services = services;
-            }
-
-            public IEnumerable<Type> Services { get; private set; }
-        }
     }
 }
