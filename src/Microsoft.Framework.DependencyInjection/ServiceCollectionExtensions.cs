@@ -131,25 +131,6 @@ namespace Microsoft.Framework.DependencyInjection
             return services.AddInstance(typeof(TService), implementationInstance);
         }
 
-        /// <summary>
-        /// Imports all services from defined using an the fallbackProvider's IServiceManifest, throws if no manifest is found.
-        /// Getting any imported services will result in delegating to the fallbackProvider's GetService()
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="fallbackProvider"></param>
-        /// <returns></returns>
-        public static IServiceCollection Import([NotNull] this IServiceCollection services,
-                                                [NotNull] IServiceProvider fallbackProvider)
-        {
-            var manifest = fallbackProvider.GetRequiredService<IServiceManifest>();
-            foreach (var service in manifest.Services)
-            {
-                // REVIEW: should this be Singleton instead?
-                services.AddTransient(service, sp => fallbackProvider.GetService(service));
-            }
-            return services;
-        }
-
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Type implementationType,
