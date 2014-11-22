@@ -8,8 +8,8 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddOnlyIfMissing([NotNull] this IServiceCollection collection,
-                                                          [NotNull] IServiceDescriptor descriptor)
+        public static IServiceCollection AddIfMissing([NotNull] this IServiceCollection collection,
+                                                      [NotNull] IServiceDescriptor descriptor)
         {
             if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
             {

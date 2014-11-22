@@ -127,7 +127,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         [Theory]
         [MemberData(nameof(AddInstanceData))]
-        public void AddOnlyIfMissingNoOpIfAdded(Action<IServiceCollection> addAction)
+        public void AddIfMissingNoOpIfAdded(Action<IServiceCollection> addAction)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -135,7 +135,7 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Act
             var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
-            collection.AddOnlyIfMissing(d);
+            collection.AddIfMissing(d);
 
             // Assert
             var descriptor = Assert.Single(collection);
@@ -145,14 +145,14 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void AddOnlyIfMissingActuallyAdds()
+        public void AddIfMissingActuallyAdds()
         {
             // Arrange
             var collection = new ServiceCollection();
 
             // Act
             var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
-            collection.AddOnlyIfMissing(d);
+            collection.AddIfMissing(d);
 
             // Assert
             var descriptor = Assert.Single(collection);
