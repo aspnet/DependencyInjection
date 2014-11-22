@@ -2,14 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.DependencyInjection.ServiceLookup;
+using System.Linq;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
-                                                      [NotNull] Type service,
+        public static IServiceCollection AddOnlyIfMissing([NotNull] this IServiceCollection collection,
+                                                          [NotNull] IServiceDescriptor descriptor)
+        {
+            if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
+            {
+                collection.Add(descriptor);
+            }
+            return collection;
+        }
+
+
+        public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
+                                                      [NotNull] Type service, 
                                                       [NotNull] Type implementationType)
         {
             return Add(collection, service, implementationType, LifecycleKind.Transient);

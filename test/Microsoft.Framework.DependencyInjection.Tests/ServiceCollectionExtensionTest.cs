@@ -124,5 +124,42 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Same(_instance, descriptor.ImplementationInstance);
             Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
         }
+
+        [Theory]
+        [MemberData(nameof(AddInstanceData))]
+        public void AddOnlyIfMissingNoOpIfAdded(Action<IServiceCollection> addAction)
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            addAction(collection);
+
+            // Act
+            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+            collection.AddOnlyIfMissing(d);
+
+            // Assert
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Same(_instance, descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void AddOnlyIfMissingActuallyAdds()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act
+            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+            collection.AddOnlyIfMissing(d);
+
+            // Assert
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Transient, descriptor.Lifecycle);
+        }
+
     }
 }
