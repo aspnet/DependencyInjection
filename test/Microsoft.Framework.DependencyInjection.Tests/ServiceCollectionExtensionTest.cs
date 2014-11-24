@@ -127,7 +127,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         [Theory]
         [MemberData(nameof(AddInstanceData))]
-        public void AddIfMissingNoOpIfAdded(Action<IServiceCollection> addAction)
+        public void TryAddNoOpFailsIfExists(Action<IServiceCollection> addAction)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -135,9 +135,9 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Act
             var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
-            collection.AddIfMissing(d);
 
             // Assert
+            Assert.False(collection.TryAdd(d));
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_instance, descriptor.ImplementationInstance);
@@ -145,14 +145,14 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void AddIfMissingActuallyAdds()
+        public void TryAddIfMissingActuallyAdds()
         {
             // Arrange
             var collection = new ServiceCollection();
 
             // Act
             var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
-            collection.AddIfMissing(d);
+            collection.TryAdd(d);
 
             // Assert
             var descriptor = Assert.Single(collection);

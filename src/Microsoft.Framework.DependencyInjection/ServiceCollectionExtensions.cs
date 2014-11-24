@@ -3,21 +3,36 @@
 
 using System;
 using System.Linq;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddIfMissing([NotNull] this IServiceCollection collection,
+        public static bool TryAdd([NotNull] this IServiceCollection collection,
                                                       [NotNull] IServiceDescriptor descriptor)
         {
             if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
             {
                 collection.Add(descriptor);
+                return true;
             }
-            return collection;
+            return false;
         }
 
+        public static IServiceCollection AddTypeActivator([NotNull]this IServiceCollection services, IConfiguration config = null)
+        {
+            var describe = new ServiceDescriber(config ?? new Configuration());
+            services.TryAdd(describe.Singleton<ITypeActivator, TypeActivator>());
+            return services;
+        }
+
+        public static IServiceCollection AddContextAccessor([NotNull]this IServiceCollection services, IConfiguration config = null)
+        {
+            var describe = new ServiceDescriber(config ?? new Configuration());
+            services.TryAdd(describe.Scoped<ITypeActivator, TypeActivator>());
+            return services;
+        }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
                                                       [NotNull] Type service, 
