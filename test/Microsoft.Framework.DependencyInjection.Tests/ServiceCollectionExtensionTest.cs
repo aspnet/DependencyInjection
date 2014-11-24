@@ -162,6 +162,47 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
+        public void TryAddWithEnumerableReturnsTrueIfAnyAdded()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act
+            var ds = new IServiceDescriptor[] {
+                new ServiceDescriber().Transient<IFakeService, FakeService>(),
+                new ServiceDescriber().Transient<IFakeService, FakeService>()
+            };
+
+            // Assert
+            Assert.True(collection.TryAdd(ds));
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Transient, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void TryAddWithEnumerableReturnsFalseIfNoneAdded()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddSingleton<IFakeService, FakeService>();
+
+            // Act
+            var ds = new IServiceDescriptor[] {
+                new ServiceDescriber().Transient<IFakeService, FakeService>(),
+                new ServiceDescriber().Transient<IFakeService, FakeService>()
+            };
+
+            // Assert
+            Assert.False(collection.TryAdd(ds));
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+        }
+
+        [Fact]
         public void AddTypeDescriptorIsSingleton()
         {
             // Arrange
