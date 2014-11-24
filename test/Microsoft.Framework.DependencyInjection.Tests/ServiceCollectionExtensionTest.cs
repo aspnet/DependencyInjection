@@ -152,9 +152,9 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Act
             var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
-            collection.TryAdd(d);
 
             // Assert
+            Assert.True(collection.TryAdd(d));
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
