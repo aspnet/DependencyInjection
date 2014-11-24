@@ -10,7 +10,7 @@ namespace Microsoft.Framework.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         public static bool TryAdd([NotNull] this IServiceCollection collection,
-                                                      [NotNull] IServiceDescriptor descriptor)
+                                  [NotNull] IServiceDescriptor descriptor)
         {
             if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
             {
