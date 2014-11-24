@@ -30,7 +30,7 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddContextAccessor([NotNull]this IServiceCollection services, IConfiguration config = null)
         {
             var describe = new ServiceDescriber(config ?? new Configuration());
-            services.TryAdd(describe.Scoped<ITypeActivator, TypeActivator>());
+            services.TryAdd(describe.Scoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>)));
             return services;
         }
 
