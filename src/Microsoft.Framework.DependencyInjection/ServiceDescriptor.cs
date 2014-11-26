@@ -7,7 +7,6 @@ using System.Diagnostics;
 namespace Microsoft.Framework.DependencyInjection
 {
     [DebuggerDisplay("{Lifecycle} | ServiceType = {ServiceType}, ImplementationType = {ImplementationType}")]
-
     public class ServiceDescriptor : IServiceDescriptor
     {
         /// <summary>
