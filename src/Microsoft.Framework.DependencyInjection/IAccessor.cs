@@ -5,10 +5,10 @@ using System;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public interface IContextAccessor<TContext>
+    public interface IAccessor<T>
     {
-        TContext Value { get; }
-
-        TContext SetValue(TContext value);
+        T Value { get; }
+        T SetValue(T value);
+        IDisposable SetSource(Func<T> access, Func<T, T> exchange);
     }
 }
