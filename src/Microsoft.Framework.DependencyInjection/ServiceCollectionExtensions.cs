@@ -32,13 +32,6 @@ namespace Microsoft.Framework.DependencyInjection
             return anyAdded;
         }
 
-        public static IServiceCollection AddTypeActivator([NotNull]this IServiceCollection services, IConfiguration config = null)
-        {
-            var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Singleton<ITypeActivator, TypeActivator>());
-            return services;
-        }
-
         public static IServiceCollection AddScopedInstance([NotNull]this IServiceCollection services, IConfiguration config = null)
         {
             var describe = new ServiceDescriber(config);
