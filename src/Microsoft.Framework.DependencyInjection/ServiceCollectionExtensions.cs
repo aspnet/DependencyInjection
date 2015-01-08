@@ -39,10 +39,10 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddAccessor([NotNull]this IServiceCollection services, IConfiguration config = null)
+        public static IServiceCollection AddScopeLocal([NotNull]this IServiceCollection services, IConfiguration config = null)
         {
             var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Scoped(typeof(IAccessor<>), typeof(Accessor<>)));
+            services.TryAdd(describe.Scoped(typeof(IScopeLocal<>), typeof(ScopeLocal<>)));
             return services;
         }
 
