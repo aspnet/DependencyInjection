@@ -219,21 +219,19 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void AddContextAccessorIsScoped()
+        public void AddScopeLocalIsScoped()
         {
             // Arrange
             var collection = new ServiceCollection();
 
             // Act
-            collection.AddContextAccessor();
+            collection.AddScopeLocal();
 
             // Assert
             var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(IContextAccessor<>), descriptor.ServiceType);
+            Assert.Equal(typeof(IScopeLocal<>), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
             Assert.Equal(LifecycleKind.Scoped, descriptor.Lifecycle);
         }
-
-
     }
 }
