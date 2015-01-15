@@ -1,7 +1,8 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Castle.Windsor": "3.2.1"
+    "Castle.Windsor": "3.3.0",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*"
   },
   "frameworks": {
     "net45": { },

@@ -5,6 +5,8 @@
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection.Windsor": "1.0.0-*",
+        "Castle.Windsor": "3.3.0",
         "Ninject": "3.0.1.10",
         "structuremap": "2.6.4.1",
         "xunit.runner.kre": "1.0.0-*"
