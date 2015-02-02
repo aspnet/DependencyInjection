@@ -79,12 +79,24 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.NotNull(anotherClass);
         }
 
-        [Theory]
-        [MemberData(nameof(CreateInstanceFuncs))]
-        public void TypeActivatorWorksWithCtorWithOptionalArgs(CreateInstanceFunc createFunc)
+        [Fact]
+        public void CreateInstanceWorksWithCtorWithOptionalArgs()
         {
             var provider = new ServiceCollection().BuildServiceProvider();
-            var anotherClass = CreateInstance<ClassWithOptionalArgsCtor>(createFunc, provider);
+            var anotherClass = (ClassWithOptionalArgsCtor)ActivatorUtilities.CreateInstance(provider,
+                typeof(ClassWithOptionalArgsCtor));
+
+            Assert.NotNull(anotherClass);
+            Assert.Equal("BLARGH", anotherClass.Whatever);
+        }
+
+        [Fact]
+        public void CreateFactoryWorksWithCtorWithOptionalArgs()
+        {
+            string args = null;
+            var provider = new ServiceCollection().BuildServiceProvider();
+            var fact = ActivatorUtilities.CreateFactory(typeof(ClassWithOptionalArgsCtor), new[] { typeof(string) });
+            var anotherClass = (ClassWithOptionalArgsCtor)fact(provider, new[] { args });
 
             Assert.NotNull(anotherClass);
             Assert.Equal("BLARGH", anotherClass.Whatever);
@@ -219,6 +231,17 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.NotNull(service);
             Assert.Equal(2, service.InstanceId);
             Assert.Equal(2, CreationCountFakeService.InstanceCount);
+        }
+
+        [Fact]
+        public void CreateFactoryUnRegisteredServiceAsConstructorParameter()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<CreationCountFakeService>()
+                .BuildServiceProvider();
+
+            var factory = ActivatorUtilities.CreateFactory(typeof(CreationCountFakeService), Type.EmptyTypes);
+            Assert.Throws<InvalidOperationException>(() => factory(serviceProvider, null));
         }
     }
 }
