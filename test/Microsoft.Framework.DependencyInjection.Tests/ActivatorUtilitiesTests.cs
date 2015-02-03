@@ -233,15 +233,16 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Equal(2, CreationCountFakeService.InstanceCount);
         }
 
-        [Fact]
-        public void CreateFactoryUnRegisteredServiceAsConstructorParameter()
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void UnRegisteredServiceAsConstructorParameterThrowsException(CreateInstanceFunc createFunc)
         {
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<CreationCountFakeService>()
                 .BuildServiceProvider();
 
-            var factory = ActivatorUtilities.CreateFactory(typeof(CreationCountFakeService), Type.EmptyTypes);
-            Assert.Throws<InvalidOperationException>(() => factory(serviceProvider, null));
+            Assert.Throws<InvalidOperationException>(() =>
+            CreateInstance<CreationCountFakeService>(createFunc, serviceProvider));
         }
     }
 }
