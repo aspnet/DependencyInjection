@@ -15,7 +15,7 @@ namespace Microsoft.Framework.DependencyInjection
     public static class ActivatorUtilities
     {
         private static readonly MethodInfo GetServiceInfo =
-            GetMethodInfo<Func<IServiceProvider, Type, bool, object>>((sp, t, c) => GetService(sp, t, c));
+            GetMethodInfo<Func<IServiceProvider, Type, Type, bool, object>>((sp, t, r, c) => GetService(sp, t, r, c));
 
         /// <summary>
         /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
@@ -125,13 +125,15 @@ namespace Microsoft.Framework.DependencyInjection
             return mc.Method;
         }
 
-        private static object GetService(IServiceProvider sp, Type type, bool condition)
+        private static object GetService(IServiceProvider sp, Type type, Type requiredBy, bool isDefaultParameterRequired)
         {
-            if (condition)
+            var service = sp.GetService(type);
+            if (service == null && !isDefaultParameterRequired)
             {
-                return sp.GetService(type);
+                throw new InvalidOperationException(
+                Resources.FormatCannotResolveService(type, requiredBy));
             }
-            return sp.GetRequiredService(type);
+            return service;
         }
 
         private static Expression BuildFactoryExpression(
@@ -156,6 +158,7 @@ namespace Microsoft.Framework.DependencyInjection
                     var constructorParameterHasDefault = constructorParameters[i].HasDefaultValue;
                     var parameterTypeExpression = new Expression[] { serviceProvider,
                         Expression.Constant(parameterType),
+                        Expression.Constant(constructor.DeclaringType),
                         Expression.Constant(constructorParameterHasDefault) };
                     constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }
@@ -309,8 +312,8 @@ namespace Microsoft.Framework.DependencyInjection
                             if (!_parameters[index].HasDefaultValue)
                             {
                                 throw new InvalidOperationException(Resources.FormatCannotResolveService(
-                                    _constructor.DeclaringType,
-                                    _parameters[index].ParameterType));
+                                    _parameters[index].ParameterType,
+                                    _constructor.DeclaringType));
                             }
                             else
                             {
