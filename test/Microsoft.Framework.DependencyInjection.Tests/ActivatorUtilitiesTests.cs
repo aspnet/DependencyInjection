@@ -79,24 +79,12 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.NotNull(anotherClass);
         }
 
-        [Fact]
-        public void CreateInstanceWorksWithCtorWithOptionalArgs()
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorWorksWithCtorWithOptionalArgs(CreateInstanceFunc createFunc)
         {
             var provider = new ServiceCollection().BuildServiceProvider();
-            var anotherClass = (ClassWithOptionalArgsCtor)ActivatorUtilities.CreateInstance(provider,
-                typeof(ClassWithOptionalArgsCtor));
-
-            Assert.NotNull(anotherClass);
-            Assert.Equal("BLARGH", anotherClass.Whatever);
-        }
-
-        [Fact]
-        public void CreateFactoryWorksWithCtorWithOptionalArgs()
-        {
-            string args = null;
-            var provider = new ServiceCollection().BuildServiceProvider();
-            var fact = ActivatorUtilities.CreateFactory(typeof(ClassWithOptionalArgsCtor), new[] { typeof(string) });
-            var anotherClass = (ClassWithOptionalArgsCtor)fact(provider, new[] { args });
+            var anotherClass = CreateInstance<ClassWithOptionalArgsCtor>(createFunc, provider);
 
             Assert.NotNull(anotherClass);
             Assert.Equal("BLARGH", anotherClass.Whatever);

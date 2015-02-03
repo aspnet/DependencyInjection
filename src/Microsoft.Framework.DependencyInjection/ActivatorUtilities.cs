@@ -15,7 +15,7 @@ namespace Microsoft.Framework.DependencyInjection
     public static class ActivatorUtilities
     {
         private static readonly MethodInfo GetServiceInfo =
-            GetMethodInfo<Func<IServiceProvider, Type, object>>((sp, t) => sp.GetRequiredService(t));
+            GetMethodInfo<Func<IServiceProvider, Type, bool, object>>((sp, t, c) => GetService(sp, t, c));
 
         /// <summary>
         /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
@@ -125,6 +125,15 @@ namespace Microsoft.Framework.DependencyInjection
             return mc.Method;
         }
 
+        private static object GetService(IServiceProvider sp, Type type, bool condition)
+        {
+            if (condition)
+            {
+                return sp.GetService(type);
+            }
+            return sp.GetRequiredService(type);
+        }
+
         private static Expression BuildFactoryExpression(
             ConstructorInfo constructor,
             int?[] parameterMap,
@@ -144,7 +153,10 @@ namespace Microsoft.Framework.DependencyInjection
                 }
                 else
                 {
-                    var parameterTypeExpression = new Expression[] { serviceProvider, Expression.Constant(parameterType) };
+                    var constructorParameterHasDefault = constructorParameters[i].HasDefaultValue;
+                    var parameterTypeExpression = new Expression[] { serviceProvider,
+                        Expression.Constant(parameterType),
+                        Expression.Constant(constructorParameterHasDefault) };
                     constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }
 
