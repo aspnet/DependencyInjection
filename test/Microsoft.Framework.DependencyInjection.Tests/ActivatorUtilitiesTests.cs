@@ -229,8 +229,10 @@ namespace Microsoft.Framework.DependencyInjection.Tests
                 .AddSingleton<CreationCountFakeService>()
                 .BuildServiceProvider();
 
-            Assert.Throws<InvalidOperationException>(() =>
+            var ex = Assert.Throws<InvalidOperationException>(() =>
             CreateInstance<CreationCountFakeService>(createFunc, serviceProvider));
+            Assert.Equal(Resources.FormatCannotResolveService(typeof(IFakeService), typeof(CreationCountFakeService)),
+                ex.Message);
         }
     }
 }
