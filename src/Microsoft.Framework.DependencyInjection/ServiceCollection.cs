@@ -14,6 +14,9 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly List<IServiceDescriptor> _descriptors = new List<IServiceDescriptor>();
 
         /// <inheritdoc />
+        public IList<IServiceDescriptor> ServiceDescriptors => _descriptors;
+
+        /// <inheritdoc />
         public IServiceCollection Add([NotNull] IServiceDescriptor descriptor)
         {
             _descriptors.Add(descriptor);

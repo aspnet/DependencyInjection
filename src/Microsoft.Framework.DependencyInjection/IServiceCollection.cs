@@ -14,6 +14,11 @@ namespace Microsoft.Framework.DependencyInjection
     public interface IServiceCollection : IEnumerable<IServiceDescriptor>
     {
         /// <summary>
+        /// Gets the <see cref="IList{T}"/> of registered <see cref="IServiceDescriptor"/>.
+        /// </summary>
+        IList<IServiceDescriptor> ServiceDescriptors { get; }
+
+        /// <summary>
         /// Adds the <paramref name="descriptor"/> to this instance.
         /// </summary>
         /// <param name="descriptor">The <see cref="IServiceDescriptor"/> to add.</param>
