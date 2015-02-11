@@ -13,12 +13,6 @@
             "dependencies": {
                 "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
-        },
-        ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.ComponentModel":  ""
-            }
         }
     }
 }
