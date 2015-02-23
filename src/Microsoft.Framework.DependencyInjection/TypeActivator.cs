@@ -240,8 +240,8 @@ namespace Microsoft.Framework.DependencyInjection
                             if (!_parameters[index].HasDefaultValue)
                             {
                                 throw new InvalidOperationException(Resources.FormatCannotResolveService(
-                                    _constructor.DeclaringType, 
-                                    _parameters[index].ParameterType));
+                                    _parameters[index].ParameterType,
+                                    _constructor.DeclaringType));
                             }
                             else
                             {
