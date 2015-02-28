@@ -15,15 +15,6 @@
                 "System.Threading": "4.0.10-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*"
             }
-        },
-        ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "frameworkAssemblies": {
-                "System.Collections.Concurrent": "",
-                "System.ComponentModel": "",
-                "System.Linq.Expressions": "",
-                "System.Threading": "",
-                "System.Threading.Tasks": ""
-            }
         }
     }
 }

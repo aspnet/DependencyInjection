@@ -9,12 +9,6 @@
             "dependencies": {
                 "System.ComponentModel": "4.0.0-beta-*"
             }
-        },
-        ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.ComponentModel":  ""
-            }
         }
     }
 }
