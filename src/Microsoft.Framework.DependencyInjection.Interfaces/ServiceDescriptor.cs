@@ -16,8 +16,8 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="implementationType">The <see cref="Type"/> implementing the service.</param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
-        public ServiceDescriptor([NotNull] Type serviceType, 
-                                 [NotNull] Type implementationType, 
+        public ServiceDescriptor([NotNull] Type serviceType,
+                                 [NotNull] Type implementationType,
                                  ServiceLifetime lifetime)
             : this(serviceType, lifetime)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="factory">A factory used for creating service instances.</param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType,
-                                 [NotNull] Func<IServiceProvider, object> factory, 
+                                 [NotNull] Func<IServiceProvider, object> factory,
                                  ServiceLifetime lifetime)
             : this(serviceType, lifetime)
         {
@@ -90,7 +90,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static ServiceDescriptor Transient([NotNull] Type service,
-                                           [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                  [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
             return Describe(service, implementationFactory, ServiceLifetime.Transient);
         }
@@ -113,7 +113,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static ServiceDescriptor Scoped([NotNull] Type service,
-                                        [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                               [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
             return Describe(service, implementationFactory, ServiceLifetime.Scoped);
         }
@@ -136,7 +136,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static ServiceDescriptor Singleton([NotNull] Type serviceType,
-                                           [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                  [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
             return Describe(serviceType, implementationFactory, ServiceLifetime.Singleton);
         }
@@ -147,7 +147,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static ServiceDescriptor Instance([NotNull] Type serviceType,
-                                          [NotNull] object implementationInstance)
+                                                 [NotNull] object implementationInstance)
         {
             return new ServiceDescriptor(serviceType, implementationInstance);
         }
