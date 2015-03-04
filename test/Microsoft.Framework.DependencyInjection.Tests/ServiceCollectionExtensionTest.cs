@@ -134,7 +134,7 @@ namespace Microsoft.Framework.DependencyInjection
             addAction(collection);
 
             // Act
-            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+            var d = ServiceDescriptor.Transient<IFakeService, FakeService>();
 
             // Assert
             Assert.False(collection.TryAdd(d));
@@ -151,7 +151,7 @@ namespace Microsoft.Framework.DependencyInjection
             var collection = new ServiceCollection();
 
             // Act
-            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+            var d = ServiceDescriptor.Transient<IFakeService, FakeService>();
 
             // Assert
             Assert.True(collection.TryAdd(d));
@@ -169,8 +169,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Act
             var ds = new ServiceDescriptor[] {
-                new ServiceDescriber().Transient<IFakeService, FakeService>(),
-                new ServiceDescriber().Transient<IFakeService, FakeService>()
+                ServiceDescriptor.Transient<IFakeService, FakeService>(),
+                ServiceDescriptor.Transient<IFakeService, FakeService>()
             };
 
             // Assert
@@ -190,8 +190,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Act
             var ds = new ServiceDescriptor[] {
-                new ServiceDescriber().Transient<IFakeService, FakeService>(),
-                new ServiceDescriber().Transient<IFakeService, FakeService>()
+                ServiceDescriptor.Transient<IFakeService, FakeService>(),
+                ServiceDescriptor.Transient<IFakeService, FakeService>()
             };
 
             // Assert

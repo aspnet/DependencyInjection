@@ -71,8 +71,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection AddTypeActivator([NotNull]this IServiceCollection services, IConfiguration config = null)
         {
-            var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Singleton<ITypeActivator, TypeActivator>());
+            services.TryAdd(ServiceDescriptor.Singleton<ITypeActivator, TypeActivator>());
             return services;
         }
 
