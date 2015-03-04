@@ -10,14 +10,18 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceProvider BuildServiceProvider(this IServiceCollection services)
+        {
+            return new ServiceProvider(services);
+        }
 
         /// <summary>
-        /// Adds a sequence of <see cref="IServiceDescriptor"/> to the <paramref name="collection"/>.
+        /// Adds a sequence of <see cref="ServiceDescriptor"/> to the <paramref name="collection"/>.
         /// </summary>
-        /// <param name="descriptor">The <see cref="IEnumerable{T}"/> of <see cref="IServiceDescriptor"/>s to add.</param>
+        /// <param name="descriptor">The <see cref="IEnumerable{T}"/> of <see cref="ServiceDescriptor"/>s to add.</param>
         /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection Add([NotNull] this IServiceCollection collection,
-                                             [NotNull] IEnumerable<IServiceDescriptor> descriptors)
+                                             [NotNull] IEnumerable<ServiceDescriptor> descriptors)
         {
             foreach (var descriptor in descriptors)
             {
@@ -32,10 +36,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// service type hasn't been already registered.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="IServiceDescriptor"/>.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/>.</param>
         /// <returns><c>true</c> if the <paramref name="descriptor"/> was added; otherwise <c>false</c>.</returns>
         public static bool TryAdd([NotNull] this IServiceCollection collection,
-                                  [NotNull] IServiceDescriptor descriptor)
+                                  [NotNull] ServiceDescriptor descriptor)
         {
             if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
             {
@@ -50,10 +54,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// service type hasn't been already registered.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="IServiceDescriptor"/>s.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/>s.</param>
         /// <returns><c>true</c> if any of the <paramref name="descriptor"/>s was added; otherwise <c>false</c>.</returns>
         public static bool TryAdd([NotNull] this IServiceCollection collection,
-                                  [NotNull] IEnumerable<IServiceDescriptor> descriptors)
+                                  [NotNull] IEnumerable<ServiceDescriptor> descriptors)
         {
             var anyAdded = false;
             foreach (var d in descriptors)
@@ -204,10 +208,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// as <paramref name="descriptor"/> and adds <paramef name="descriptor"/> to the collection.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="IServiceDescriptor"/> to replace with.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/> to replace with.</param>
         /// <returns></returns>
         public static IServiceCollection Replace([NotNull] this IServiceCollection collection,
-                                                 [NotNull] IServiceDescriptor descriptor)
+                                                 [NotNull] ServiceDescriptor descriptor)
         {
             var registeredServiceDescriptor = collection.FirstOrDefault(s => s.ServiceType == descriptor.ServiceType);
             if (registeredServiceDescriptor != null)

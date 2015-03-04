@@ -12,9 +12,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal class Service : IService
     {
-        private readonly IServiceDescriptor _descriptor;
+        private readonly ServiceDescriptor _descriptor;
 
-        public Service(IServiceDescriptor descriptor)
+        public Service(ServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }
@@ -129,9 +129,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         private class CreateInstanceCallSite : IServiceCallSite
         {
-            private readonly IServiceDescriptor _descriptor;
+            private readonly ServiceDescriptor _descriptor;
 
-            public CreateInstanceCallSite(IServiceDescriptor descriptor)
+            public CreateInstanceCallSite(ServiceDescriptor descriptor)
             {
                 _descriptor = descriptor;
             }

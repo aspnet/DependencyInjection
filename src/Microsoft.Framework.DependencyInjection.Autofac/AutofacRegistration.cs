@@ -13,7 +13,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
     {
         public static void Populate(
                 this ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> descriptors)
+                IEnumerable<ServiceDescriptor> descriptors)
         {
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
             builder.RegisterType<AutofacServiceScopeFactory>().As<IServiceScopeFactory>();
@@ -23,7 +23,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
 
         private static void Register(
                 ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> descriptors)
+                IEnumerable<ServiceDescriptor> descriptors)
         {
             foreach (var descriptor in descriptors)
             {

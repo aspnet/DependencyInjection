@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Microsoft.Framework.DependencyInjection
 {
     [DebuggerDisplay("Lifecycle = {Lifecycle}, ServiceType = {ServiceType}, ImplementationType = {ImplementationType}")]
-    public class ServiceDescriptor : IServiceDescriptor
+    public class ServiceDescriptor
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="implementationType"/>.

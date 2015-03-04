@@ -12,10 +12,10 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 {
     internal class ServiceProviderNinjectModule : NinjectModule
     {
-        private readonly IEnumerable<IServiceDescriptor> _serviceDescriptors;
+        private readonly IEnumerable<ServiceDescriptor> _serviceDescriptors;
 
         public ServiceProviderNinjectModule(
-                IEnumerable<IServiceDescriptor> serviceDescriptors)
+                IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
             _serviceDescriptors = serviceDescriptors;
         }

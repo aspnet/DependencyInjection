@@ -8,9 +8,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal class GenericService : IGenericService
     {
-        private readonly IServiceDescriptor _descriptor;
+        private readonly ServiceDescriptor _descriptor;
 
-        public GenericService(IServiceDescriptor descriptor)
+        public GenericService(ServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }

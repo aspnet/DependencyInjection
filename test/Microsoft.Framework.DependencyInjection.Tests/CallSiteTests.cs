@@ -78,7 +78,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [MemberData(nameof(TestServiceDescriptors), LifecycleKind.Scoped)]
         [MemberData(nameof(TestServiceDescriptors), LifecycleKind.Transient)]
         public void BuiltExpressionWillReturnResolvedServiceWhenAppropriate(
-            IServiceDescriptor[] desciptors, Type serviceType, Func<object, object, bool> compare)
+            ServiceDescriptor[] desciptors, Type serviceType, Func<object, object, bool> compare)
         {
             var provider = new ServiceProvider(desciptors);
 

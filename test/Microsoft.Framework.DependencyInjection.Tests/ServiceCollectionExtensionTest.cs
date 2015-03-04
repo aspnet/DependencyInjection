@@ -168,7 +168,7 @@ namespace Microsoft.Framework.DependencyInjection
             var collection = new ServiceCollection();
 
             // Act
-            var ds = new IServiceDescriptor[] {
+            var ds = new ServiceDescriptor[] {
                 new ServiceDescriber().Transient<IFakeService, FakeService>(),
                 new ServiceDescriber().Transient<IFakeService, FakeService>()
             };
@@ -189,7 +189,7 @@ namespace Microsoft.Framework.DependencyInjection
             collection.AddSingleton<IFakeService, FakeService>();
 
             // Act
-            var ds = new IServiceDescriptor[] {
+            var ds = new ServiceDescriptor[] {
                 new ServiceDescriber().Transient<IFakeService, FakeService>(),
                 new ServiceDescriber().Transient<IFakeService, FakeService>()
             };
