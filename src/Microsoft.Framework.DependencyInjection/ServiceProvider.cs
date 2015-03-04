@@ -121,11 +121,11 @@ namespace Microsoft.Framework.DependencyInjection
         internal IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
         {
             IServiceCallSite serviceCallSite = service.CreateCallSite(this, callSiteChain);
-            if (service.Lifecycle == LifecycleKind.Transient)
+            if (service.Lifecycle == ServiceLifetime.Transient)
             {
                 return new TransientCallSite(serviceCallSite);
             }
-            else if (service.Lifecycle == LifecycleKind.Scoped)
+            else if (service.Lifecycle == ServiceLifetime.Scoped)
             {
                 return new ScopedCallSite(service, serviceCallSite);
             }

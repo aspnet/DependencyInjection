@@ -16,19 +16,19 @@ namespace Microsoft.Framework.DependencyInjection
         {
             get
             {
-                var theoryData = new TheoryData<DescribeAction, LifecycleKind>();
-                theoryData.Add(describer => describer.Describe(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient), LifecycleKind.Transient);
-                theoryData.Add(describer => describer.Transient(typeof(IFakeService), typeof(FakeService)), LifecycleKind.Transient);
-                theoryData.Add(describer => describer.Scoped(typeof(IFakeService), typeof(FakeService)), LifecycleKind.Scoped);
-                theoryData.Add(describer => describer.Singleton(typeof(IFakeService), typeof(FakeService)), LifecycleKind.Singleton);
+                var theoryData = new TheoryData<DescribeAction, ServiceLifetime>();
+                theoryData.Add(describer => describer.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient), ServiceLifetime.Transient);
+                theoryData.Add(describer => describer.Transient(typeof(IFakeService), typeof(FakeService)), ServiceLifetime.Transient);
+                theoryData.Add(describer => describer.Scoped(typeof(IFakeService), typeof(FakeService)), ServiceLifetime.Scoped);
+                theoryData.Add(describer => describer.Singleton(typeof(IFakeService), typeof(FakeService)), ServiceLifetime.Singleton);
 
-                theoryData.Add(describer => describer.Instance(typeof(IFakeService), new FakeService()), LifecycleKind.Singleton);
+                theoryData.Add(describer => describer.Instance(typeof(IFakeService), new FakeService()), ServiceLifetime.Singleton);
 
                 Func<IServiceProvider, object> _factory = service => new FakeService();
-                theoryData.Add(describer => describer.Describe(typeof(IFakeService), _factory, LifecycleKind.Transient), LifecycleKind.Transient);
-                theoryData.Add(describer => describer.Transient(typeof(IFakeService), _factory), LifecycleKind.Transient);
-                theoryData.Add(describer => describer.Scoped(typeof(IFakeService), _factory), LifecycleKind.Scoped);
-                theoryData.Add(describer => describer.Singleton(typeof(IFakeService), _factory), LifecycleKind.Singleton);
+                theoryData.Add(describer => describer.Describe(typeof(IFakeService), _factory, ServiceLifetime.Transient), ServiceLifetime.Transient);
+                theoryData.Add(describer => describer.Transient(typeof(IFakeService), _factory), ServiceLifetime.Transient);
+                theoryData.Add(describer => describer.Scoped(typeof(IFakeService), _factory), ServiceLifetime.Scoped);
+                theoryData.Add(describer => describer.Singleton(typeof(IFakeService), _factory), ServiceLifetime.Singleton);
 
                 return theoryData;
             }
@@ -36,7 +36,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         [Theory]
         [MemberData(nameof(ServiceDescriberActions))]
-        public void Descriptor_ReplacesServicesFromConfiguration(DescribeAction action, LifecycleKind lifeCycle)
+        public void Descriptor_ReplacesServicesFromConfiguration(DescribeAction action, ServiceLifetime lifeCycle)
         {
             // Arrange
             var configuration = new Configuration();
@@ -57,7 +57,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         [Theory]
         [MemberData(nameof(ServiceDescriberActions))]
-        public void Descriptor_ThrowsIfReplacedServiceCanotBeFound(DescribeAction action, LifecycleKind lifeCycle)
+        public void Descriptor_ThrowsIfReplacedServiceCanotBeFound(DescribeAction action, ServiceLifetime lifeCycle)
         {
             // Arrange
             var expected = Resources.FormatCannotLocateImplementation("Type-Does-NotExist", typeof(IFakeService).FullName);

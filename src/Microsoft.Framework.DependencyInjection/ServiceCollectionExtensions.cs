@@ -79,42 +79,42 @@ namespace Microsoft.Framework.DependencyInjection
                                                       [NotNull] Type service, 
                                                       [NotNull] Type implementationType)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Transient);
+            return Add(collection, service, implementationType, ServiceLifetime.Transient);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Transient);
+            return Add(collection, service, implementationFactory, ServiceLifetime.Transient);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
                                                    [NotNull] Type implementationType)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Scoped);
+            return Add(collection, service, implementationType, ServiceLifetime.Scoped);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
                                                    [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Scoped);
+            return Add(collection, service, implementationFactory, ServiceLifetime.Scoped);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Type implementationType)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Singleton);
+            return Add(collection, service, implementationType, ServiceLifetime.Singleton);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Singleton);
+            return Add(collection, service, implementationFactory, ServiceLifetime.Singleton);
         }
 
         public static IServiceCollection AddInstance([NotNull] this IServiceCollection collection,
@@ -225,7 +225,7 @@ namespace Microsoft.Framework.DependencyInjection
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Type implementationType,
-                                              LifecycleKind lifeCycle)
+                                              ServiceLifetime lifeCycle)
         {
             var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle);
             return collection.Add(descriptor);
@@ -234,7 +234,7 @@ namespace Microsoft.Framework.DependencyInjection
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Func<IServiceProvider, object> implementationFactory,
-                                              LifecycleKind lifeCycle)
+                                              ServiceLifetime lifeCycle)
         {
             var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle);
             return collection.Add(descriptor);

@@ -45,13 +45,13 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 
                 switch (descriptor.Lifecycle)
                 {
-                    case LifecycleKind.Singleton:
+                    case ServiceLifetime.Singleton:
                         binding.InSingletonScope();
                         break;
-                    case LifecycleKind.Scoped:
+                    case ServiceLifetime.Scoped:
                         binding.InRequestScope();
                         break;
-                    case LifecycleKind.Transient:
+                    case ServiceLifetime.Transient:
                         binding.InTransientScope();
                         break;
                 }

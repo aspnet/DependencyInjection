@@ -13,11 +13,11 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 {
     public class CallSiteTests
     {
-        public static IEnumerable<object[]> TestServiceDescriptors(LifecycleKind lifecycle)
+        public static IEnumerable<object[]> TestServiceDescriptors(ServiceLifetime lifecycle)
         {
             Func<object, object, bool> compare;
 
-            if (lifecycle == LifecycleKind.Transient)
+            if (lifecycle == ServiceLifetime.Transient)
             {
                 // Expect service references to be different for transient descriptors
                 compare = (service1, service2) => service1 != service2;
@@ -61,7 +61,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
                 compare,
             };
 
-            if (lifecycle == LifecycleKind.Singleton)
+            if (lifecycle == ServiceLifetime.Singleton)
             {
                 // Instance Descriptor
                 yield return new object[]
@@ -74,9 +74,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         }
 
         [Theory]
-        [MemberData(nameof(TestServiceDescriptors), LifecycleKind.Singleton)]
-        [MemberData(nameof(TestServiceDescriptors), LifecycleKind.Scoped)]
-        [MemberData(nameof(TestServiceDescriptors), LifecycleKind.Transient)]
+        [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Singleton)]
+        [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Scoped)]
+        [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Transient)]
         public void BuiltExpressionWillReturnResolvedServiceWhenAppropriate(
             ServiceDescriptor[] desciptors, Type serviceType, Func<object, object, bool> compare)
         {

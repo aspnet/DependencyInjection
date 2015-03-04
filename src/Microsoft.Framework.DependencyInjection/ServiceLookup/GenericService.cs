@@ -15,7 +15,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             _descriptor = descriptor;
         }
 
-        public LifecycleKind Lifecycle
+        public ServiceLifetime Lifecycle
         {
             get { return _descriptor.Lifecycle; }
         }

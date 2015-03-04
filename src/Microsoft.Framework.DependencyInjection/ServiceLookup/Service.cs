@@ -21,7 +21,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public IService Next { get; set; }
 
-        public LifecycleKind Lifecycle
+        public ServiceLifetime Lifecycle
         {
             get { return _descriptor.Lifecycle; }
         }

@@ -7,7 +7,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal interface IGenericService
     {
-        LifecycleKind Lifecycle { get; }
+        ServiceLifetime Lifecycle { get; }
 
         IService GetService(Type closedServiceType);
     }

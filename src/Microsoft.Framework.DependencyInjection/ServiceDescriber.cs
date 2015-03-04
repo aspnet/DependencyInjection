@@ -18,70 +18,70 @@ namespace Microsoft.Framework.DependencyInjection
         public ServiceDescriptor Transient<TService, TImplementation>()
             where TImplementation : TService
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Transient);
+            return Describe<TService, TImplementation>(ServiceLifetime.Transient);
         }
 
         public ServiceDescriptor Transient([NotNull] Type service, [NotNull] Type implementationType)
         {
-            return Describe(service, implementationType, LifecycleKind.Transient);
+            return Describe(service, implementationType, ServiceLifetime.Transient);
         }
 
         public ServiceDescriptor Transient<TService>([NotNull] Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Transient);
+            return Describe(typeof(TService), implementationFactory, ServiceLifetime.Transient);
         }
 
         public ServiceDescriptor Transient([NotNull] Type service,
                                            [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Describe(service, implementationFactory, LifecycleKind.Transient);
+            return Describe(service, implementationFactory, ServiceLifetime.Transient);
         }
 
         public ServiceDescriptor Scoped<TService, TImplementation>()
             where TImplementation : TService
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Scoped);
+            return Describe<TService, TImplementation>(ServiceLifetime.Scoped);
         }
 
         public ServiceDescriptor Scoped(Type service, Type implementationType)
         {
-            return Describe(service, implementationType, LifecycleKind.Scoped);
+            return Describe(service, implementationType, ServiceLifetime.Scoped);
         }
 
         public ServiceDescriptor Scoped<TService>([NotNull] Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Scoped);
+            return Describe(typeof(TService), implementationFactory, ServiceLifetime.Scoped);
         }
 
         public ServiceDescriptor Scoped([NotNull] Type service,
                                         [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Describe(service, implementationFactory, LifecycleKind.Scoped);
+            return Describe(service, implementationFactory, ServiceLifetime.Scoped);
         }
 
         public ServiceDescriptor Singleton<TService, TImplementation>()
             where TImplementation : TService
         {
-            return Describe<TService, TImplementation>(LifecycleKind.Singleton);
+            return Describe<TService, TImplementation>(ServiceLifetime.Singleton);
         }
 
         public ServiceDescriptor Singleton([NotNull] Type service, [NotNull] Type implementationType)
         {
-            return Describe(service, implementationType, LifecycleKind.Singleton);
+            return Describe(service, implementationType, ServiceLifetime.Singleton);
         }
 
         public ServiceDescriptor Singleton<TService>([NotNull] Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            return Describe(typeof(TService), implementationFactory, LifecycleKind.Singleton);
+            return Describe(typeof(TService), implementationFactory, ServiceLifetime.Singleton);
         }
 
         public ServiceDescriptor Singleton([NotNull] Type serviceType,
                                            [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Describe(serviceType, implementationFactory, LifecycleKind.Singleton);
+            return Describe(serviceType, implementationFactory, ServiceLifetime.Singleton);
         }
 
         public ServiceDescriptor Instance<TService>([NotNull] TService implementationInstance)
@@ -95,13 +95,13 @@ namespace Microsoft.Framework.DependencyInjection
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)
             {
-                return new ServiceDescriptor(serviceType, implementationType, LifecycleKind.Singleton);
+                return new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Singleton);
             }
 
             return new ServiceDescriptor(serviceType, implementationInstance);
         }
 
-        private ServiceDescriptor Describe<TService, TImplementation>(LifecycleKind lifecycle)
+        private ServiceDescriptor Describe<TService, TImplementation>(ServiceLifetime lifecycle)
         {
             return Describe(
                 typeof(TService),
@@ -109,14 +109,14 @@ namespace Microsoft.Framework.DependencyInjection
                 lifecycle: lifecycle);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Type implementationType, LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Type implementationType, ServiceLifetime lifecycle)
         {
             implementationType = GetRemappedImplementationType(serviceType) ?? implementationType;
 
             return new ServiceDescriptor(serviceType, implementationType, lifecycle);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, LifecycleKind lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, ServiceLifetime lifecycle)
         {
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)

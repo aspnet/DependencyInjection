@@ -14,10 +14,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="implementationType">The <see cref="Type"/> implementing the service.</param>
-        /// <param name="lifecycle">The <see cref="LifecycleKind"/> of the service.</param>
+        /// <param name="lifecycle">The <see cref="ServiceLifetime"/> of the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType, 
                                  [NotNull] Type implementationType, 
-                                 LifecycleKind lifecycle)
+                                 ServiceLifetime lifecycle)
             : this(serviceType, lifecycle)
         {
             ImplementationType = implementationType;
@@ -25,13 +25,13 @@ namespace Microsoft.Framework.DependencyInjection
 
         /// <summary>
         /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="instance"/>
-        /// as a <see cref="LifecycleKind.Singleton"/>.
+        /// as a <see cref="ServiceLifetime.Singleton"/>.
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="instance">The instance implementing the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType,
                                  [NotNull] object instance)
-            : this(serviceType, LifecycleKind.Singleton)
+            : this(serviceType, ServiceLifetime.Singleton)
         {
             ImplementationInstance = instance;
         }
@@ -41,23 +41,23 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>
-        /// <param name="lifecycle">The <see cref="LifecycleKind"/> of the service.</param>
+        /// <param name="lifecycle">The <see cref="ServiceLifetime"/> of the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType,
                                  [NotNull] Func<IServiceProvider, object> factory, 
-                                 LifecycleKind lifecycle)
+                                 ServiceLifetime lifecycle)
             : this(serviceType, lifecycle)
         {
             ImplementationFactory = factory;
         }
 
-        private ServiceDescriptor(Type serviceType, LifecycleKind lifecycle)
+        private ServiceDescriptor(Type serviceType, ServiceLifetime lifecycle)
         {
             Lifecycle = lifecycle;
             ServiceType = serviceType;
         }
 
         /// <inheritdoc />
-        public LifecycleKind Lifecycle { get; }
+        public ServiceLifetime Lifecycle { get; }
 
         /// <inheritdoc />
         public Type ServiceType { get; }

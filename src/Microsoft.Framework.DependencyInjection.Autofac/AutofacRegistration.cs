@@ -70,17 +70,17 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
 
         private static IRegistrationBuilder<object, T, U> ConfigureLifecycle<T, U>(
                 this IRegistrationBuilder<object, T, U> registrationBuilder,
-                LifecycleKind lifecycleKind)
+                ServiceLifetime lifecycleKind)
         {
             switch (lifecycleKind)
             {
-                case LifecycleKind.Singleton:
+                case ServiceLifetime.Singleton:
                     registrationBuilder.SingleInstance();
                     break;
-                case LifecycleKind.Scoped:
+                case ServiceLifetime.Scoped:
                     registrationBuilder.InstancePerLifetimeScope();
                     break;
-                case LifecycleKind.Transient:
+                case ServiceLifetime.Transient:
                     registrationBuilder.InstancePerDependency();
                     break;
             }
