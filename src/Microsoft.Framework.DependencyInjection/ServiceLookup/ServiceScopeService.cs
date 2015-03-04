@@ -13,7 +13,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     {
         public IService Next { get; set; }
 
-        public ServiceLifetime Lifecycle
+        public ServiceLifetime Lifetime
         {
             get { return ServiceLifetime.Scoped; }
         }

@@ -50,7 +50,7 @@ namespace Microsoft.Framework.DependencyInjection
             // Assert
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Equal(typeof(FakeOuterService), descriptor.ImplementationType);
-            Assert.Equal(lifeCycle, descriptor.Lifecycle);
+            Assert.Equal(lifeCycle, descriptor.Lifetime);
             Assert.Null(descriptor.ImplementationFactory);
             Assert.Null(descriptor.ImplementationInstance);
         }

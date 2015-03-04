@@ -55,7 +55,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(expectedServiceType, descriptor.ServiceType);
             Assert.Equal(expectedImplementationType, descriptor.ImplementationType);
-            Assert.Equal(lifeCycle, descriptor.Lifecycle);
+            Assert.Equal(lifeCycle, descriptor.Lifetime);
         }
 
         public static TheoryData AddImplementationFactoryData
@@ -93,7 +93,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_factory, descriptor.ImplementationFactory);
-            Assert.Equal(lifeCycle, descriptor.Lifecycle);
+            Assert.Equal(lifeCycle, descriptor.Lifetime);
         }
 
         public static TheoryData AddInstanceData
@@ -122,7 +122,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_instance, descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Theory]
@@ -141,7 +141,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_instance, descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Fact]
@@ -215,7 +215,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(ITypeActivator), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Fact]

@@ -101,30 +101,30 @@ namespace Microsoft.Framework.DependencyInjection
             return new ServiceDescriptor(serviceType, implementationInstance);
         }
 
-        private ServiceDescriptor Describe<TService, TImplementation>(ServiceLifetime lifecycle)
+        private ServiceDescriptor Describe<TService, TImplementation>(ServiceLifetime lifetime)
         {
             return Describe(
                 typeof(TService),
                 typeof(TImplementation),
-                lifecycle: lifecycle);
+                lifetime: lifetime);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Type implementationType, ServiceLifetime lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Type implementationType, ServiceLifetime lifetime)
         {
             implementationType = GetRemappedImplementationType(serviceType) ?? implementationType;
 
-            return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+            return new ServiceDescriptor(serviceType, implementationType, lifetime);
         }
 
-        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, ServiceLifetime lifecycle)
+        public ServiceDescriptor Describe(Type serviceType, Func<IServiceProvider, object> implementationFactory, ServiceLifetime lifetime)
         {
             var implementationType = GetRemappedImplementationType(serviceType);
             if (implementationType != null)
             {
-                return new ServiceDescriptor(serviceType, implementationType, lifecycle);
+                return new ServiceDescriptor(serviceType, implementationType, lifetime);
             }
 
-            return new ServiceDescriptor(serviceType, implementationFactory, lifecycle);
+            return new ServiceDescriptor(serviceType, implementationFactory, lifetime);
         }
 
         private Type GetRemappedImplementationType(Type serviceType)

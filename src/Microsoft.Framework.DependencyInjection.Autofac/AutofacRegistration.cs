@@ -36,14 +36,14 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                         builder
                             .RegisterGeneric(descriptor.ImplementationType)
                             .As(descriptor.ServiceType)
-                            .ConfigureLifecycle(descriptor.Lifecycle);
+                            .ConfigureLifecycle(descriptor.Lifetime);
                     }
                     else
                     {
                         builder
                             .RegisterType(descriptor.ImplementationType)
                             .As(descriptor.ServiceType)
-                            .ConfigureLifecycle(descriptor.Lifecycle);
+                            .ConfigureLifecycle(descriptor.Lifetime);
                     }
                 }
                 else if (descriptor.ImplementationFactory != null)
@@ -53,7 +53,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                         var serviceProvider = context.Resolve<IServiceProvider>();
                         return descriptor.ImplementationFactory(serviceProvider);
                     })
-                    .ConfigureLifecycle(descriptor.Lifecycle)
+                    .ConfigureLifecycle(descriptor.Lifetime)
                     .CreateRegistration();
 
                     builder.RegisterComponent(registration);
@@ -63,7 +63,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                     builder
                         .RegisterInstance(descriptor.ImplementationInstance)
                         .As(descriptor.ServiceType)
-                        .ConfigureLifecycle(descriptor.Lifecycle);
+                        .ConfigureLifecycle(descriptor.Lifetime);
                 }
             }
         }

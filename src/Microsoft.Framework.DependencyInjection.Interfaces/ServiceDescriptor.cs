@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    [DebuggerDisplay("Lifecycle = {Lifecycle}, ServiceType = {ServiceType}, ImplementationType = {ImplementationType}")]
+    [DebuggerDisplay("Lifetime = {Lifetime}, ServiceType = {ServiceType}, ImplementationType = {ImplementationType}")]
     public class ServiceDescriptor
     {
         /// <summary>
@@ -14,11 +14,11 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="implementationType">The <see cref="Type"/> implementing the service.</param>
-        /// <param name="lifecycle">The <see cref="ServiceLifetime"/> of the service.</param>
+        /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType, 
                                  [NotNull] Type implementationType, 
-                                 ServiceLifetime lifecycle)
-            : this(serviceType, lifecycle)
+                                 ServiceLifetime lifetime)
+            : this(serviceType, lifetime)
         {
             ImplementationType = implementationType;
         }
@@ -41,23 +41,23 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>
-        /// <param name="lifecycle">The <see cref="ServiceLifetime"/> of the service.</param>
+        /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
         public ServiceDescriptor([NotNull] Type serviceType,
                                  [NotNull] Func<IServiceProvider, object> factory, 
-                                 ServiceLifetime lifecycle)
-            : this(serviceType, lifecycle)
+                                 ServiceLifetime lifetime)
+            : this(serviceType, lifetime)
         {
             ImplementationFactory = factory;
         }
 
-        private ServiceDescriptor(Type serviceType, ServiceLifetime lifecycle)
+        private ServiceDescriptor(Type serviceType, ServiceLifetime lifetime)
         {
-            Lifecycle = lifecycle;
+            Lifetime = lifetime;
             ServiceType = serviceType;
         }
 
         /// <inheritdoc />
-        public ServiceLifetime Lifecycle { get; }
+        public ServiceLifetime Lifetime { get; }
 
         /// <inheritdoc />
         public Type ServiceType { get; }

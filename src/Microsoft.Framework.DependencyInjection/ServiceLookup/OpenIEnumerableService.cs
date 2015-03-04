@@ -15,7 +15,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             _table = table;
         }
 
-        public ServiceLifetime Lifecycle
+        public ServiceLifetime Lifetime
         {
             get { return ServiceLifetime.Transient; }
         }

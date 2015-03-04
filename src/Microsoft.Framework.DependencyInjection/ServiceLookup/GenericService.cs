@@ -15,9 +15,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             _descriptor = descriptor;
         }
 
-        public ServiceLifetime Lifecycle
+        public ServiceLifetime Lifetime
         {
-            get { return _descriptor.Lifecycle; }
+            get { return _descriptor.Lifetime; }
         }
 
         public IService GetService(Type closedServiceType)
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             Type closedImplementationType =
                 _descriptor.ImplementationType.MakeGenericType(genericArguments);
 
-            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifecycle);
+            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifetime);
             return new Service(closedServiceDescriptor);
         }
     }

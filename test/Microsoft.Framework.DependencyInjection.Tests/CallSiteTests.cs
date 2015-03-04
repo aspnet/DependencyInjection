@@ -13,11 +13,11 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 {
     public class CallSiteTests
     {
-        public static IEnumerable<object[]> TestServiceDescriptors(ServiceLifetime lifecycle)
+        public static IEnumerable<object[]> TestServiceDescriptors(ServiceLifetime lifetime)
         {
             Func<object, object, bool> compare;
 
-            if (lifecycle == ServiceLifetime.Transient)
+            if (lifetime == ServiceLifetime.Transient)
             {
                 // Expect service references to be different for transient descriptors
                 compare = (service1, service2) => service1 != service2;
@@ -31,14 +31,14 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             // Implementation Type Descriptor
             yield return new object[]
             {
-                new[] { new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), lifecycle) },
+                new[] { new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), lifetime) },
                 typeof(IFakeService),
                 compare,
             };
             // Closed Generic Descriptor
             yield return new object[]
             {
-                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<string>), typeof(FakeService), lifecycle) },
+                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<string>), typeof(FakeService), lifetime) },
                 typeof(IFakeOpenGenericService<string>),
                 compare,
             };
@@ -47,8 +47,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             {
                 new[]
                 {
-                    new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), lifecycle),
-                    new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), lifecycle),
+                    new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), lifetime),
+                    new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), lifetime),
                 },
                 typeof(IFakeOpenGenericService<IFakeService>),
                 compare,
@@ -56,12 +56,12 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             // Factory Descriptor
             yield return new object[]
             {
-                new[] { new ServiceDescriptor(typeof(IFakeService), _ => new FakeService(), lifecycle) },
+                new[] { new ServiceDescriptor(typeof(IFakeService), _ => new FakeService(), lifetime) },
                 typeof(IFakeService),
                 compare,
             };
 
-            if (lifecycle == ServiceLifetime.Singleton)
+            if (lifetime == ServiceLifetime.Singleton)
             {
                 // Instance Descriptor
                 yield return new object[]

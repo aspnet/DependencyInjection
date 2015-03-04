@@ -43,7 +43,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                     binding = Bind(descriptor.ServiceType).ToConstant(descriptor.ImplementationInstance);
                 }
 
-                switch (descriptor.Lifecycle)
+                switch (descriptor.Lifetime)
                 {
                     case ServiceLifetime.Singleton:
                         binding.InSingletonScope();
