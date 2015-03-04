@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {

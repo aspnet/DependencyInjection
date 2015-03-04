@@ -1,6 +1,9 @@
 {
     "version": "1.0.0-*",
     "description": "Contracts for dependency injection.",
+    "dependencies": {
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
+    },
     "frameworks": {
         "net45": {
         },

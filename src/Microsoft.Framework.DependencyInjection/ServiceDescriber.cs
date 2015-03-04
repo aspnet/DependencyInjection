@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
