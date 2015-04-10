@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.DependencyInjection.Interfaces;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.DependencyInjection;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace System
 {
     public static class ServiceProviderExtensions
     {
@@ -35,7 +36,7 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (service == null)
             {
-                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(serviceType));
+                throw new InvalidOperationException(Microsoft.Framework.DependencyInjection.Interfaces.Resources.FormatNoServiceRegistered(serviceType));
             }
 
             return service;
@@ -66,7 +67,7 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (!providers.Any())
             {
-                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(typeof(T)));
+                throw new InvalidOperationException(Microsoft.Framework.DependencyInjection.Interfaces.Resources.FormatNoServiceRegistered(typeof(T)));
             }
 
             return providers;
