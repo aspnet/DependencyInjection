@@ -1,0 +1,12 @@
+{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "SimpleInjector.Integration.Web": "2.7.2",
+        "SimpleInjector.Extensions.LifetimeScoping": "2.7.2"
+    },
+    "frameworks": {
+        "net45": { },
+        "dnx451": { }
+    }
+}
