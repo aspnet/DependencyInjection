@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Reflection;
+using System.Collections.Generic;
 using SimpleInjector;
 using SimpleInjector.Extensions;
 using SimpleInjector.Extensions.LifetimeScoping;
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Framework.DependencyInjection.SimpleInjector
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Framework.DependencyInjection.SimpleInjector
                 if (descriptor.ImplementationType != null)
                 {
                     // Test if an open generic type is being registered.
-                    var serviceTypeInfo = descriptor.ServiceType.GetType();
+                    var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
                     if (serviceTypeInfo.IsGenericTypeDefinition)
                     {
                         container.RegisterOpenGeneric(descriptor.ServiceType,
