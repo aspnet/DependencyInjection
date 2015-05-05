@@ -26,7 +26,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             if (collection == null)
             {
-                throw new ArgumentNullException("collection");
+                throw new ArgumentNullException(nameof(collection));
             }
 
             IList castedCollection = CreateEmptyList(castItemsTo);
