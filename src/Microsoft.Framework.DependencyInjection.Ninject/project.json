@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-beta4",
   "dependencies": {
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-beta4",
     "Ninject": "3.0.1.10"
   },
   "frameworks": {

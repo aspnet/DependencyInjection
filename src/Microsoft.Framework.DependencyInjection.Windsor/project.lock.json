@@ -1,0 +1,117 @@
+{
+  "locked": true,
+  "version": -9998,
+  "projectFileDependencyGroups": {
+    "": [
+      "Castle.Windsor >= 3.2.1"
+    ],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": []
+  },
+  "libraries": {
+    "Castle.Core/3.2.0": {
+      "serviceable": false,
+      "sha": "Ht9+voegMLDLfGwHIpDjP9deFeVlSGi2USLGGLRl32IgkcKxUZUAdXV2OLPYdXrlYqbfohFUmBIcL1y0oWIhtg==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/net45/Castle.Core.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net45/Castle.Core.dll"
+          ]
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/net45/Castle.Core.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net45/Castle.Core.dll"
+          ]
+        }
+      },
+      "files": [
+        "ASL - Apache Software Foundation License.txt",
+        "BreakingChanges.txt",
+        "Castle.Core.3.2.0.nupkg",
+        "Castle.Core.3.2.0.nupkg.sha512",
+        "Castle.Core.nuspec",
+        "Changes.txt",
+        "License.txt",
+        "readme.txt",
+        "lib/net35/Castle.Core.dll",
+        "lib/net35/Castle.Core.xml",
+        "lib/net40-client/Castle.Core.dll",
+        "lib/net40-client/Castle.Core.xml",
+        "lib/net45/Castle.Core.dll",
+        "lib/net45/Castle.Core.xml",
+        "lib/sl4/Castle.Core.dll",
+        "lib/sl4/Castle.Core.xml",
+        "lib/sl5/Castle.Core.dll",
+        "lib/sl5/Castle.Core.xml"
+      ]
+    },
+    "Castle.Windsor/3.2.1": {
+      "serviceable": false,
+      "sha": "pTt0H5k1Li5AGvWHc7xDHABf0M9PMNjDeaiGNFF8ltxYr3oOcI6xEYMeuP6gipHJChN43rAYni3hG+IcaSmitg==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {
+            "Castle.Core": "3.2.0"
+          },
+          "frameworkAssemblies": [
+            "System.Core",
+            "System.Xml"
+          ],
+          "runtimeAssemblies": [
+            "lib/net45/Castle.Windsor.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net45/Castle.Windsor.dll"
+          ]
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {
+            "Castle.Core": "3.2.0"
+          },
+          "frameworkAssemblies": [
+            "System.Core",
+            "System.Xml"
+          ],
+          "runtimeAssemblies": [
+            "lib/net45/Castle.Windsor.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net45/Castle.Windsor.dll"
+          ]
+        }
+      },
+      "files": [
+        "ASL - Apache Software Foundation License.txt",
+        "BreakingChanges.txt",
+        "Castle.Windsor.3.2.1.nupkg",
+        "Castle.Windsor.3.2.1.nupkg.sha512",
+        "Castle.Windsor.nuspec",
+        "Changes.txt",
+        "License.txt",
+        "readme.txt",
+        "lib/net35/Castle.Windsor.dll",
+        "lib/net35/Castle.Windsor.xml",
+        "lib/net40/Castle.Windsor.dll",
+        "lib/net40/Castle.Windsor.xml",
+        "lib/net40-client/Castle.Windsor.dll",
+        "lib/net40-client/Castle.Windsor.xml",
+        "lib/net45/Castle.Windsor.dll",
+        "lib/net45/Castle.Windsor.xml",
+        "lib/sl4/Castle.Windsor.dll",
+        "lib/sl4/Castle.Windsor.xml",
+        "lib/sl5/Castle.Windsor.dll",
+        "lib/sl5/Castle.Windsor.xml"
+      ]
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "locked": true,
+  "version": -9998,
+  "projectFileDependencyGroups": {
+    "": [
+      "structuremap >= 2.6.4.1"
+    ],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": []
+  },
+  "libraries": {
+    "structuremap/2.6.4.1": {
+      "serviceable": false,
+      "sha": "pot5rWPLwM6DAxDPC1L1AyO/A64kAIp3EMpjlrELdKIx8odiRtqfWovEtDIQSdWerbWoD1cTt1aj9s0mpiA6bQ==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/net40/StructureMap.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net40/StructureMap.dll"
+          ]
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/net40/StructureMap.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net40/StructureMap.dll"
+          ]
+        }
+      },
+      "files": [
+        "structuremap.2.6.4.1.nupkg",
+        "structuremap.2.6.4.1.nupkg.sha512",
+        "structuremap.nuspec",
+        "lib/net40/StructureMap.dll",
+        "lib/net40/StructureMap.pdb",
+        "lib/net40/StructureMap.XML"
+      ]
+    }
+  }
+}

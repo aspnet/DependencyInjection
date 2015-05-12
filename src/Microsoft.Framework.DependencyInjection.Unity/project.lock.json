@@ -1,0 +1,59 @@
+{
+  "locked": true,
+  "version": -9998,
+  "projectFileDependencyGroups": {
+    "": [
+      "Unity >= 3.0.1304.1"
+    ],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": []
+  },
+  "libraries": {
+    "Unity/3.0.1304.1": {
+      "serviceable": false,
+      "sha": "+/1nhoAJOcL4iNo2NfObwy+WrqJhPM6fCLCI/6ETFpDl5y4sqO749LO2yhlY9UCJZz+298oFhQanhXnmYmZgoA==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/Net45/Microsoft.Practices.Unity.Configuration.dll",
+            "lib/Net45/Microsoft.Practices.Unity.dll"
+          ],
+          "compileAssemblies": [
+            "lib/Net45/Microsoft.Practices.Unity.Configuration.dll",
+            "lib/Net45/Microsoft.Practices.Unity.dll"
+          ]
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/Net45/Microsoft.Practices.Unity.Configuration.dll",
+            "lib/Net45/Microsoft.Practices.Unity.dll"
+          ],
+          "compileAssemblies": [
+            "lib/Net45/Microsoft.Practices.Unity.Configuration.dll",
+            "lib/Net45/Microsoft.Practices.Unity.dll"
+          ]
+        }
+      },
+      "files": [
+        "Unity.3.0.1304.1.nupkg",
+        "Unity.3.0.1304.1.nupkg.sha512",
+        "Unity.nuspec",
+        "UnityConfiguration30.xsd",
+        "lib/Net45/Microsoft.Practices.Unity.Configuration.dll",
+        "lib/Net45/Microsoft.Practices.Unity.Configuration.xml",
+        "lib/Net45/Microsoft.Practices.Unity.dll",
+        "lib/Net45/Microsoft.Practices.Unity.xml",
+        "lib/NetCore45/Microsoft.Practices.Unity.NetCore.dll",
+        "lib/NetCore45/Microsoft.Practices.Unity.NetCore.pri",
+        "lib/NetCore45/Microsoft.Practices.Unity.NetCore.xml",
+        "lib/wp8/Microsoft.Practices.Unity.WindowsPhone.dll",
+        "lib/wp8/Microsoft.Practices.Unity.WindowsPhone.xml",
+        "tools/install.ps1"
+      ]
+    }
+  }
+}

@@ -1,14 +1,14 @@
 {
-    "version": "0.1-alpha-*",
+    "version": "0.1-alpha-beta4",
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta4",
+        "xunit.runner.aspnet": "2.0.0-aspnet-beta4"
     },
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
-                "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-*",
+                "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-beta4",
+                "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-beta4",
                 "structuremap": "2.6.4.1"
             }
         },

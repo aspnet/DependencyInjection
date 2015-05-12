@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-beta4",
   "dependencies": {
     "Autofac": "3.3.0",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+    "Microsoft.Framework.DependencyInjection": "1.0.0-beta4"
   },
   "frameworks": {
     "net45": { },
