@@ -25,6 +25,11 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
         private static IEnumerable Cast([NotNull] IEnumerable collection, Type castItemsTo)
         {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
             IList castedCollection = CreateEmptyList(castItemsTo);
 
             foreach (object item in collection)
