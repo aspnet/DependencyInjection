@@ -1,19 +1,19 @@
 {
-    "version": "1.0.0-*",
+    "version": "1.0.0-beta5",
     "description": "Dependency injection abstraction and fallback implementation.",
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-beta5",
+        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-beta5", "type": "build" }
     },
     "frameworks": {
         "net45": { },
         "dnx451": { },
         "dotnet": {
             "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.Collections.Concurrent": "4.0.10-beta-*",
-                "System.Threading": "4.0.10-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*"
+                "System.Collections": "4.0.10-beta-23019",
+                "System.Collections.Concurrent": "4.0.10-beta-23019",
+                "System.Threading": "4.0.10-beta-23019",
+                "System.Threading.Tasks": "4.0.10-beta-23019"
             }
         }
     }
