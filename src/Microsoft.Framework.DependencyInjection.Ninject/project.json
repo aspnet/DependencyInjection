@@ -1,15 +1,15 @@
 {
-  "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dependencyinjection"
-  },
-  "dependencies": {
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Ninject": "3.0.1.10"
-  },
-  "frameworks": {
-    "net45": { },
-    "dnx451": { }
-  }
+    "version": "1.0.0-beta6",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/dependencyinjection"
+    },
+    "dependencies": {
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta6",
+        "Ninject": "3.0.1.10"
+    },
+    "frameworks": {
+        "net45": {},
+        "dnx451": {}
+    }
 }
