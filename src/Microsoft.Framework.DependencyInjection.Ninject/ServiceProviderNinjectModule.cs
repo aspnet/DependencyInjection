@@ -62,9 +62,6 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 var resolver = context.Kernel.Get<IResolutionRoot>();
                 var inheritedParams = context.Parameters.Where(p => p.ShouldInherit);
 
-                var scopeParam = new ScopeParameter();
-                inheritedParams = inheritedParams.AddOrReplaceScopeParameter(scopeParam);
-
                 return new NinjectServiceProvider(resolver, inheritedParams.ToArray());
             }).InRequestScope();
 
