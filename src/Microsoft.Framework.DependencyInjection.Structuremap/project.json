@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+    "StructureMap": "3.1.5.154",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+  },
+  "frameworks": {
+    "net45": { },
+    "dnx451": { }
+  }
+}
