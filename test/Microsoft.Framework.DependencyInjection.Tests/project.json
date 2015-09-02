@@ -2,17 +2,17 @@
     "version": "0.1-alpha-*",
     "dependencies": {
         "Autofac.Framework.DependencyInjection": "4.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-beta7",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta7",
         "Microsoft.Framework.NotNullAttribute.Sources": {
-            "version": "1.0.0-*",
+            "version": "1.0.0-beta7",
             "type": "build"
         },
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-beta7"
     },
     "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
+        "dnx451": {},
+        "dnxcore50": {}
     },
     "commands": {
         "test": "xunit.runner.aspnet"
