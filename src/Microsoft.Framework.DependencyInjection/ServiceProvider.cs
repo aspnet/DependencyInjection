@@ -25,6 +25,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
+        private ConcurrentBag<IDisposable> _offlineDisposables;
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
@@ -143,14 +144,29 @@ namespace Microsoft.Framework.DependencyInjection
             }
         }
 
+        internal void Reset()
+        {
+            if (_offlineDisposables == null)
+            {
+                throw new InvalidOperationException("ServiceProvider reused before being disposed");
+            }
+            _disposables = _offlineDisposables;
+            _offlineDisposables = null;
+        }
+
         public void Dispose()
         {
-            IDisposable disposable;
-            while (_disposables.TryTake(out disposable))
+            var disposables = Interlocked.Exchange(ref _disposables, null);
+            if(disposables != null)
             {
-                disposable.Dispose();
+                IDisposable disposable;
+                while (_disposables.TryTake(out disposable))
+                {
+                    disposable.Dispose();
+                }
+                _resolvedServices.Clear();
+                _offlineDisposables = disposables;
             }
-            _resolvedServices.Clear();
         }
 
         private object CaptureDisposable(object service)

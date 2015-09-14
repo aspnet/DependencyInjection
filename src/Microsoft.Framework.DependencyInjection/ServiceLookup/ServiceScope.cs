@@ -23,8 +23,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         internal void Reset()
         {
-            // Double wash
-            _scopedProvider.Dispose();
+            _scopedProvider.Reset();
         }
 
         public void Dispose()
