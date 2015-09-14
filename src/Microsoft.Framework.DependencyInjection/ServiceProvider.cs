@@ -19,12 +19,12 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private readonly object _sync = new object();
 
-        private readonly Func<Type, Func<ServiceProvider, object>> _createServiceAccessor;
+        private Func<Type, Func<ServiceProvider, object>> _createServiceAccessor;
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
-        private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
+        private ConcurrentQueue<IDisposable> _disposables = new ConcurrentQueue<IDisposable>();
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
@@ -145,15 +145,13 @@ namespace Microsoft.Framework.DependencyInjection
 
         public void Dispose()
         {
-            var disposables = Interlocked.Exchange(ref _disposables, null);
-
-            if (disposables != null)
+            IDisposable disposable;
+            while (_disposables.TryDequeue(out disposable))
             {
-                foreach (var disposable in disposables)
-                {
-                    disposable.Dispose();
-                }
+                disposable.Dispose();
             }
+            _createServiceAccessor = null;
+            _resolvedServices.Clear();
         }
 
         private object CaptureDisposable(object service)
@@ -163,7 +161,7 @@ namespace Microsoft.Framework.DependencyInjection
                 var disposable = service as IDisposable;
                 if (disposable != null)
                 {
-                    _disposables.Add(disposable);
+                    _disposables.Enqueue(disposable);
                 }
             }
             return service;
