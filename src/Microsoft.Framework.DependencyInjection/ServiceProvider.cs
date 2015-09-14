@@ -144,11 +144,13 @@ namespace Microsoft.Framework.DependencyInjection
             }
         }
 
-        internal void Reset()
+        public void Reset()
         {
             if (_offlineDisposables == null)
             {
-                throw new InvalidOperationException("ServiceProvider reused before being disposed");
+                throw new InvalidOperationException(
+                    Resources.FormatPooledTypeReusedBeforeDisposal(
+                        nameof(ServiceProvider)));
             }
             _disposables = _offlineDisposables;
             _offlineDisposables = null;
