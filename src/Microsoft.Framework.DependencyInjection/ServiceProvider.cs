@@ -19,7 +19,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private readonly object _sync = new object();
 
-        private Func<Type, Func<ServiceProvider, object>> _createServiceAccessor;
+        private readonly Func<Type, Func<ServiceProvider, object>> _createServiceAccessor;
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
 
