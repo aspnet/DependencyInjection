@@ -9,12 +9,8 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     {
         private readonly ServiceProvider _scopedProvider;
         private readonly ServiceScopeFactory _parentFactory;
-
-        public ServiceScope(ServiceProvider scopedProvider)
-        {
-            _scopedProvider = scopedProvider;
-        }
-        internal ServiceScope(ServiceProvider scopedProvider, ServiceScopeFactory parentFactory)
+        
+        public ServiceScope(ServiceProvider scopedProvider, ServiceScopeFactory parentFactory)
         {
             _scopedProvider = scopedProvider;
             _parentFactory = parentFactory;

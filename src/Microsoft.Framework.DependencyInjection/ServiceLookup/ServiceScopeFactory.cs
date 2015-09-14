@@ -8,7 +8,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal class ServiceScopeFactory : IServiceScopeFactory
     {
-        private static int _maxPooled = 32 * Environment.ProcessorCount;
+        private static int _capacity = 32 * Environment.ProcessorCount;
         private static readonly ConcurrentQueue<ServiceScope> _scopePool = new ConcurrentQueue<ServiceScope>();
 
         private readonly ServiceProvider _provider;
@@ -32,7 +32,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         internal void PoolScope(ServiceScope scope)
         {
             // Benign race condition
-            if (_scopePool.Count < _maxPooled)
+            if (_scopePool.Count < _capacity)
             {
                 _scopePool.Enqueue(scope);
             }
