@@ -150,7 +150,6 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 disposable.Dispose();
             }
-            _createServiceAccessor = null;
             _resolvedServices.Clear();
         }
 
