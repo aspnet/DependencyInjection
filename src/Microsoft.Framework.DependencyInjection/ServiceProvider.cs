@@ -157,10 +157,10 @@ namespace Microsoft.Framework.DependencyInjection
         public void Dispose()
         {
             var disposables = Interlocked.Exchange(ref _disposables, null);
-            if(disposables != null)
+            if (disposables != null)
             {
                 IDisposable disposable;
-                while (_disposables.TryTake(out disposable))
+                while (disposables.TryTake(out disposable))
                 {
                     disposable.Dispose();
                 }
