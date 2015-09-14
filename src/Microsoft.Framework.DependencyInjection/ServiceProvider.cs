@@ -24,7 +24,7 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly ServiceTable _table;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
-        private ConcurrentQueue<IDisposable> _disposables = new ConcurrentQueue<IDisposable>();
+        private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
@@ -146,7 +146,7 @@ namespace Microsoft.Framework.DependencyInjection
         public void Dispose()
         {
             IDisposable disposable;
-            while (_disposables.TryDequeue(out disposable))
+            while (_disposables.TryTake(out disposable))
             {
                 disposable.Dispose();
             }
@@ -160,7 +160,7 @@ namespace Microsoft.Framework.DependencyInjection
                 var disposable = service as IDisposable;
                 if (disposable != null)
                 {
-                    _disposables.Enqueue(disposable);
+                    _disposables.Add(disposable);
                 }
             }
             return service;
