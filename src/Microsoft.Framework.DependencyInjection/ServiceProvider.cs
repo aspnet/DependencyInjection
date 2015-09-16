@@ -153,10 +153,12 @@ namespace Microsoft.Framework.DependencyInjection
                     _transientDisposables.Clear();
                 }
 
-                // Nuke the other service types
-                foreach (var item in _resolvedServices.Values)
+                // PERF: We've enumerating the dictionary so that we don't allocate to enumerate.
+                // .Values allocates a KeyCollection on the heap, enumerating the dictionary allocates
+                // a struct enumerator
+                foreach (var entry in _resolvedServices)
                 {
-                    (item as IDisposable)?.Dispose();
+                    (entry.Value as IDisposable)?.Dispose();
                 }
 
                 _resolvedServices.Clear();
