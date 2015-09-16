@@ -21,7 +21,7 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly ServiceTable _table;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
-        private readonly List<IDisposable> _disposables = new List<IDisposable>();
+        private List<IDisposable> _transientDisposables;
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
 
@@ -41,6 +41,9 @@ namespace Microsoft.Framework.DependencyInjection
             _root = parent._root;
             _table = parent._table;
         }
+
+        // Reusing _resolvedServices as an implementation detail of the lock
+        private object SyncObject => _resolvedServices;
 
         /// <summary>
         /// Gets the service object of the specified type.
@@ -138,14 +141,24 @@ namespace Microsoft.Framework.DependencyInjection
 
         public void Dispose()
         {
-            lock (_disposables)
+            lock (SyncObject)
             {
-                foreach (var disposable in _disposables)
+                if (_transientDisposables != null)
                 {
-                    disposable.Dispose();
+                    foreach (var disposable in _transientDisposables)
+                    {
+                        disposable.Dispose();
+                    }
+
+                    _transientDisposables.Clear();
                 }
 
-                _disposables.Clear();
+                // Nuke the other service types
+                foreach (var item in _resolvedServices.Values)
+                {
+                    (item as IDisposable)?.Dispose();
+                }
+
                 _resolvedServices.Clear();
             }
         }
@@ -163,9 +176,14 @@ namespace Microsoft.Framework.DependencyInjection
                 var disposable = service as IDisposable;
                 if (disposable != null)
                 {
-                    lock (_disposables)
+                    lock (SyncObject)
                     {
-                        _disposables.Add(disposable);
+                        if (_transientDisposables == null)
+                        {
+                            _transientDisposables = new List<IDisposable>();
+                        }
+
+                        _transientDisposables.Add(disposable);
                     }
                 }
             }
@@ -262,7 +280,7 @@ namespace Microsoft.Framework.DependencyInjection
                 {
                     if (!provider._resolvedServices.TryGetValue(_key, out resolved))
                     {
-                        resolved = provider.CaptureDisposable(_serviceCallSite.Invoke(provider));
+                        resolved = _serviceCallSite.Invoke(provider);
                         provider._resolvedServices.Add(_key, resolved);
                     }
                 }
@@ -287,12 +305,8 @@ namespace Microsoft.Framework.DependencyInjection
                     keyExpression,
                     resolvedExpression);
 
-                var captureDisposableExpression = Expression.Assign(
-                    resolvedExpression,
-                    Expression.Call(
-                        providerExpression,
-                        CaptureDisposableMethodInfo,
-                        _serviceCallSite.Build(providerExpression)));
+                var assignExpression = Expression.Assign(
+                    resolvedExpression, _serviceCallSite.Build(providerExpression));
 
                 var addValueExpression = Expression.Call(
                     resolvedServicesExpression,
@@ -305,7 +319,7 @@ namespace Microsoft.Framework.DependencyInjection
                     new[] { resolvedExpression },
                     Expression.IfThen(
                         Expression.Not(tryGetValueExpression),
-                        Expression.Block(captureDisposableExpression, addValueExpression)),
+                        Expression.Block(assignExpression, addValueExpression)),
                     resolvedExpression);
 
                 return Lock(providerExpression, blockExpression);
