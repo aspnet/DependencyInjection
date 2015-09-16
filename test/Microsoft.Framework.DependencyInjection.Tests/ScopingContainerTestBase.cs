@@ -76,16 +76,24 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var container = CreateContainer();
             FakeService disposableService;
+-           FakeService transient1;
+            FakeService transient2;
 
             var scopeFactory = container.GetService<IServiceScopeFactory>();
             using (var scope = scopeFactory.CreateScope())
             {
                 disposableService = (FakeService)scope.ServiceProvider.GetService<IFakeScopedService>();
+                transient1 = (FakeService)scope.ServiceProvider.GetService<IFakeService>();
+                transient2 = (FakeService)scope.ServiceProvider.GetService<IFakeService>();
 
                 Assert.False(disposableService.Disposed);
+                Assert.False(transient1.Disposed);
+                Assert.False(transient2.Disposed);
             }
 
             Assert.True(disposableService.Disposed);
+            Assert.True(transient1.Disposed);
+            Assert.True(transient2.Disposed);
         }
 
         [Fact]

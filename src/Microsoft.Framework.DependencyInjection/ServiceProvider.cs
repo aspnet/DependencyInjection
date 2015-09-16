@@ -17,14 +17,11 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     internal class ServiceProvider : IServiceProvider, IDisposable
     {
-        private readonly object _sync = new object();
-
-        private readonly Func<Type, Func<ServiceProvider, object>> _createServiceAccessor;
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
-        private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
+        private readonly List<IDisposable> _disposables = new List<IDisposable>();
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
@@ -34,9 +31,6 @@ namespace Microsoft.Framework.DependencyInjection
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
             _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
             _table.Add(typeof(IEnumerable<>), new OpenIEnumerableService(_table));
-
-            // Caching to avoid allocating a Func<,> object per call to GetService
-            _createServiceAccessor = CreateServiceAccessor;
         }
 
         // This constructor is called exclusively to create a child scope from the parent
@@ -44,9 +38,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             _root = parent._root;
             _table = parent._table;
-
-            // Caching to avoid allocating a Func<,> object per call to GetService
-            _createServiceAccessor = CreateServiceAccessor;
         }
 
         /// <summary>
@@ -56,16 +47,16 @@ namespace Microsoft.Framework.DependencyInjection
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
+            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, (type, sp) => CreateServiceAccessor(type, sp), this);
             return realizedService.Invoke(this);
         }
 
-        private Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType)
+        private static Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType, ServiceProvider sp)
         {
-            var callSite = GetServiceCallSite(serviceType, new HashSet<Type>());
+            var callSite = sp.GetServiceCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
-                return RealizeService(_table, serviceType, callSite);
+                return RealizeService(sp._table, serviceType, callSite);
             }
 
             return _ => null;
@@ -145,25 +136,35 @@ namespace Microsoft.Framework.DependencyInjection
 
         public void Dispose()
         {
-            var disposables = Interlocked.Exchange(ref _disposables, null);
-
-            if (disposables != null)
+            lock (_disposables)
             {
-                foreach (var disposable in disposables)
+                foreach (var disposable in _disposables)
                 {
                     disposable.Dispose();
                 }
+
+                _disposables.Clear();
+                _resolvedServices.Clear();
             }
         }
 
         private object CaptureDisposable(object service)
         {
+            // Skip capturing disposables for the root
+            if (_root == this)
+            {
+                return service;
+            }
+
             if (!object.ReferenceEquals(this, service))
             {
                 var disposable = service as IDisposable;
                 if (disposable != null)
                 {
-                    _disposables.Add(disposable);
+                    lock (_disposables)
+                    {
+                        _disposables.Add(disposable);
+                    }
                 }
             }
             return service;
@@ -255,7 +256,7 @@ namespace Microsoft.Framework.DependencyInjection
             public virtual object Invoke(ServiceProvider provider)
             {
                 object resolved;
-                lock (provider._sync)
+                lock (provider._resolvedServices)
                 {
                     if (!provider._resolvedServices.TryGetValue(_key, out resolved))
                     {
@@ -312,7 +313,7 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 // The C# compiler would copy the lock object to guard against mutation.
                 // We don't, since we know the lock object is readonly.
-                var syncField = Expression.Field(providerExpression, "_sync");
+                var syncField = Expression.Field(providerExpression, "_resolvedServices");
                 var lockWasTaken = Expression.Variable(typeof(bool), "lockWasTaken");
 
                 var monitorEnter = Expression.Call(MonitorEnterMethodInfo, syncField, lockWasTaken);
