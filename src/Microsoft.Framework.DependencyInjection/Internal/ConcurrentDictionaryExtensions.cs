@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace System.Collections.Concurrent
 {
@@ -8,20 +9,9 @@ namespace System.Collections.Concurrent
         // This lets us pass a state parameter allocation free GetOrAdd
         internal static TValue GetOrAdd<TKey, TValue, TArg>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TArg, TValue> valueFactory, TArg arg)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException(nameof(dictionary));
-            }
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (valueFactory == null)
-            {
-                throw new ArgumentNullException(nameof(valueFactory));
-            }
+            Debug.Assert(dictionary != null);
+            Debug.Assert(key != null);
+            Debug.Assert(valueFactory != null);
 
             while (true)
             {

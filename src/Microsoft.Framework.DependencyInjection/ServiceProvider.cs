@@ -23,6 +23,8 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
 
+        private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
+
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
             _root = this;
@@ -47,16 +49,16 @@ namespace Microsoft.Framework.DependencyInjection
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, (type, sp) => CreateServiceAccessor(type, sp), this);
+            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
             return realizedService.Invoke(this);
         }
 
-        private static Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType, ServiceProvider sp)
+        private static Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType, ServiceProvider serviceProvider)
         {
-            var callSite = sp.GetServiceCallSite(serviceType, new HashSet<Type>());
+            var callSite = serviceProvider.GetServiceCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
-                return RealizeService(sp._table, serviceType, callSite);
+                return RealizeService(serviceProvider._table, serviceType, callSite);
             }
 
             return _ => null;
