@@ -144,7 +144,7 @@ namespace Microsoft.Framework.DependencyInjection
             }
         }
 
-        public void Reset()
+        internal void Reset()
         {
             if (_offlineDisposables == null)
             {
