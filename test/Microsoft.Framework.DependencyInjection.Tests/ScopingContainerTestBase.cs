@@ -76,7 +76,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var container = CreateContainer();
             FakeService disposableService;
--           FakeService transient1;
+            FakeService transient1;
             FakeService transient2;
 
             var scopeFactory = container.GetService<IServiceScopeFactory>();
