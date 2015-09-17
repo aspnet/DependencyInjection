@@ -8,14 +8,16 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal class ServiceScopeFactory : IServiceScopeFactory
     {
-        private int _capacity = 32 * Environment.ProcessorCount;
-        private int _halfCapacity = 32 * Environment.ProcessorCount;
+        private readonly int _capacity;
+        private readonly int _halfCapacity;
         private readonly ConcurrentQueue<ServiceScope> _scopePool = new ConcurrentQueue<ServiceScope>();
 
         private readonly ServiceProvider _provider;
 
         public ServiceScopeFactory(ServiceProvider provider)
         {
+            _capacity = 32 * Environment.ProcessorCount;
+            _halfCapacity = _capacity / 2;
             _provider = provider;
         }
 
