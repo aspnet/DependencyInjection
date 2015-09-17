@@ -8,8 +8,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal class ServiceScopeFactory : IServiceScopeFactory
     {
-        private static int _capacity = 32 * Environment.ProcessorCount;
-        private static readonly ConcurrentQueue<ServiceScope> _scopePool = new ConcurrentQueue<ServiceScope>();
+        private int _capacity = 32 * Environment.ProcessorCount;
+        private int _halfCapacity = 32 * Environment.ProcessorCount;
+        private readonly ConcurrentQueue<ServiceScope> _scopePool = new ConcurrentQueue<ServiceScope>();
 
         private readonly ServiceProvider _provider;
 
@@ -21,7 +22,8 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         public IServiceScope CreateScope()
         {
             ServiceScope scope;
-            if (_scopePool.TryDequeue(out scope))
+            // maintain unused buffer of _halfCapacity as partial defense against badly behaving user code
+            if (_scopePool.Count > _halfCapacity && _scopePool.TryDequeue(out scope))
             {
                 scope.Reset();
                 return scope;

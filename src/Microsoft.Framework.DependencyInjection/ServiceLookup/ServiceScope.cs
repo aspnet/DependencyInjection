@@ -28,6 +28,11 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public void Dispose()
         {
+            if (_scopedProvider.Disposed)
+            {
+                return;
+            }
+
             _scopedProvider.Dispose();
 
             if (_parentFactory != null)
