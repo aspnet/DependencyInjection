@@ -8,10 +8,12 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     internal class ServiceScope : IServiceScope
     {
         private readonly ServiceProvider _scopedProvider;
-
-        public ServiceScope(ServiceProvider scopedProvider)
+        private readonly ServiceScopeFactory _parentFactory;
+        
+        public ServiceScope(ServiceProvider scopedProvider, ServiceScopeFactory parentFactory)
         {
             _scopedProvider = scopedProvider;
+            _parentFactory = parentFactory;
         }
 
         public IServiceProvider ServiceProvider
@@ -19,9 +21,24 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             get { return _scopedProvider; }
         }
 
+        internal void Reset()
+        {
+            _scopedProvider.Reset();
+        }
+
         public void Dispose()
         {
+            if (_scopedProvider.Disposed)
+            {
+                return;
+            }
+
             _scopedProvider.Dispose();
+
+            if (_parentFactory != null)
+            {
+                _parentFactory.PoolScope(this);
+            }
         }
     }
 }

@@ -106,6 +106,14 @@ namespace Microsoft.Framework.DependencyInjection
             return string.Format(CultureInfo.CurrentCulture, GetString("TypeCannotBeActivated"), p0, p1);
         }
 
+        /// <summary>
+        /// Pooled type '{0}' reused before correct disposal.
+        /// </summary>
+        internal static string FormatPooledTypeReusedBeforeDisposal(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PooledTypeReusedBeforeDisposal"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

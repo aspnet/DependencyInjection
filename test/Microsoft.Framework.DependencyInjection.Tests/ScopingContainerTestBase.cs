@@ -122,6 +122,34 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         }
 
         [Fact]
+        public void PooledDisposedScopesResolveDifferentInstances()
+        {
+            var container = CreateContainer();
+            FakeService disposableService1;
+            FakeService disposableService2;
+
+            var scopeFactory = container.GetService<IServiceScopeFactory>();
+            using (var scope = scopeFactory.CreateScope())
+            {
+                disposableService1 = (FakeService)scope.ServiceProvider.GetService<IFakeScopedService>();
+
+                Assert.False(disposableService1.Disposed);
+            }
+
+            Assert.True(disposableService1.Disposed);
+
+            using (var scope = scopeFactory.CreateScope())
+            {
+                disposableService2 = (FakeService)scope.ServiceProvider.GetService<IFakeScopedService>();
+
+                Assert.False(disposableService2.Disposed);
+            }
+
+            Assert.True(disposableService2.Disposed);
+            Assert.NotEqual(disposableService1, disposableService2);
+        }
+
+        [Fact]
         public void SingletonServicesComeFromRootContainer()
         {
             var container = CreateContainer();

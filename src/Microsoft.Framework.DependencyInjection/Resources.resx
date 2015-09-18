@@ -137,4 +137,7 @@
   <data name="TypeCannotBeActivated" xml:space="preserve">
     <value>Cannot instantiate implementation type '{0}' for service type '{1}'.</value>
   </data>
+  <data name="PooledTypeReusedBeforeDisposal" xml:space="preserve">
+    <value>Pooled type '{0}' reused before correct disposal.</value>
+  </data>
 </root>

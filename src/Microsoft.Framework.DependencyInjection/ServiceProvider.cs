@@ -41,7 +41,6 @@ namespace Microsoft.Framework.DependencyInjection
             _root = parent._root;
             _table = parent._table;
         }
-
         // Reusing _resolvedServices as an implementation detail of the lock
         private object SyncObject => _resolvedServices;
 
@@ -139,10 +138,27 @@ namespace Microsoft.Framework.DependencyInjection
             }
         }
 
+        internal bool Disposed { get; private set; }
+
+        internal void Reset()
+        {
+            lock (SyncObject)
+            {
+                if (!Disposed)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatPooledTypeReusedBeforeDisposal(
+                            nameof(ServiceProvider)));
+                }
+                Disposed = false;
+            }
+        }
+
         public void Dispose()
         {
             lock (SyncObject)
             {
+                Disposed = true;
                 if (_transientDisposables != null)
                 {
                     foreach (var disposable in _transientDisposables)
@@ -151,6 +167,7 @@ namespace Microsoft.Framework.DependencyInjection
                     }
 
                     _transientDisposables.Clear();
+                    _transientDisposables = null;
                 }
 
                 // PERF: We've enumerating the dictionary so that we don't allocate to enumerate.
@@ -179,6 +196,10 @@ namespace Microsoft.Framework.DependencyInjection
                 {
                     lock (SyncObject)
                     {
+                        if (Disposed)
+                        {
+                            throw new ObjectDisposedException(nameof(ServiceProvider));
+                        }
                         if (_transientDisposables == null)
                         {
                             _transientDisposables = new List<IDisposable>();
@@ -279,6 +300,10 @@ namespace Microsoft.Framework.DependencyInjection
                 object resolved;
                 lock (provider._resolvedServices)
                 {
+                    if (provider.Disposed)
+                    {
+                        throw new ObjectDisposedException(nameof(ServiceProvider));
+                    }
                     if (!provider._resolvedServices.TryGetValue(_key, out resolved))
                     {
                         resolved = _serviceCallSite.Invoke(provider);
