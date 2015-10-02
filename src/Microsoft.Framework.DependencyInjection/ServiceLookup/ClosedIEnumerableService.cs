@@ -50,7 +50,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             public object Invoke(ServiceProvider provider)
             {
                 var array = Array.CreateInstance(_itemType, _serviceCallSites.Length);
-                for (var index = 0; index != _serviceCallSites.Length; ++index)
+                for (var index = 0; index < _serviceCallSites.Length; index++)
                 {
                     array.SetValue(_serviceCallSites[index].Invoke(provider), index);
                 }
