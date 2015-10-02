@@ -29,9 +29,11 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             var list = new List<IServiceCallSite>();
-            for (var service = _serviceEntry.First; service != null; service = service.Next)
+            var service = _serviceEntry.First;
+            while (service != null)
             {
                 list.Add(provider.GetResolveCallSite(service, callSiteChain));
+                service = service.Next;
             }
             return new CallSite(_itemType, list.ToArray());
         }

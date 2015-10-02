@@ -274,7 +274,7 @@ namespace Microsoft.Framework.DependencyInjection
                     var givenType = givenParameters[givenIndex] == null ? null : givenParameters[givenIndex].GetType().GetTypeInfo();
                     var givenMatched = false;
 
-                    for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
+                    for (var applyIndex = applyIndexStart; applyIndex != _parameters.Length; ++applyIndex)
                     {
                         if (_parameterValuesSet[applyIndex] == false &&
                             _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
@@ -290,6 +290,7 @@ namespace Microsoft.Framework.DependencyInjection
                                     applyExactLength = applyIndex;
                                 }
                             }
+                            break;
                         }
                     }
 
