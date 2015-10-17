@@ -3,23 +3,13 @@
 
 using System;
 
-namespace Microsoft.Extensions.DependencyInjection.Tests.Fakes
+namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
 {
     public class FakeService : IFakeEveryService, IDisposable
     {
-        public FakeService()
-        {
-            Message = "FakeServiceSimpleMethod";
-        }
+        public string Value => "Hello world";
 
         public bool Disposed { get; private set; }
-
-        public string Message { get; set; }
-
-        public string SimpleMethod()
-        {
-            return Message;
-        }
 
         public void Dispose()
         {

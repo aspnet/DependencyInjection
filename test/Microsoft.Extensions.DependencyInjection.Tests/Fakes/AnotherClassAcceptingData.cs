@@ -1,24 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
+
 namespace Microsoft.Extensions.DependencyInjection.Tests.Fakes
 {
     public class AnotherClassAcceptingData
     {
-        private readonly IFakeService _fakeService;
-        private readonly string _one;
-        private readonly string _two;
-
         public AnotherClassAcceptingData(IFakeService fakeService, string one, string two)
         {
-            _fakeService = fakeService;
-            _one = one;
-            _two = two;
+            FakeService = fakeService;
+            One = one;
+            Two = two;
         }
 
-        public string LessSimpleMethod()
-        {
-            return string.Format("[{0}] {1} {2}", _fakeService.SimpleMethod(), _one, _two);
-        }
+        public IFakeService FakeService { get; }
+
+        public string One { get; }
+
+        public string Two { get; }
     }
 }

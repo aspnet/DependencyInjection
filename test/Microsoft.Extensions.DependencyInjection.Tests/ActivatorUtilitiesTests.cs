@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
 
@@ -48,25 +49,25 @@ namespace Microsoft.Extensions.DependencyInjection.Abstractions.Tests
 
             var anotherClass = CreateInstance<AnotherClass>(createFunc, serviceProvider);
 
-            var result = anotherClass.LessSimpleMethod();
-
-            Assert.Equal("[FakeServiceSimpleMethod]", result);
+            Assert.NotNull(anotherClass.FakeService);
         }
 
         [Theory]
         [MemberData(nameof(CreateInstanceFuncs))]
         public void TypeActivatorAcceptsAnyNumberOfAdditionalConstructorParametersToProvide(CreateInstanceFunc createFunc)
         {
+            // Arrange
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
                 .BuildServiceProvider();
 
-
+            // Act
             var anotherClass = CreateInstance<AnotherClassAcceptingData>(createFunc, serviceProvider, "1", "2");
 
-            var result = anotherClass.LessSimpleMethod();
-
-            Assert.Equal("[FakeServiceSimpleMethod] 1 2", result);
+            // Assert
+            Assert.NotNull(anotherClass.FakeService);
+            Assert.Equal("1", anotherClass.One);
+            Assert.Equal("2", anotherClass.Two);
         }
 
         [Theory]
