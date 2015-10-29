@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class AutofacContainerTests : DependencyInjectionSpecificationTests
     {
-        protected override IServiceProvider CreateContainer(IServiceCollection collection)
+        protected override IServiceProvider CreateServiceProvider(IServiceCollection collection)
         {
             var builder = new ContainerBuilder();
             builder.Populate(collection);

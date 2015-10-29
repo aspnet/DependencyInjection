@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public abstract class DependencyInjectionSpecificationTests
+    public abstract partial class DependencyInjectionSpecificationTests
     {
-        protected abstract IServiceProvider CreateContainer(IServiceCollection serviceCollection);
+        protected abstract IServiceProvider CreateServiceProvider(IServiceCollection serviceCollection);
 
         [Fact]
         public void ServicesRegisteredWithImplementationTypeCanBeResolved()
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service = container.GetService<IFakeService>();
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service1 = container.GetService<IFakeService>();
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddSingleton(typeof(IFakeService), typeof(FakeService));
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service1 = container.GetService<IFakeService>();
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new ServiceCollection();
             var instance = new FakeService();
             collection.AddInstance(typeof(IFakeServiceInstance), instance);
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service = container.GetService<IFakeServiceInstance>();
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service1 = container.GetService<IFakeService>();
@@ -104,7 +104,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var services = container.GetService<IEnumerable<IFakeService>>();
@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
             collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var services = container.GetService<IEnumerable<IFakeMultipleService>>();
@@ -142,7 +142,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             collection.AddInstance<IFakeService>(fakeService);
             collection.AddTransient<IFakeMultipleService, FakeOneMultipleService>();
             collection.AddTransient<IFakeMultipleService, FakeTwoMultipleService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var services = container.GetService<IFakeOuterService>();
@@ -169,7 +169,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                     Value = 42
                 };
             });
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service = container.GetService<IFactoryService>();
@@ -205,7 +205,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 };
             });
             collection.AddTransient<ServiceAcceptingFactoryService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service1 = container.GetService<ServiceAcceptingFactoryService>();
@@ -232,7 +232,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new ServiceCollection();
             collection.AddTransient<IFakeMultipleService, FakeOneMultipleService>();
             collection.AddTransient<IFakeMultipleService, FakeTwoMultipleService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service = container.GetService<IFakeMultipleService>();
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddSingleton<IFakeSingletonService, FakeService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service1 = container.GetService<IFakeSingletonService>();
@@ -263,7 +263,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var scopeFactory = container.GetService<IServiceScopeFactory>();
@@ -278,7 +278,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var scopeFactory = container.GetRequiredService<IServiceScopeFactory>();
@@ -300,7 +300,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var outerScopeFactory = container.GetService<IServiceScopeFactory>();
@@ -329,7 +329,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             collection.AddScoped<IFakeScopedService, FakeService>();
             collection.AddTransient<IFakeService, FakeService>();
 
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
             FakeService disposableService;
             FakeService transient1;
             FakeService transient2;
@@ -370,7 +370,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var serviceProvider = container.GetService<IServiceProvider>();
@@ -386,7 +386,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient<ClassWithNestedReferencesToProvider>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var nester = container.GetService<ClassWithNestedReferencesToProvider>();
@@ -402,7 +402,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddSingleton<IFakeSingletonService, FakeService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
             FakeService disposableService1;
             FakeService disposableService2;
 
@@ -434,7 +434,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var outerScopeFactory = container.GetService<IServiceScopeFactory>();
@@ -459,7 +459,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
             collection.AddSingleton<IFakeSingletonService, FakeService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var genericService = container.GetService<IFakeOpenGenericService<IFakeSingletonService>>();
@@ -477,7 +477,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             collection.AddTransient(typeof(IFakeOpenGenericService<string>), typeof(FakeService));
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
             collection.AddInstance("Hello world");
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service = container.GetService<IFakeOpenGenericService<string>>();
@@ -491,7 +491,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var service = container.GetService<INonexistentService>();
@@ -506,7 +506,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient<IDependOnNonexistentService, DependOnNonexistentService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act and Assert
             Assert.ThrowsAny<Exception>(() => container.GetService<IDependOnNonexistentService>());
@@ -517,7 +517,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act
             var services = container.GetService<IEnumerable<INonexistentService>>();
@@ -532,15 +532,11 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             collection.AddTransient<IDependOnNonexistentService, DependOnNonexistentService>();
-            var container = CreateContainer(collection);
+            var container = CreateServiceProvider(collection);
 
             // Act and Assert
             Assert.ThrowsAny<Exception>(() =>
                 container.GetService<IEnumerable<IDependOnNonexistentService>>().ToArray());
-        }
-
-        private class ServiceCollection : List<ServiceDescriptor>, IServiceCollection
-        {
         }
     }
 }

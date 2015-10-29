@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class ServiceProviderContainerTests : DependencyInjectionSpecificationTests
     {
-        protected override IServiceProvider CreateContainer(IServiceCollection collection) =>
+        protected override IServiceProvider CreateServiceProvider(IServiceCollection collection) =>
             collection.BuildServiceProvider();
 
         [Fact]

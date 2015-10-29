@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 
-namespace Microsoft.Extensions.DependencyInjection.Tests.Fakes
+namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
 {
     public class AnotherClass
     {

@@ -13,6 +13,11 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
 
         public void Dispose()
         {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(nameof(FakeService));
+            }
+
             Disposed = true;
         }
     }
