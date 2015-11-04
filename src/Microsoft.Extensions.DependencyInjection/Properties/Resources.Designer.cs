@@ -106,6 +106,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return string.Format(CultureInfo.CurrentCulture, GetString("TypeCannotBeActivated"), p0, p1);
         }
 
+        /// <summary>
+        /// Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and services are registered for all parameters of a public constructor.
+        /// </summary>
+        internal static string NoConstructorMatch
+        {
+            get { return GetString("NoConstructorMatch"); }
+        }
+
+        /// <summary>
+        /// Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and services are registered for all parameters of a public constructor.
+        /// </summary>
+        internal static string FormatNoConstructorMatch(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NoConstructorMatch"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
