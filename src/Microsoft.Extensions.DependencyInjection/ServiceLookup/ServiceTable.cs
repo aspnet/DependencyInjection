@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceTable
+    public class ServiceTable
     {
         private readonly object _sync = new object();
 

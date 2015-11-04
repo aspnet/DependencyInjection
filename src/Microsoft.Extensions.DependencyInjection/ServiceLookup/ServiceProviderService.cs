@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceProviderService : IService, IServiceCallSite
+    public class ServiceProviderService : IService, IServiceCallSite
     {
         public IService Next { get; set; }
 

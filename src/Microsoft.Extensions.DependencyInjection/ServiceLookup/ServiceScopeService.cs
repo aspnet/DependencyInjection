@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceScopeService : IService, IServiceCallSite
+    public class ServiceScopeService : IService, IServiceCallSite
     {
         public IService Next { get; set; }
 

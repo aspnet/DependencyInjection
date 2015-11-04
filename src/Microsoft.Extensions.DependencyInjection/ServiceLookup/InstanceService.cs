@@ -7,10 +7,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    /// <summary>
-    /// Summary description for InstanceService
-    /// </summary>
-    internal class InstanceService : IService, IServiceCallSite
+    public class InstanceService : IService, IServiceCallSite
     {
         private readonly ServiceDescriptor _descriptor;
 

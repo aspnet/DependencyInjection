@@ -5,10 +5,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    /// <summary>
-    /// Summary description for IServiceCallSite
-    /// </summary>
-    internal interface IServiceCallSite
+    public interface IServiceCallSite
     {
         object Invoke(ServiceProvider provider);
 

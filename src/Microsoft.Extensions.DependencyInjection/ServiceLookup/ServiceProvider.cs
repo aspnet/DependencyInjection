@@ -8,14 +8,13 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    internal class ServiceProvider : IServiceProvider, IDisposable
+    public class ServiceProvider : IServiceProvider, IDisposable
     {
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
@@ -37,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         // This constructor is called exclusively to create a child scope from the parent
-        internal ServiceProvider(ServiceProvider parent)
+        public ServiceProvider(ServiceProvider parent)
         {
             _root = parent._root;
             _table = parent._table;
@@ -68,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return _ => null;
         }
 
-        internal static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
+        public static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
         {
             var callCount = 0;
             return provider =>
@@ -91,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
             };
         }
 
-        internal IServiceCallSite GetServiceCallSite(Type serviceType, ISet<Type> callSiteChain)
+        public IServiceCallSite GetServiceCallSite(Type serviceType, ISet<Type> callSiteChain)
         {
             try
             {
@@ -123,7 +122,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         }
 
-        internal IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
+        public IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
         {
             IServiceCallSite serviceCallSite = service.CreateCallSite(this, callSiteChain);
             if (service.Lifetime == ServiceLifetime.Transient)

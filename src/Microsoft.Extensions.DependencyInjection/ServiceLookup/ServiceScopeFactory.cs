@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceScopeFactory : IServiceScopeFactory
+    public class ServiceScopeFactory : IServiceScopeFactory
     {
         private readonly ServiceProvider _provider;
 

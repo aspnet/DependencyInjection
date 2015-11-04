@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class GenericService : IGenericService
+    public class GenericService : IGenericService
     {
         private readonly ServiceDescriptor _descriptor;
 
