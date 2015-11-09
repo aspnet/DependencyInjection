@@ -103,7 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient(
@@ -296,7 +296,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Scoped"/>
         public static IServiceCollection AddScoped(
@@ -488,7 +488,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton(
