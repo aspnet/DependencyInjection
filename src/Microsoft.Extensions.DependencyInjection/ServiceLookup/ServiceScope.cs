@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceScope : IServiceScope
+    public class ServiceScope : IServiceScope
     {
         private readonly ServiceProvider _scopedProvider;
 

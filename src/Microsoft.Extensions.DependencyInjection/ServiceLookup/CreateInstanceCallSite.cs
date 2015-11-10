@@ -7,7 +7,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CreateInstanceCallSite : IServiceCallSite
+    public class CreateInstanceCallSite : IServiceCallSite
     {
         private readonly ServiceDescriptor _descriptor;
 

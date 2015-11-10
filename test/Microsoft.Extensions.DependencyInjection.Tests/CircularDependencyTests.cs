@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependency>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependency)),
+                $"A circular dependency was detected for the service of type '{typeof(SelfCircularDependency)}'.",
                 exception.Message);
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<string>>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependencyGeneric<string>)),
+                $"A circular dependency was detected for the service of type '{typeof(SelfCircularDependencyGeneric<string>)}'.",
                 exception.Message);
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<int>>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependencyGeneric<string>)),
+                $"A circular dependency was detected for the service of type '{typeof(SelfCircularDependencyGeneric<string>)}'.",
                 exception.Message);
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependencyWithInterface>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(ISelfCircularDependencyWithInterface)),
+                $"A circular dependency was detected for the service of type '{typeof(ISelfCircularDependencyWithInterface)}'.",
                 exception.Message);
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<DirectCircularDependencyA>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(DirectCircularDependencyA)),
+                $"A circular dependency was detected for the service of type '{typeof(DirectCircularDependencyA)}'.",
                 exception.Message);
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<IndirectCircularDependencyA>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(IndirectCircularDependencyA)),
+                $"A circular dependency was detected for the service of type '{typeof(IndirectCircularDependencyA)}'.",
                 exception.Message);
         }
 

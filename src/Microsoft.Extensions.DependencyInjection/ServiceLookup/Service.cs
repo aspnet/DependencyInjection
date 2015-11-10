@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class Service : IService
+    public class Service : IService
     {
         private readonly ServiceDescriptor _descriptor;
 

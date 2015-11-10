@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ClosedIEnumerableService : IService
+    public class ClosedIEnumerableService : IService
     {
         private readonly Type _itemType;
         private readonly ServiceEntry _serviceEntry;

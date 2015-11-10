@@ -9,7 +9,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ConstructorCallSite : IServiceCallSite
+    public class ConstructorCallSite : IServiceCallSite
     {
         private readonly ConstructorInfo _constructorInfo;
         private readonly IServiceCallSite[] _parameterCallSites;

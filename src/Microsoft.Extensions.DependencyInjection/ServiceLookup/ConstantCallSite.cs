@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ConstantCallSite : IServiceCallSite
+    public class ConstantCallSite : IServiceCallSite
     {
         private readonly object _defaultValue;
 

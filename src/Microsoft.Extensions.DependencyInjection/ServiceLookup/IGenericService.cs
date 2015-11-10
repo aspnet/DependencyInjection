@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal interface IGenericService
+    public interface IGenericService
     {
         ServiceLifetime Lifetime { get; }
 

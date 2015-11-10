@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class FactoryService : IService, IServiceCallSite
+    public class FactoryService : IService, IServiceCallSite
     {
         private readonly ServiceDescriptor _descriptor;
 

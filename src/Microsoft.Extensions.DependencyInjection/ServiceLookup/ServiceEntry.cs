@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceEntry
+    public class ServiceEntry
     {
-        private object _sync = new object();
+        private readonly object _sync = new object();
 
         public ServiceEntry(IService service)
         {
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Last = service;
         }
 
-        public IService First { get; private set; }
+        public IService First { get; }
         public IService Last { get; private set; }
 
         public void Add(IService service)

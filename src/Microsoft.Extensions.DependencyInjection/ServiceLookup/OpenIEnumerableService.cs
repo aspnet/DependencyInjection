@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class OpenIEnumerableService : IGenericService
+    public class OpenIEnumerableService : IGenericService
     {
         private readonly ServiceTable _table;
 
