@@ -596,7 +596,27 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="implementationInstance">The instance of the service.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Singleton"/>
+        [Obsolete("This method will be removed in future releases. Use " +
+            nameof(ServiceCollectionExtensions.AddSingleton) + " instead.")]
         public static IServiceCollection AddInstance(
+            this IServiceCollection services,
+            Type serviceType,
+            object implementationInstance)
+        {
+            return AddSingleton(services, serviceType, implementationInstance);
+        }
+
+        /// <summary>
+        /// Adds a singleton service of the type specified in <paramref name="serviceType"/> with an
+        /// instance specified in <paramref name="implementationInstance"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationInstance">The instance of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
+        public static IServiceCollection AddSingleton(
             this IServiceCollection services,
             Type serviceType,
             object implementationInstance)
@@ -631,7 +651,27 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="implementationInstance">The instance of the service.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Singleton"/>
+        [Obsolete("This method will be removed in future releases. Use " +
+            nameof(ServiceCollectionExtensions.AddSingleton) + " instead.")]
         public static IServiceCollection AddInstance<TService>(
+            this IServiceCollection services,
+            TService implementationInstance)
+            where TService : class
+        {
+            return AddSingleton(services, implementationInstance);
+        }
+
+        // <summary>
+        /// Adds a singleton service of the type specified in <typeparamref name="TService" /> with an
+        /// instance specified in <paramref name="implementationInstance"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationInstance">The instance of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
+        public static IServiceCollection AddSingleton<TService>(
             this IServiceCollection services,
             TService implementationInstance)
             where TService : class
@@ -646,9 +686,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return services.AddInstance(typeof(TService), implementationInstance);
+            return services.AddSingleton(typeof(TService), implementationInstance);
         }
-
 
         private static IServiceCollection Add(
             IServiceCollection collection,
