@@ -11,19 +11,19 @@ namespace Microsoft.Extensions.DependencyInjection
             = new ResourceManager("Microsoft.Extensions.DependencyInjection.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Unable to activate type '{0}'. The following constructors are ambigious:
+        /// Unable to activate type '{0}'. The following constructors are ambiguous:
         /// </summary>
-        internal static string AmbigiousConstructorException
+        internal static string AmbiguousConstructorException
         {
-            get { return GetString("AmbigiousConstructorException"); }
+            get { return GetString("AmbiguousConstructorException"); }
         }
 
         /// <summary>
-        /// Unable to activate type '{0}'. The following constructors are ambigious:
+        /// Unable to activate type '{0}'. The following constructors are ambiguous:
         /// </summary>
-        internal static string FormatAmbigiousConstructorException(object p0)
+        internal static string FormatAmbiguousConstructorException(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AmbigiousConstructorException"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousConstructorException"), p0);
         }
 
         /// <summary>
@@ -40,22 +40,6 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static string FormatCannotResolveService(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("CannotResolveService"), p0, p1);
-        }
-
-        /// <summary>
-        /// A circular dependency was detected for the service of type '{0}'.
-        /// </summary>
-        internal static string CircularDependencyException
-        {
-            get { return GetString("CircularDependencyException"); }
-        }
-
-        /// <summary>
-        /// A circular dependency was detected for the service of type '{0}'.
-        /// </summary>
-        internal static string FormatCircularDependencyException(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CircularDependencyException"), p0);
         }
 
         /// <summary>

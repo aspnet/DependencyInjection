@@ -18,14 +18,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _descriptor = descriptor;
         }
 
+        public IService Previous { get; set; }
+
         public IService Next { get; set; }
 
-        public ServiceLifetime Lifetime
-        {
-            get { return _descriptor.Lifetime; }
-        }
+        public ServiceLifetime Lifetime => _descriptor.Lifetime;
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
+        public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
             var constructors = _descriptor.ImplementationType.GetTypeInfo()
                 .DeclaredConstructors
@@ -49,7 +48,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                 parameterCallSites = PopulateCallSites(
                     provider,
-                    callSiteChain,
                     parameters,
                     throwIfCallSiteNotFound: true);
 
@@ -67,7 +65,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                 var currentParameterCallSites = PopulateCallSites(
                     provider,
-                    callSiteChain,
                     parameters,
                     throwIfCallSiteNotFound: false);
 
@@ -91,10 +88,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                         if (!bestConstructorParameterTypes.IsSupersetOf(parameters.Select(p => p.ParameterType)))
                         {
-                            // Ambigious match exception
+                            // Ambiguous match exception
                             var message = string.Join(
                                 Environment.NewLine,
-                                Resources.FormatAmbigiousConstructorException(_descriptor.ImplementationType),
+                                Resources.FormatAmbiguousConstructorException(_descriptor.ImplementationType),
                                 bestConstructor,
                                 constructors[i]);
                             throw new InvalidOperationException(message);
@@ -117,21 +114,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        private bool IsSuperset(IEnumerable<Type> left, IEnumerable<Type> right)
-        {
-            return new HashSet<Type>(left).IsSupersetOf(right);
-        }
-
         private IServiceCallSite[] PopulateCallSites(
             ServiceProvider provider,
-            ISet<Type> callSiteChain,
             ParameterInfo[] parameters,
             bool throwIfCallSiteNotFound)
         {
             var parameterCallSites = new IServiceCallSite[parameters.Length];
             for (var index = 0; index < parameters.Length; index++)
             {
-                var callSite = provider.GetServiceCallSite(parameters[index].ParameterType, callSiteChain);
+                var callSite = provider.GetServiceCallSite(parameters[index].ParameterType);
 
                 if (callSite == null && parameters[index].HasDefaultValue)
                 {

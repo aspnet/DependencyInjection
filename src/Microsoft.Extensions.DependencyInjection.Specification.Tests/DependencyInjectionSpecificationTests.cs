@@ -157,6 +157,100 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 service => Assert.IsType<FakeTwoMultipleService>(service));
         }
 
+        public static IEnumerable<object[]> DecoratorData
+        {
+            get
+            {
+                var lifetimeOptions = Enum.GetValues(typeof(ServiceLifetime));
+                
+                foreach (var wrappedLifetime in lifetimeOptions)
+                {
+                    foreach (var wrapperLifetime in lifetimeOptions)
+                    {
+                        yield return new[] { wrappedLifetime, wrapperLifetime, false, false };
+                        yield return new[] { wrappedLifetime, wrapperLifetime, true, false };
+                        yield return new[] { wrappedLifetime, wrapperLifetime, false, true };
+                        yield return new[] { wrappedLifetime, wrapperLifetime, true, true };
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DecoratorData))]
+        public void MultipleServicesCanDecorateEachOther(
+            ServiceLifetime wrappedLifetime, 
+            ServiceLifetime wrapperLifetime, 
+            bool useFactory,
+            bool wrapperFirst)
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            if (useFactory)
+            {
+                collection.Add(new ServiceDescriptor(
+                    serviceType: typeof(IFakeMultipleService),
+                    lifetime: wrapperLifetime,
+                    factory: _provider =>
+                    {
+                        var registered = _provider.GetService<IFakeMultipleService>();
+                        return new FakeDecoratingMultipleService(registered);
+                    }));
+            }
+            else
+            {
+                collection.Add(new ServiceDescriptor(
+                    serviceType: typeof(IFakeMultipleService),
+                    lifetime: wrapperLifetime,
+                    implementationType: typeof(FakeDecoratingMultipleService)));
+            }
+
+            collection.Insert(
+                index: wrapperFirst ? 1 : 0, 
+                item: new ServiceDescriptor(
+                    serviceType: typeof(IFakeMultipleService),
+                    implementationType: typeof(FakeOneMultipleService),
+                    lifetime: wrappedLifetime));
+
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            var multipleResolved = provider.GetService<IEnumerable<IFakeMultipleService>>();
+            var singleResolved = provider.GetService<IFakeMultipleService>();
+
+            // Assert
+            FakeOneMultipleService wrapped;
+            FakeDecoratingMultipleService wrapper;
+
+            if (wrapperFirst)
+            {
+                Assert.IsType<FakeOneMultipleService>(singleResolved);
+                Assert.Collection(multipleResolved,
+                    service => Assert.IsType<FakeDecoratingMultipleService>(service),
+                    service => Assert.IsType<FakeOneMultipleService>(service));
+
+                wrapped = singleResolved as FakeOneMultipleService;
+                wrapper = multipleResolved.First() as FakeDecoratingMultipleService;
+            }
+            else
+            {
+                Assert.IsType<FakeDecoratingMultipleService>(singleResolved);
+                Assert.Collection(multipleResolved,
+                    service => Assert.IsType<FakeOneMultipleService>(service),
+                    service => Assert.IsType<FakeDecoratingMultipleService>(service));
+
+                wrapped = multipleResolved.First() as FakeOneMultipleService;
+                wrapper = singleResolved as FakeDecoratingMultipleService;
+            }
+
+            Assert.NotNull(wrapped);
+
+            Assert.Equal(
+                wrapped == wrapper.Inner, 
+                wrappedLifetime != ServiceLifetime.Transient);
+        }
+
         [Fact]
         public void OuterServiceCanHaveOtherServicesInjected()
         {

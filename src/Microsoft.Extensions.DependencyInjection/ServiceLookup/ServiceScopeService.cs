@@ -11,14 +11,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ServiceScopeService : IService, IServiceCallSite
     {
+        public IService Previous { get; set; }
+
         public IService Next { get; set; }
 
-        public ServiceLifetime Lifetime
-        {
-            get { return ServiceLifetime.Scoped; }
-        }
+        public ServiceLifetime Lifetime => ServiceLifetime.Scoped;
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
+        public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
             return this;
         }

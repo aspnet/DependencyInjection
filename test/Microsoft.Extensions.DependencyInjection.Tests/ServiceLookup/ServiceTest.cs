@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceProvider = new ServiceProvider(new[] { descriptor });
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
+            var ex = Assert.Throws<InvalidOperationException>(() => service.CreateCallSite(serviceProvider));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceProvider = new ServiceProvider(new[] { descriptor });
 
             // Act
-            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite(serviceProvider);
 
             // Assert
             Assert.IsType<CreateInstanceCallSite>(callSite);
@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             );
 
             // Act
-            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite(serviceProvider);
 
             // Assert
             var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             );
 
             // Act
-            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite(serviceProvider);
 
             // Assert
             var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceProvider = new ServiceProvider(new[] { descriptor });
 
             // Act
-            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite(serviceProvider);
 
             // Assert
             Assert.IsType<CreateInstanceCallSite>(callSite);
@@ -194,7 +194,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
 
             // Act
-            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider);
 
             // Assert
             var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var service = new Service(descriptor);
 
             // Act
-            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider);
 
             // Assert
             var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
@@ -255,7 +255,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
+                () => service.CreateCallSite(serviceProvider));
             Assert.Equal($"Unable to resolve service for type '{typeof(IFakeService)}' while attempting to activate '{type}'.",
                 ex.Message);
         }
@@ -276,7 +276,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
+                () => service.CreateCallSite(serviceProvider));
             Assert.Equal($"No constructor for type '{type}' can be instantiated using services from the service container and default values.",
                 ex.Message);
         }
@@ -357,7 +357,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var expectedMessage =
                 string.Join(
                     Environment.NewLine,
-                    $"Unable to activate type '{type}'. The following constructors are ambigious:",
+                    $"Unable to activate type '{type}'. The following constructors are ambiguous:",
                     GetConstructor(type, expectedConstructorParameterTypes[0]),
                     GetConstructor(type, expectedConstructorParameterTypes[1]));
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
@@ -365,7 +365,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>()));
+                () => service.CreateCallSite((ServiceProvider)serviceProvider));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -374,7 +374,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithGenericServices);
-            var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambigious:";
+            var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambiguous:";
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var serviceProvider = GetServiceProvider(
                 new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
@@ -385,7 +385,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
+                () => service.CreateCallSite(serviceProvider));
             Assert.StartsWith(expectedMessage, ex.Message);
         }
 
