@@ -211,7 +211,16 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            return services.TryAdd(ServiceDescriptor.Transient(implementationFactory));
+            return services.TryAddTransient<TService, TService>(implementationFactory);
+        }
+
+        public static bool TryAddTransient<TService, TImplementation>(
+            this IServiceCollection services,
+            Func<IServiceProvider, TImplementation> implementationFactory)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return services.TryAdd(ServiceDescriptor.Transient(typeof(TService), implementationFactory));
         }
 
         public static bool TryAddScoped(
@@ -311,7 +320,16 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            return services.TryAdd(ServiceDescriptor.Scoped(implementationFactory));
+            return services.TryAddScoped<TService, TService>(implementationFactory);
+        }
+
+        public static bool TryAddScoped<TService, TImplementation>(
+            this IServiceCollection services,
+            Func<IServiceProvider, TImplementation> implementationFactory)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return services.TryAdd(ServiceDescriptor.Scoped(typeof(TService), implementationFactory));
         }
 
         public static bool TryAddSingleton(
@@ -429,7 +447,16 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            return services.TryAdd(ServiceDescriptor.Singleton(implementationFactory));
+            return services.TryAddSingleton<TService, TService>(implementationFactory);
+        }
+
+        public static bool TryAddSingleton<TService, TImplementation>(
+            this IServiceCollection services,
+            Func<IServiceProvider, TImplementation> implementationFactory)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return services.TryAdd(ServiceDescriptor.Singleton(typeof(TService), implementationFactory));
         }
 
         /// <summary>
