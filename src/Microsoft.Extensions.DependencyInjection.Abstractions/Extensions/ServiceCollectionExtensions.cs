@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
+            if (collection.All(d => d.ServiceType != descriptor.ServiceType))
             {
                 collection.Add(descriptor);
                 return true;
