@@ -208,12 +208,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return null;
         }
 
-        private static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
-        private static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
-        private static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
+        private object GetOrAdd(IService key, Func<object> getter)
+        {
+            object resolved;
+            lock (_resolvedServices)
+            {
+                if (!_resolvedServices.TryGetValue(key, out resolved))
+                {
+                    resolved = getter();
+                    _resolvedServices.Add(key, resolved);
+                }
+            }
+            return resolved;
+        }
 
-        private static MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
-        private static MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
+        private static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
+        private static MethodInfo GetOrAddMethodInfo = GetMethodInfo<Func<ServiceProvider, IService, Func<object>, object>>((sp, key, factory) => sp.GetOrAdd(key, factory));
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
         {
@@ -279,16 +289,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public virtual object Invoke(ServiceProvider provider)
             {
-                object resolved;
-                lock (provider._resolvedServices)
-                {
-                    if (!provider._resolvedServices.TryGetValue(_key, out resolved))
-                    {
-                        resolved = _serviceCallSite.Invoke(provider);
-                        provider._resolvedServices.Add(_key, resolved);
-                    }
-                }
-                return resolved;
+                return provider.GetOrAdd(_key, () => _serviceCallSite.Invoke(provider));
             }
 
             public virtual Expression Build(Expression providerExpression)
@@ -297,55 +298,12 @@ namespace Microsoft.Extensions.DependencyInjection
                     _key,
                     typeof(IService));
 
-                var resolvedExpression = Expression.Variable(typeof(object), "resolved");
+                var factoryExpression = Expression.Lambda(_serviceCallSite.Build(providerExpression));
 
-                var resolvedServicesExpression = Expression.Field(
-                    providerExpression,
-                    "_resolvedServices");
-
-                var tryGetValueExpression = Expression.Call(
-                    resolvedServicesExpression,
-                    TryGetValueMethodInfo,
+                return Expression.Call(providerExpression,
+                    GetOrAddMethodInfo,
                     keyExpression,
-                    resolvedExpression);
-
-                var assignExpression = Expression.Assign(
-                    resolvedExpression, _serviceCallSite.Build(providerExpression));
-
-                var addValueExpression = Expression.Call(
-                    resolvedServicesExpression,
-                    AddMethodInfo,
-                    keyExpression,
-                    resolvedExpression);
-
-                var blockExpression = Expression.Block(
-                    typeof(object),
-                    new[] { resolvedExpression },
-                    Expression.IfThen(
-                        Expression.Not(tryGetValueExpression),
-                        Expression.Block(assignExpression, addValueExpression)),
-                    resolvedExpression);
-
-                return Lock(providerExpression, blockExpression);
-            }
-
-            private static Expression Lock(Expression providerExpression, Expression body)
-            {
-                // The C# compiler would copy the lock object to guard against mutation.
-                // We don't, since we know the lock object is readonly.
-                var syncField = Expression.Field(providerExpression, "_resolvedServices");
-                var lockWasTaken = Expression.Variable(typeof(bool), "lockWasTaken");
-
-                var monitorEnter = Expression.Call(MonitorEnterMethodInfo, syncField, lockWasTaken);
-                var monitorExit = Expression.Call(MonitorExitMethodInfo, syncField);
-
-                var tryBody = Expression.Block(monitorEnter, body);
-                var finallyBody = Expression.IfThen(lockWasTaken, monitorExit);
-
-                return Expression.Block(
-                    typeof(object),
-                    new[] { lockWasTaken },
-                    Expression.TryFinally(tryBody, finallyBody));
+                    factoryExpression);
             }
         }
 
