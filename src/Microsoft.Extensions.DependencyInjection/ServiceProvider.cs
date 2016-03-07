@@ -208,22 +208,27 @@ namespace Microsoft.Extensions.DependencyInjection
             return null;
         }
 
-        private object GetOrAdd(IService key, Func<object> getter)
+        private object GetOrAdd(IService key, Func<ServiceProvider, object, object> getter, object state)
         {
             object resolved;
             lock (_resolvedServices)
             {
                 if (!_resolvedServices.TryGetValue(key, out resolved))
                 {
-                    resolved = getter();
+                    resolved = getter(this, state);
                     _resolvedServices.Add(key, resolved);
                 }
             }
             return resolved;
         }
 
+        private object GetOrAdd(IService key, Func<ServiceProvider, object> getter)
+        {
+            return GetOrAdd(key, (provider, state) => ((Func<ServiceProvider, object>)state)(provider), getter);
+        }
+
         private static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
-        private static MethodInfo GetOrAddMethodInfo = GetMethodInfo<Func<ServiceProvider, IService, Func<object>, object>>((sp, key, factory) => sp.GetOrAdd(key, factory));
+        private static MethodInfo GetOrAddMethodInfo = GetMethodInfo<Func<ServiceProvider, IService, Func<ServiceProvider, object>, object>>((sp, key, factory) => sp.GetOrAdd(key, factory));
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
         {
@@ -289,7 +294,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public virtual object Invoke(ServiceProvider provider)
             {
-                return provider.GetOrAdd(_key, () => _serviceCallSite.Invoke(provider));
+                return provider.GetOrAdd(_key, (p, state) => ((IServiceCallSite)state).Invoke(p), _serviceCallSite);
             }
 
             public virtual Expression Build(Expression providerExpression)
@@ -298,7 +303,8 @@ namespace Microsoft.Extensions.DependencyInjection
                     _key,
                     typeof(IService));
 
-                var factoryExpression = Expression.Lambda(_serviceCallSite.Build(providerExpression));
+                var parameter = Expression.Parameter(providerExpression.Type);
+                var factoryExpression = Expression.Lambda(_serviceCallSite.Build(parameter), parameter);
 
                 return Expression.Call(providerExpression,
                     GetOrAddMethodInfo,
