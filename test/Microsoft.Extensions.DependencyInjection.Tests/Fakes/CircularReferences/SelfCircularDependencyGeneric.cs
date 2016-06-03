@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests.Fakes
 
         }
 
-        public SelfCircularDependencyGeneric()
+        internal SelfCircularDependencyGeneric()
         {
 
         }

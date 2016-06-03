@@ -82,8 +82,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             var provider = new ServiceProvider(desciptors);
 
-            var callSite = provider.GetServiceCallSite(serviceType, new HashSet<Type>());
-            var collectionCallSite = provider.GetServiceCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType), new HashSet<Type>());
+            var callSite = provider.GetServiceCallSite(serviceType);
+            var collectionCallSite = provider.GetServiceCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType));
 
             var compiledCallSite = CompileCallSite(callSite);
             var compiledCollectionCallSite = CompileCallSite(collectionCallSite);
@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             descriptors.AddScoped<ServiceC>();
 
             var provider = new ServiceProvider(descriptors);
-            var callSite = provider.GetServiceCallSite(typeof(ServiceC), new HashSet<Type>());
+            var callSite = provider.GetServiceCallSite(typeof(ServiceC));
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (ServiceC)compiledCallSite(provider);
@@ -129,10 +129,10 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var provider = new ServiceProvider(descriptors);
 
-            var callSite1 = provider.GetServiceCallSite(typeof(ClassWithThrowingEmptyCtor), new HashSet<Type>());
+            var callSite1 = provider.GetServiceCallSite(typeof(ClassWithThrowingEmptyCtor));
             var compiledCallSite1 = CompileCallSite(callSite1);
 
-            var callSite2 = provider.GetServiceCallSite(typeof(ClassWithThrowingCtor), new HashSet<Type>());
+            var callSite2 = provider.GetServiceCallSite(typeof(ClassWithThrowingCtor));
             var compiledCallSite2 = CompileCallSite(callSite2);
 
             var ex1 = Assert.Throws<Exception>(() => compiledCallSite1(provider));

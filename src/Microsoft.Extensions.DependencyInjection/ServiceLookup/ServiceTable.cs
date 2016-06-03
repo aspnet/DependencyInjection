@@ -15,7 +15,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly Dictionary<Type, ServiceEntry> _services;
         private readonly Dictionary<Type, List<IGenericService>> _genericServices;
-        private readonly ConcurrentDictionary<Type, Func<ServiceProvider, object>> _realizedServices = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
+        private readonly ConcurrentDictionary<IService, Func<ServiceProvider, object>> _realizedServices = 
+            new ConcurrentDictionary<IService, Func<ServiceProvider, object>>();
 
         public ServiceTable(IEnumerable<ServiceDescriptor> descriptors)
         {
@@ -77,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        public ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices
+        public ConcurrentDictionary<IService, Func<ServiceProvider, object>> RealizedServices
         {
             get { return _realizedServices; }
         }
@@ -118,14 +119,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             lock (_sync)
             {
                 ServiceEntry entry;
-                if (_services.TryGetValue(serviceType, out entry))
+
+                if (!_services.TryGetValue(serviceType, out entry))
                 {
-                    entry.Add(service);
+                    entry = new ServiceEntry(serviceType);
+                    _services[serviceType] = entry;
                 }
-                else
-                {
-                    _services[serviceType] = new ServiceEntry(service);
-                }
+
+                entry.Link(service);
             }
         }
 
@@ -134,6 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             lock (_sync)
             {
                 List<IGenericService> genericEntry;
+
                 if (!_genericServices.TryGetValue(serviceType, out genericEntry))
                 {
                     genericEntry = new List<IGenericService>();

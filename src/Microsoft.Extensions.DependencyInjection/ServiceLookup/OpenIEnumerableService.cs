@@ -15,19 +15,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _table = table;
         }
 
-        public ServiceLifetime Lifetime
-        {
-            get { return ServiceLifetime.Transient; }
-        }
+        public ServiceLifetime Lifetime => ServiceLifetime.Transient;
 
         public IService GetService(Type closedServiceType)
         {
             var itemType = closedServiceType.GetTypeInfo().GenericTypeArguments[0];
 
             ServiceEntry entry;
-            return _table.TryGetEntry(itemType, out entry) ?
-                new ClosedIEnumerableService(itemType, entry) :
-                null;
+
+            if (_table.TryGetEntry(itemType, out entry))
+            {
+                return new ClosedIEnumerableService(entry);
+            }
+
+            return null;
         }
     }
 }

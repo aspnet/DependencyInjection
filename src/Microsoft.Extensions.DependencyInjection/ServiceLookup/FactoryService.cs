@@ -16,14 +16,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _descriptor = descriptor;
         }
 
+        public IService Previous { get; set; }
+
         public IService Next { get; set; }
 
-        public ServiceLifetime Lifetime
-        {
-            get { return _descriptor.Lifetime; }
-        }
+        public ServiceLifetime Lifetime => _descriptor.Lifetime;
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
+        public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
             return this;
         }

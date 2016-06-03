@@ -10,51 +10,67 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ClosedIEnumerableService : IService
     {
-        private readonly Type _itemType;
         private readonly ServiceEntry _serviceEntry;
 
-        public ClosedIEnumerableService(Type itemType, ServiceEntry entry)
+        public ClosedIEnumerableService(ServiceEntry entry)
         {
-            _itemType = itemType;
             _serviceEntry = entry;
         }
 
+        public IService Previous { get; set; }
+
         public IService Next { get; set; }
 
-        public ServiceLifetime Lifetime
-        {
-            get { return ServiceLifetime.Transient; }
-        }
+        public ServiceLifetime Lifetime => ServiceLifetime.Transient;
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
+        public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
-            var list = new List<IServiceCallSite>();
+            var list = new List<Tuple<IService, IServiceCallSite>>();
             var service = _serviceEntry.First;
             while (service != null)
             {
-                list.Add(provider.GetResolveCallSite(service, callSiteChain));
+                try
+                {
+                    _serviceEntry.Unlink(service);
+                    var callSite = provider.GetResolveCallSite(service);
+                    list.Add(new Tuple<IService, IServiceCallSite>(service, callSite));
+                }
+                finally
+                {
+                    _serviceEntry.Link(service);
+                }
+
                 service = service.Next;
             }
-            return new CallSite(_itemType, list.ToArray());
+            return new CallSite(_serviceEntry, list.ToArray());
         }
 
         private class CallSite : IServiceCallSite
         {
-            private readonly Type _itemType;
-            private readonly IServiceCallSite[] _serviceCallSites;
+            private readonly ServiceEntry _entry;
+            private readonly Tuple<IService, IServiceCallSite>[] _serviceCallSites;
 
-            public CallSite(Type itemType, IServiceCallSite[] serviceCallSites)
+            public CallSite(ServiceEntry entry, Tuple<IService, IServiceCallSite>[] serviceCallSites)
             {
-                _itemType = itemType;
+                _entry = entry;
                 _serviceCallSites = serviceCallSites;
             }
 
             public object Invoke(ServiceProvider provider)
             {
-                var array = Array.CreateInstance(_itemType, _serviceCallSites.Length);
-                for (var index = 0; index < _serviceCallSites.Length; index++)
+                var array = Array.CreateInstance(_entry.ServiceType, _serviceCallSites.Length);
+                for (var index = 0 ; index < _serviceCallSites.Length; index++)
                 {
-                    array.SetValue(_serviceCallSites[index].Invoke(provider), index);
+                    var item = _serviceCallSites[index];
+                    try
+                    {
+                        _entry.Unlink(item.Item1);
+                        array.SetValue(item.Item2.Invoke(provider), index);
+                    }
+                    finally
+                    {
+                        _entry.Link(item.Item1);
+                    }
                 }
                 return array;
             }
@@ -62,11 +78,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             public Expression Build(Expression provider)
             {
                 return Expression.NewArrayInit(
-                    _itemType,
+                    _entry.ServiceType,
                     _serviceCallSites.Select(callSite =>
                         Expression.Convert(
-                            callSite.Build(provider),
-                            _itemType)));
+                            callSite.Item2.Build(provider),
+                            _entry.ServiceType)));
             }
         }
     }

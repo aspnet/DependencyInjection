@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
     public class CircularDependencyTests
     {
         [Fact]
-        public void SelfCircularDependency()
+        public void SelfCircularDependency_CannotResolve()
         {
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependency>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependency)),
+                Resources.FormatCannotResolveService(typeof(SelfCircularDependency), typeof(SelfCircularDependency)),
                 exception.Message);
         }
 
@@ -35,7 +35,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<string>>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependencyGeneric<string>)),
+                Resources.FormatCannotResolveService(
+                    typeof(SelfCircularDependencyGeneric<string>),
+                    typeof(SelfCircularDependencyGeneric<string>)),
                 exception.Message);
         }
 
@@ -51,7 +53,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<int>>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependencyGeneric<string>)),
+                Resources.FormatCannotResolveService(
+                    typeof(SelfCircularDependencyGeneric<string>),
+                    typeof(SelfCircularDependencyGeneric<string>)),
                 exception.Message);
         }
 
@@ -81,7 +85,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<SelfCircularDependencyWithInterface>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(ISelfCircularDependencyWithInterface)),
+                Resources.FormatCannotResolveService(
+                    typeof(ISelfCircularDependencyWithInterface), 
+                    typeof(SelfCircularDependencyWithInterface)),
                 exception.Message);
         }
 
@@ -97,7 +103,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<DirectCircularDependencyA>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(DirectCircularDependencyA)),
+                Resources.FormatCannotResolveService(
+                    typeof(DirectCircularDependencyA), 
+                    typeof(DirectCircularDependencyB)),
                 exception.Message);
         }
 
@@ -114,7 +122,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<IndirectCircularDependencyA>());
 
             Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(IndirectCircularDependencyA)),
+                Resources.FormatCannotResolveService(
+                    typeof(IndirectCircularDependencyA),
+                    typeof(IndirectCircularDependencyC)),
                 exception.Message);
         }
 
