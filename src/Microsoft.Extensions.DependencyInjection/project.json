@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0",
   "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
   "packOptions": {
     "repository": {
@@ -20,16 +20,16 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*"
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0"
   },
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Threading": "4.0.11-*",
-        "System.Threading.Tasks": "4.0.11-*"
+        "System.Collections": "4.0.11",
+        "System.Collections.Concurrent": "4.0.12",
+        "System.Runtime.Extensions": "4.1.0",
+        "System.Threading": "4.0.11",
+        "System.Threading.Tasks": "4.0.11"
       }
     }
   }
