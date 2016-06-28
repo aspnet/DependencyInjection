@@ -73,7 +73,12 @@ namespace Microsoft.Extensions.DependencyInjection
             var callCount = 0;
             return provider =>
             {
-                if (Interlocked.Increment(ref callCount) == 2)
+                // PERF: Singleton services once created will always be available in the lookup dictionary.
+                // Hence it is not needed to create an lambda expression for looking up in the dictionary.
+                // This change reduces the memory allocations during the start up because 
+                // lambda expression compilation involves expensive code access security checks for Desktop CLR.
+                var singletonCallSite = callSite as SingletonCallSite;
+                if (singletonCallSite ==  null && Interlocked.Increment(ref callCount) == 2)
                 {
                     Task.Run(() =>
                     {
@@ -214,6 +219,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
         private static MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
+        private static MethodInfo InvokeMethodInfo = GetMethodInfo<Func<IServiceCallSite, ServiceProvider, object>>((a, b) => a.Invoke(b));
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
         {
@@ -362,7 +368,15 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public override Expression Build(Expression provider)
             {
-                return base.Build(Expression.Field(provider, "_root"));
+                // PERF: Singleton services once created will always be available in the lookup dictionary
+                // Hence it is cheaper to directly call its Invoke method that will do the lookup rather than 
+                // building an expression tree that does the same.
+                // This change reduces the memory allocations during the start up because, expressions accessing private members
+                // involves expensive code access security checks for Desktop CLR.
+                return Expression.Call(
+                    Expression.Constant(this, typeof(SingletonCallSite)),
+                    InvokeMethodInfo,
+                    provider);
             }
         }
     }
