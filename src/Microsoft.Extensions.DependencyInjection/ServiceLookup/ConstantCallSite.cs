@@ -11,10 +11,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             DefaultValue = defaultValue;
         }
-
-        public object Invoke(ServiceProvider provider)
-        {
-            return DefaultValue;
-        }
     }
 }

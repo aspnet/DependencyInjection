@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
@@ -16,20 +15,21 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    class ServiceProvider : IServiceProvider, IDisposable
+    internal class ServiceProvider : IServiceProvider, IDisposable
     {
-        private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
-
-        private readonly Dictionary<object, object> _resolvedServices = new Dictionary<object, object>();
         private List<IDisposable> _transientDisposables;
 
+        internal ServiceProvider Root { get; }
+        internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
+
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
+        private static CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
-            _root = this;
+            Root = this;
             _table = new ServiceTable(serviceDescriptors);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
@@ -40,12 +40,12 @@ namespace Microsoft.Extensions.DependencyInjection
         // This constructor is called exclusively to create a child scope from the parent
         internal ServiceProvider(ServiceProvider parent)
         {
-            _root = parent._root;
+            Root = parent.Root;
             _table = parent._table;
         }
 
         // Reusing _resolvedServices as an implementation detail of the lock
-        private object SyncObject => _resolvedServices;
+        private object SyncObject => ResolvedServices;
 
         /// <summary>
         /// Gets the service object of the specified type.
@@ -69,15 +69,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return _ => null;
         }
 
-        public static string GetDebugView(Expression exp)
-        {
-            if (exp == null)
-                return null;
-
-            var propertyInfo = typeof(Expression).GetTypeInfo().GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic);
-            return propertyInfo.GetValue(exp) as string;
-        }
-
         internal static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
         {
             var callCount = 0;
@@ -95,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     });
                 }
 
-                return callSite.Invoke(provider);
+                return _callSiteRuntimeResolver.Resolve(callSite, provider);
             };
         }
 
@@ -171,16 +162,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 // PERF: We've enumerating the dictionary so that we don't allocate to enumerate.
                 // .Values allocates a KeyCollection on the heap, enumerating the dictionary allocates
                 // a struct enumerator
-                foreach (var entry in _resolvedServices)
+                foreach (var entry in ResolvedServices)
                 {
                     (entry.Value as IDisposable)?.Dispose();
                 }
 
-                _resolvedServices.Clear();
+                ResolvedServices.Clear();
             }
         }
 
-        public object CaptureDisposable(object service)
+        internal object CaptureDisposable(object service)
         {
             if (!object.ReferenceEquals(this, service))
             {

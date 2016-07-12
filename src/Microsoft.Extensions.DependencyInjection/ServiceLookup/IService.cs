@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    interface IService
+    internal interface IService
     {
         IService Next { get; set; }
 

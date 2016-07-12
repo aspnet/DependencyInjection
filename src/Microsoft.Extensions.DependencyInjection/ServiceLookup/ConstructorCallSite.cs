@@ -17,25 +17,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             ConstructorInfo = constructorInfo;
             ParameterCallSites = parameterCallSites;
         }
-
-        public object Invoke(ServiceProvider provider)
-        {
-            object[] parameterValues = new object[ParameterCallSites.Length];
-            for (var index = 0; index < parameterValues.Length; index++)
-            {
-                parameterValues[index] = ParameterCallSites[index].Invoke(provider);
-            }
-
-            try
-            {
-                return ConstructorInfo.Invoke(parameterValues);
-            }
-            catch (Exception ex) when (ex.InnerException != null)
-            {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                // The above line will always throw, but the compiler requires we throw explicitly.
-                throw;
-            }
-        }
     }
 }

@@ -88,7 +88,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var compiledCallSite = CompileCallSite(callSite);
             var compiledCollectionCallSite = CompileCallSite(collectionCallSite);
 
-            var service1 = callSite.Invoke(provider);
+            var service1 = Invoke(callSite, provider);
             var service2 = compiledCallSite(provider);
             var serviceEnumerator = ((IEnumerable)compiledCollectionCallSite(provider)).GetEnumerator();
 
@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var serviceC = (ServiceC)compiledCallSite(provider);
 
             Assert.NotNull(serviceC.ServiceB.ServiceA);
-            Assert.Equal(serviceC, callSite.Invoke(provider));
+            Assert.Equal(serviceC, Invoke(callSite, provider));
         }
 
         [Fact]
@@ -164,6 +164,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             }
 
             public ServiceB ServiceB { get; set; }
+        }
+
+        private static object Invoke(IServiceCallSite callSite, ServiceProvider provider)
+        {
+            return new CallSiteRuntimeResolver().Resolve(callSite, provider);
         }
 
         private static Func<ServiceProvider, object> CompileCallSite(IServiceCallSite callSite)

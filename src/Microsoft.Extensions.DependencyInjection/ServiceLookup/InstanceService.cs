@@ -29,10 +29,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             return this;
         }
-
-        public object Invoke(ServiceProvider provider)
-        {
-            return Descriptor.ImplementationInstance;
-        }
     }
 }

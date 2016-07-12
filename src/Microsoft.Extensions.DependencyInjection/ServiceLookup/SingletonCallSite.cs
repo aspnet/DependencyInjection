@@ -8,10 +8,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public SingletonCallSite(IService key, IServiceCallSite serviceCallSite) : base(key, serviceCallSite)
         {
         }
-
-        public override object Invoke(ServiceProvider provider)
-        {
-            return base.Invoke(provider._root);
-        }
     }
 }

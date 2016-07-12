@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Expression<Func<ServiceProvider, object>> Build(IServiceCallSite callSite)
         {
-            var serviceExpression = VisitExpression(callSite, _providerParameter);
+            var serviceExpression = VisitCallSite(callSite, _providerParameter);
 
             List<Expression> body = new List<Expression>();
             body.AddRange(_initializations);
@@ -99,14 +99,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 callSite.ItemType,
                 callSite.ServiceCallSites.Select(cs =>
                     Expression.Convert(
-                        VisitExpression(cs, provider),
+                        VisitCallSite(cs, provider),
                         callSite.ItemType)));
         }
 
         protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
         {
             return Expression.Invoke(GetCaptureDisposable(provider),
-                VisitExpression(callSite.Service, provider));
+                VisitCallSite(callSite.Service, provider));
         }
 
         protected override Expression VisitConstructor(ConstructorCallSite callSite, ParameterExpression provider)
@@ -115,7 +115,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.New(
                 callSite.ConstructorInfo,
                 callSite.ParameterCallSites.Select((c, index) =>
-                        Expression.Convert(VisitExpression(c, provider), parameters[index].ParameterType)));
+                        Expression.Convert(VisitCallSite(c, provider), parameters[index].ParameterType)));
         }
 
         protected override Expression VisitScoped(ScopedCallSite callSite, ParameterExpression provider)
@@ -135,7 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 resolvedExpression);
 
             var assignExpression = Expression.Assign(
-                resolvedExpression, VisitExpression(callSite.ServiceCallSite, provider));
+                resolvedExpression, VisitCallSite(callSite.ServiceCallSite, provider));
 
             var addValueExpression = Expression.Call(
                 resolvedServices,
@@ -181,9 +181,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             ParameterExpression resolvedServicesVariable;
             if (!_resolvedServices.TryGetValue(provider, out resolvedServicesVariable))
             {
-                var resolvedServicesExpression = Expression.Field(
+                var resolvedServicesExpression = Expression.Property(
                     provider,
-                    "_resolvedServices");
+                    nameof(ServiceProvider.ResolvedServices));
 
                 resolvedServicesVariable = Expression.Variable(typeof(IDictionary<object, object>),
                     provider.Name + "resolvedServices");
@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (_rootVariable == null)
             {
-                var rootExpression = Expression.Field(_providerParameter, "_root");
+                var rootExpression = Expression.Property(_providerParameter, nameof(ServiceProvider.Root));
                 _rootVariable = Expression.Variable(typeof(ServiceProvider), "root");
 
                 _variables.Add(_rootVariable);

@@ -6,8 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     /// <summary>
     /// Summary description for IServiceCallSite
     /// </summary>
-    interface IServiceCallSite
+    internal interface IServiceCallSite
     {
-        object Invoke(ServiceProvider provider);
     }
 }

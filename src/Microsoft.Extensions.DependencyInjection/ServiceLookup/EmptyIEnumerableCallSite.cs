@@ -15,10 +15,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             ServiceType = serviceType;
             ServiceInstance = serviceInstance;
         }
-
-        public object Invoke(ServiceProvider provider)
-        {
-            return ServiceInstance;
-        }
     }
 }

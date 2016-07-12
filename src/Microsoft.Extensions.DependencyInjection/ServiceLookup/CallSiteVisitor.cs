@@ -4,7 +4,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal abstract class CallSiteVisitor<TArgument, TResult>
     {
-        protected virtual TResult VisitExpression(IServiceCallSite callSite, TArgument argument)
+        protected virtual TResult VisitCallSite(IServiceCallSite callSite, TArgument argument)
         {
             var factoryService = callSite as FactoryService;
             if (factoryService != null)

@@ -11,10 +11,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             Service = service;
         }
-
-        public object Invoke(ServiceProvider provider)
-        {
-            return provider.CaptureDisposable(Service.Invoke(provider));
-        }
     }
 }
