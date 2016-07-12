@@ -3,18 +3,15 @@
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ConstantCallSite : IServiceCallSite
+    internal class SingletonCallSite : ScopedCallSite
     {
-        internal object DefaultValue { get; }
-
-        public ConstantCallSite(object defaultValue)
+        public SingletonCallSite(IService key, IServiceCallSite serviceCallSite) : base(key, serviceCallSite)
         {
-            DefaultValue = defaultValue;
         }
 
-        public object Invoke(ServiceProvider provider)
+        public override object Invoke(ServiceProvider provider)
         {
-            return DefaultValue;
+            return base.Invoke(provider._root);
         }
     }
 }
