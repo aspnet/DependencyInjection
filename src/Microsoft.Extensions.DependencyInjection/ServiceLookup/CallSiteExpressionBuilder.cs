@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +10,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteExpressionBuilder
+    internal class CallSiteExpressionBuilder: CallSiteVisitor<ParameterExpression, Expression>
     {
         private static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
         private static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<object, object>, object, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
@@ -28,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Expression<Func<ServiceProvider, object>> Build(IServiceCallSite callSite)
         {
-            var serviceExpression = BuildExpression(callSite, _providerParameter);
+            var serviceExpression = VisitExpression(callSite, _providerParameter);
 
             List<Expression> body = new List<Expression>();
             body.AddRange(_initializations);
@@ -43,109 +46,79 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 _providerParameter);
         }
 
-        private Expression BuildExpression(IServiceCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, ParameterExpression provider)
         {
-            var factoryService = callSite as FactoryService;
-            if (factoryService != null)
-            {
-                return BuildFactoryService(factoryService, provider);
-            }
-            var closedIEnumerableCallSite = callSite as ClosedIEnumerableCallSite;
-            if (closedIEnumerableCallSite != null)
-            {
-                return BuildClosedIEnumerable(closedIEnumerableCallSite, provider);
-            }
-            var constructorCallSite = callSite as ConstructorCallSite;
-            if (constructorCallSite != null)
-            {
-                return BuildConstructor(constructorCallSite, provider);
-            }
-            var transientCallSite = callSite as TransientCallSite;
-            if (transientCallSite != null)
-            {
-                return BuildTransient(transientCallSite, provider);
-            }
-            var singletonCallSite = callSite as SingletonCallSite;
-            if (singletonCallSite != null)
-            {
-                return BuildScoped(singletonCallSite, GetRootProvider());
-            }
-            var scopedCallSite = callSite as ScopedCallSite;
-            if (scopedCallSite != null)
-            {
-                return BuildScoped(scopedCallSite, provider);
-            }
-            var constantCallSite = callSite as ConstantCallSite;
-            if (constantCallSite != null)
-            {
-                return Expression.Constant(constantCallSite.DefaultValue);
-            }
-            var createInstanceCallSite = callSite as CreateInstanceCallSite;
-            if (createInstanceCallSite != null)
-            {
-                return Expression.New(createInstanceCallSite.Descriptor.ImplementationType);
-            }
-            var instanceCallSite = callSite as InstanceService;
-            if (instanceCallSite != null)
-            {
-                return Expression.Constant(
-                    instanceCallSite.Descriptor.ImplementationInstance,
-                    instanceCallSite.Descriptor.ServiceType);
-            }
-            var serviceProviderService = callSite as ServiceProviderService;
-            if (serviceProviderService != null)
-            {
-                return provider;
-            }
-            var emptyIEnumerableCallSite = callSite as EmptyIEnumerableCallSite;
-            if (emptyIEnumerableCallSite != null)
-            {
-                return Expression.Constant(
-                    emptyIEnumerableCallSite.ServiceInstance,
-                    emptyIEnumerableCallSite.ServiceType);
-            }
-            var serviceScopeService = callSite as ServiceScopeService;
-            if (serviceScopeService != null)
-            {
-                return Expression.New(typeof(ServiceScopeFactory).GetTypeInfo()
-                        .DeclaredConstructors
-                        .Single(),
-                    provider);
-            }
-            throw new NotSupportedException("Call site type is not supported");
+            return VisitScoped(singletonCallSite, GetRootProvider());
         }
 
-        public Expression BuildFactoryService(FactoryService factoryService, ParameterExpression provider)
+        protected override Expression VisitConstant(ConstantCallSite constantCallSite, ParameterExpression provider)
+        {
+            return Expression.Constant(constantCallSite.DefaultValue);
+        }
+
+        protected override Expression VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ParameterExpression provider)
+        {
+            return Expression.New(createInstanceCallSite.Descriptor.ImplementationType);
+        }
+
+        protected override Expression VisitInstanceService(InstanceService instanceCallSite, ParameterExpression provider)
+        {
+            return Expression.Constant(
+                instanceCallSite.Descriptor.ImplementationInstance,
+                instanceCallSite.Descriptor.ServiceType);
+        }
+
+        protected override Expression VisitServiceProviderService(ServiceProviderService serviceProviderService, ParameterExpression provider)
+        {
+            return provider;
+        }
+
+        protected override Expression VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, ParameterExpression provider)
+        {
+            return Expression.Constant(
+                emptyIEnumerableCallSite.ServiceInstance,
+                emptyIEnumerableCallSite.ServiceType);
+        }
+
+        protected override Expression VisitServiceScopeService(ServiceScopeService serviceScopeService, ParameterExpression provider)
+        {
+            return Expression.New(typeof(ServiceScopeFactory).GetTypeInfo()
+                    .DeclaredConstructors
+                    .Single(),
+                provider);
+        }
+
+        protected override Expression VisitFactoryService(FactoryService factoryService, ParameterExpression provider)
         {
             return Expression.Invoke(Expression.Constant(factoryService.Descriptor.ImplementationFactory), provider);
         }
 
-        public Expression BuildClosedIEnumerable(ClosedIEnumerableCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitClosedIEnumerable(ClosedIEnumerableCallSite callSite, ParameterExpression provider)
         {
             return Expression.NewArrayInit(
                 callSite.ItemType,
                 callSite.ServiceCallSites.Select(cs =>
                     Expression.Convert(
-                        BuildExpression(cs, provider),
+                        VisitExpression(cs, provider),
                         callSite.ItemType)));
         }
 
-        public Expression BuildTransient(TransientCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
         {
             return Expression.Invoke(GetCaptureDisposable(provider),
-                BuildExpression(callSite.Service, provider));
+                VisitExpression(callSite.Service, provider));
         }
 
-        public Expression BuildConstructor(ConstructorCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitConstructor(ConstructorCallSite callSite, ParameterExpression provider)
         {
             var parameters = callSite.ConstructorInfo.GetParameters();
             return Expression.New(
                 callSite.ConstructorInfo,
                 callSite.ParameterCallSites.Select((c, index) =>
-                        Expression.Convert(BuildExpression(c, provider), parameters[index].ParameterType)));
+                        Expression.Convert(VisitExpression(c, provider), parameters[index].ParameterType)));
         }
 
-        public virtual Expression BuildScoped(ScopedCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitScoped(ScopedCallSite callSite, ParameterExpression provider)
         {
             var keyExpression = Expression.Constant(
                 callSite.Key,
@@ -162,7 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 resolvedExpression);
 
             var assignExpression = Expression.Assign(
-                resolvedExpression, BuildExpression(callSite.ServiceCallSite, provider));
+                resolvedExpression, VisitExpression(callSite.ServiceCallSite, provider));
 
             var addValueExpression = Expression.Call(
                 resolvedServices,

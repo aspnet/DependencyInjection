@@ -168,13 +168,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private static Func<ServiceProvider, object> CompileCallSite(IServiceCallSite callSite)
         {
-            var providerExpression = Expression.Parameter(typeof(ServiceProvider), "provider");
-
-            var lambdaExpression = Expression.Lambda<Func<ServiceProvider, object>>(
-                callSite.Build(providerExpression),
-                providerExpression);
-
-            return lambdaExpression.Compile();
+            return new CallSiteExpressionBuilder().Build(callSite).Compile();
         }
     }
 }

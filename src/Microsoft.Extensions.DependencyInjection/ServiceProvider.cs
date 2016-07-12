@@ -18,11 +18,11 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     class ServiceProvider : IServiceProvider, IDisposable
     {
-        internal readonly ServiceProvider _root;
+        private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
 
-        internal readonly Dictionary<object, object> _resolvedServices = new Dictionary<object, object>();
+        private readonly Dictionary<object, object> _resolvedServices = new Dictionary<object, object>();
         private List<IDisposable> _transientDisposables;
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
@@ -128,7 +128,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 callSiteChain.Remove(serviceType);
             }
-
         }
 
         internal IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
