@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
@@ -17,11 +18,11 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     internal class ServiceProvider : IServiceProvider, IDisposable
     {
-        private readonly ServiceProvider _root;
+        public readonly ServiceProvider _root;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
 
-        private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
+        internal readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private List<IDisposable> _transientDisposables;
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
@@ -68,6 +69,15 @@ namespace Microsoft.Extensions.DependencyInjection
             return _ => null;
         }
 
+        public static string GetDebugView(Expression exp)
+        {
+            if (exp == null)
+                return null;
+
+            var propertyInfo = typeof(Expression).GetTypeInfo().GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic);
+            return propertyInfo.GetValue(exp) as string;
+        }
+
         internal static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
         {
             var callCount = 0;
@@ -83,6 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
                             callSite.Build(providerExpression),
                             providerExpression);
 
+                        System.Console.WriteLine(serviceType+"=>"+GetDebugView(lambdaExpression));
                         table.RealizedServices[serviceType] = lambdaExpression.Compile();
                     });
                 }
@@ -298,13 +309,18 @@ namespace Microsoft.Extensions.DependencyInjection
                     typeof(IService));
 
                 var resolvedExpression = Expression.Variable(typeof(object), "resolved");
-
                 var resolvedServicesExpression = Expression.Field(
                     providerExpression,
                     "_resolvedServices");
 
+                var resolvedServicesVariable = Expression.Variable(typeof(IDictionary<IService, object>),
+                    "resolvedServices");
+                var resolvedServicesVariableAssignment = Expression.Assign(resolvedServicesVariable,
+                    resolvedServicesExpression);
+
+
                 var tryGetValueExpression = Expression.Call(
-                    resolvedServicesExpression,
+                    resolvedServicesVariable,
                     TryGetValueMethodInfo,
                     keyExpression,
                     resolvedExpression);
@@ -313,38 +329,40 @@ namespace Microsoft.Extensions.DependencyInjection
                     resolvedExpression, _serviceCallSite.Build(providerExpression));
 
                 var addValueExpression = Expression.Call(
-                    resolvedServicesExpression,
+                    resolvedServicesVariable,
                     AddMethodInfo,
                     keyExpression,
                     resolvedExpression);
 
                 var blockExpression = Expression.Block(
                     typeof(object),
-                    new[] { resolvedExpression },
+                    new[] {
+                        resolvedExpression
+                    },
                     Expression.IfThen(
                         Expression.Not(tryGetValueExpression),
                         Expression.Block(assignExpression, addValueExpression)),
                     resolvedExpression);
 
-                return Lock(providerExpression, blockExpression);
+                return Lock(blockExpression, resolvedServicesVariableAssignment, resolvedServicesVariable);
             }
 
-            private static Expression Lock(Expression providerExpression, Expression body)
+            private static Expression Lock(Expression body, Expression before, ParameterExpression syncVariable)
             {
                 // The C# compiler would copy the lock object to guard against mutation.
                 // We don't, since we know the lock object is readonly.
-                var syncField = Expression.Field(providerExpression, "_resolvedServices");
                 var lockWasTaken = Expression.Variable(typeof(bool), "lockWasTaken");
 
-                var monitorEnter = Expression.Call(MonitorEnterMethodInfo, syncField, lockWasTaken);
-                var monitorExit = Expression.Call(MonitorExitMethodInfo, syncField);
+                var monitorEnter = Expression.Call(MonitorEnterMethodInfo, syncVariable, lockWasTaken);
+                var monitorExit = Expression.Call(MonitorExitMethodInfo, syncVariable);
 
                 var tryBody = Expression.Block(monitorEnter, body);
                 var finallyBody = Expression.IfThen(lockWasTaken, monitorExit);
 
                 return Expression.Block(
                     typeof(object),
-                    new[] { lockWasTaken },
+                    new[] { lockWasTaken, syncVariable },
+                    before,
                     Expression.TryFinally(tryBody, finallyBody));
             }
         }
