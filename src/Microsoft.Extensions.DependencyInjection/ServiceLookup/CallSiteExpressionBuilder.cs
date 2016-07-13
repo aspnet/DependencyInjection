@@ -45,7 +45,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _runtimeResolver = runtimeResolver;
         }
 
-        public Expression<Func<ServiceProvider, object>> Build(IServiceCallSite callSite)
+        public Func<ServiceProvider, object> Build(IServiceCallSite callSite)
+        {
+            if (callSite is SingletonCallSite)
+            {
+                // If root call site is singleton we can return Func calling
+                // _runtimeResolver.Resolve directly and avoid Expression generation
+                return (provider) => _runtimeResolver.Resolve(callSite, provider);
+            }
+            return BuildExpression(callSite).Compile();
+        }
+
+        private Expression<Func<ServiceProvider, object>> BuildExpression(IServiceCallSite callSite)
         {
             var serviceExpression = VisitCallSite(callSite, ProviderParameter);
 

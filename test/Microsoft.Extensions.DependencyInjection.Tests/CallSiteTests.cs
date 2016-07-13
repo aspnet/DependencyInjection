@@ -175,7 +175,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private static Func<ServiceProvider, object> CompileCallSite(IServiceCallSite callSite)
         {
-            return new CallSiteExpressionBuilder(CallSiteRuntimeResolver).Build(callSite).Compile();
+            return new CallSiteExpressionBuilder(CallSiteRuntimeResolver).Build(callSite);
         }
     }
 }
