@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             var serviceExpression = VisitCallSite(callSite, ProviderParameter);
 
-            List<Expression> body = new List<Expression>();
+            var body = new List<Expression>();
             if (_requiresResolvedServices)
             {
                 body.Add(ResolvedServicesVariableAssignment);
