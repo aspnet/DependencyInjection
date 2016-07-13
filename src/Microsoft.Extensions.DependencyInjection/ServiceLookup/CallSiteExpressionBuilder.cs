@@ -21,15 +21,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             GetMethodInfo<Func<CallSiteRuntimeResolver, IServiceCallSite, ServiceProvider, object>>((r, c, p) => r.Resolve(c, p));
 
         private readonly ParameterExpression _providerParameter = Expression.Parameter(typeof(ServiceProvider));
-
-        private readonly List<Expression> _initializations = new List<Expression>();
-        private readonly List<ParameterExpression> _variables = new List<ParameterExpression>();
-        private readonly List<Expression> _locks = new List<Expression>();
-
-        private readonly Dictionary<Expression, ParameterExpression> _resolvedServices = new Dictionary<Expression, ParameterExpression>();
-        private readonly Dictionary<Expression, LambdaExpression> _captureDisposable = new Dictionary<Expression, LambdaExpression>();
-
         private readonly CallSiteRuntimeResolver _runtimeResolver;
+
+        private ParameterExpression _resolvedServices;
+        private LambdaExpression _captureDisposable;
+        private BinaryExpression _resolvedServicesVariableAssignment;
 
         public CallSiteExpressionBuilder(CallSiteRuntimeResolver runtimeResolver)
         {
@@ -45,15 +41,22 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceExpression = VisitCallSite(callSite, _providerParameter);
 
             List<Expression> body = new List<Expression>();
-            body.AddRange(_initializations);
-            foreach (var expression in _locks)
+            if (_resolvedServicesVariableAssignment != null)
             {
-                serviceExpression = Lock(serviceExpression, expression);
+                body.Add(_resolvedServicesVariableAssignment);
+            }
+            if (_resolvedServices != null)
+            {
+                serviceExpression = Lock(serviceExpression, _resolvedServices);
             }
             body.Add(serviceExpression);
 
+            var variables = _resolvedServices != null
+                ? new[] { _resolvedServices }
+                : Enumerable.Empty<ParameterExpression>();
+
             return Expression.Lambda<Func<ServiceProvider, object>>(
-                Expression.Block(_variables, body),
+                Expression.Block(variables, body),
                 _providerParameter);
         }
 
@@ -183,39 +186,35 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Expression GetCaptureDisposable(ParameterExpression provider)
         {
-            LambdaExpression captureDisposableLambda;
-            if (!_captureDisposable.TryGetValue(provider, out captureDisposableLambda))
+            if (_captureDisposable == null)
             {
                 var parameter = Expression.Parameter(typeof(object));
-                 captureDisposableLambda = Expression.Lambda(
+                _captureDisposable = Expression.Lambda(
                     Expression.Call(provider, CaptureDisposableMethodInfo, parameter), parameter);
-                _captureDisposable.Add(provider, captureDisposableLambda);
             }
 
-            return captureDisposableLambda;
+            return _captureDisposable;
         }
 
         public Expression GetResolvedServices(ParameterExpression provider)
         {
-            ParameterExpression resolvedServicesVariable;
-            if (!_resolvedServices.TryGetValue(provider, out resolvedServicesVariable))
+            if (provider != _providerParameter)
+            {
+                throw new NotSupportedException("Resolved services call is supported only for main provider");
+            }
+            if (_resolvedServices == null)
             {
                 var resolvedServicesExpression = Expression.Property(
                     provider,
                     nameof(ServiceProvider.ResolvedServices));
 
-                resolvedServicesVariable = Expression.Variable(typeof(IDictionary<object, object>),
+                _resolvedServices = Expression.Variable(typeof(IDictionary<object, object>),
                     provider.Name + "resolvedServices");
-                var resolvedServicesVariableAssignment = Expression.Assign(resolvedServicesVariable,
+                _resolvedServicesVariableAssignment = Expression.Assign(_resolvedServices,
                     resolvedServicesExpression);
-
-                _locks.Add(resolvedServicesVariable);
-                _variables.Add(resolvedServicesVariable);
-                _initializations.Add(resolvedServicesVariableAssignment);
-                _resolvedServices.Add(provider, resolvedServicesVariable);
             }
 
-            return resolvedServicesVariable;
+            return _resolvedServices;
         }
 
         private static Expression Lock(Expression body, Expression syncVariable)
