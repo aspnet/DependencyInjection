@@ -21,9 +21,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             GetMethodInfo<Func<CallSiteRuntimeResolver, IServiceCallSite, ServiceProvider, object>>((r, c, p) => r.Resolve(c, p));
 
         private static readonly ParameterExpression ProviderParameter = Expression.Parameter(typeof(ServiceProvider));
+
         private static readonly ParameterExpression ResolvedServices = Expression.Variable(typeof(IDictionary<object, object>),
             ProviderParameter.Name + "resolvedServices");
-
         private static readonly BinaryExpression ResolvedServicesVariableAssignment =
             Expression.Assign(ResolvedServices,
                 Expression.Property(ProviderParameter, nameof(ServiceProvider.ResolvedServices)));

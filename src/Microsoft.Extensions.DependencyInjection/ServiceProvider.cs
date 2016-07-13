@@ -46,9 +46,6 @@ namespace Microsoft.Extensions.DependencyInjection
             _table = parent._table;
         }
 
-        // Reusing _resolvedServices as an implementation detail of the lock
-        private object SyncObject => ResolvedServices;
-
         /// <summary>
         /// Gets the service object of the specified type.
         /// </summary>
@@ -140,15 +137,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public void Dispose()
         {
-            lock (SyncObject)
+            lock (ResolvedServices)
             {
                 if (_disposeCalled)
                 {
                     return;
                 }
-
                 _disposeCalled = true;
-
                 if (_transientDisposables != null)
                 {
                     foreach (var disposable in _transientDisposables)
@@ -178,7 +173,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var disposable = service as IDisposable;
                 if (disposable != null)
                 {
-                    lock (SyncObject)
+                    lock (ResolvedServices)
                     {
                         if (_transientDisposables == null)
                         {
