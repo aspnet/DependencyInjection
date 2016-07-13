@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteExpressionBuilder: CallSiteVisitor<ParameterExpression, Expression>
+    internal class CallSiteExpressionBuilder : CallSiteVisitor<ParameterExpression, Expression>
     {
         private static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
         private static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<object, object>, object, object, bool>>((a, b, c) => a.TryGetValue(b, out c));

@@ -25,7 +25,9 @@ namespace Microsoft.Extensions.DependencyInjection
         internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
-        private static CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
+
+        // CallSiteRuntimeResolver is stateless so can be shared between all instances
+        private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
@@ -160,7 +162,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
 
                 // PERF: We've enumerating the dictionary so that we don't allocate to enumerate.
-                // .Values allocates a KeyCollection on the heap, enumerating the dictionary allocates
+                // .Values allocates a ValueCollection on the heap, enumerating the dictionary allocates
                 // a struct enumerator
                 foreach (var entry in ResolvedServices)
                 {

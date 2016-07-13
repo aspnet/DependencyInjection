@@ -3,7 +3,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProvider, object>
+    internal class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProvider, object>
     {
         public object Resolve(IServiceCallSite callSite, ServiceProvider provider)
         {
