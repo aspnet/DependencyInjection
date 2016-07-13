@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 return VisitServiceScopeService(serviceScopeService, argument);
             }
-            throw new NotSupportedException("Call site type is not supported");
+            throw new NotSupportedException($"Call site type {callSite.GetType()} is not supported");
         }
 
         protected abstract TResult VisitTransient(TransientCallSite transientCallSite, TArgument argument);
