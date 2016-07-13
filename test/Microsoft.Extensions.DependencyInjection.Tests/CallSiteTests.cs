@@ -13,6 +13,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class CallSiteTests
     {
+        private static readonly CallSiteRuntimeResolver CallSiteRuntimeResolver = new CallSiteRuntimeResolver();
+
         public static IEnumerable<object[]> TestServiceDescriptors(ServiceLifetime lifetime)
         {
             Func<object, object, bool> compare;
@@ -168,12 +170,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private static object Invoke(IServiceCallSite callSite, ServiceProvider provider)
         {
-            return new CallSiteRuntimeResolver().Resolve(callSite, provider);
+            return CallSiteRuntimeResolver.Resolve(callSite, provider);
         }
 
         private static Func<ServiceProvider, object> CompileCallSite(IServiceCallSite callSite)
         {
-            return new CallSiteExpressionBuilder().Build(callSite).Compile();
+            return new CallSiteExpressionBuilder(CallSiteRuntimeResolver).Build(callSite).Compile();
         }
     }
 }

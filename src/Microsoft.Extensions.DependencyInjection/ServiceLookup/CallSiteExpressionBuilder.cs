@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<object, object>, object, object>>((a, b, c) => a.Add(b, c));
         private static readonly MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
         private static readonly MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
+        private static readonly MethodInfo CallSiteRuntimeResolverResolve =
+            GetMethodInfo<Func<CallSiteRuntimeResolver, IServiceCallSite, ServiceProvider, object>>((r, c, p) => r.Resolve(c, p));
 
         private readonly ParameterExpression _providerParameter = Expression.Parameter(typeof(ServiceProvider));
 
@@ -27,7 +29,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private readonly Dictionary<Expression, ParameterExpression> _resolvedServices = new Dictionary<Expression, ParameterExpression>();
         private readonly Dictionary<Expression, LambdaExpression> _captureDisposable = new Dictionary<Expression, LambdaExpression>();
 
-        private ParameterExpression _rootVariable;
+        private readonly CallSiteRuntimeResolver _runtimeResolver;
+
+        public CallSiteExpressionBuilder(CallSiteRuntimeResolver runtimeResolver)
+        {
+            if (runtimeResolver == null)
+            {
+                throw new ArgumentNullException(nameof(runtimeResolver));
+            }
+            _runtimeResolver = runtimeResolver;
+        }
 
         public Expression<Func<ServiceProvider, object>> Build(IServiceCallSite callSite)
         {
@@ -48,7 +59,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, ParameterExpression provider)
         {
-            return VisitScoped(singletonCallSite, GetRootProvider());
+            // Call to CallSiteRuntimeResolver.Resolve is being returned here
+            // because in the current use case singleton service was already resolved and cached
+            // to dictionary so there is no need to generate full tree at this point.
+
+            return Expression.Call(
+                Expression.Constant(_runtimeResolver),
+                CallSiteRuntimeResolverResolve,
+                Expression.Constant(singletonCallSite, typeof(IServiceCallSite)),
+                provider);
         }
 
         protected override Expression VisitConstant(ConstantCallSite constantCallSite, ParameterExpression provider)
@@ -197,19 +216,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
 
             return resolvedServicesVariable;
-        }
-
-        public ParameterExpression GetRootProvider()
-        {
-            if (_rootVariable == null)
-            {
-                var rootExpression = Expression.Property(_providerParameter, nameof(ServiceProvider.Root));
-                _rootVariable = Expression.Variable(typeof(ServiceProvider), "root");
-
-                _variables.Add(_rootVariable);
-                _initializations.Add(Expression.Assign(_rootVariable, rootExpression));
-            }
-            return _rootVariable;
         }
 
         private static Expression Lock(Expression body, Expression syncVariable)

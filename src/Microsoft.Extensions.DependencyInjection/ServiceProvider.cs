@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     Task.Run(() =>
                     {
                         Expression<Func<ServiceProvider, object>> lambdaExpression =
-                            new CallSiteExpressionBuilder().Build(callSite);
+                            new CallSiteExpressionBuilder(_callSiteRuntimeResolver).Build(callSite);
 
                         var realizedService = lambdaExpression.Compile();
                         table.RealizedServices[serviceType] = realizedService;
