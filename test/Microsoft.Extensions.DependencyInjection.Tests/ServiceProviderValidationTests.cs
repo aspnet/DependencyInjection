@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -12,11 +15,41 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IFoo, Foo>();
             serviceCollection.AddScoped<IBar, Bar>();
-            var serviceProvider = serviceCollection.BuildServiceProvider(true);
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
 
             // Act + Assert
             var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
             Assert.Equal($"Cannot consume scoped service '{typeof(IBar)}' from singleton '{typeof(IFoo)}'.", exception.Message);
+        }
+
+        [Fact]
+        public void GetService_Throws_WhenScopedIsInjectedIntoSingletonThroughTransient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFoo, Foo>();
+            serviceCollection.AddTransient<IBar, Bar2>();
+            serviceCollection.AddScoped<IBaz, Baz>();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
+            Assert.Equal($"Cannot consume scoped service '{typeof(IBaz)}' from singleton '{typeof(IFoo)}'.", exception.Message);
+        }
+
+        [Fact]
+        public void GetService_Throws_WhenScopedIsInjectedIntoSingletonThroughSingleton()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFoo, Foo>();
+            serviceCollection.AddSingleton<IBar, Bar2>();
+            serviceCollection.AddScoped<IBaz, Baz>();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
+            Assert.Equal($"Cannot consume scoped service '{typeof(IBaz)}' from singleton '{typeof(IBar)}'.", exception.Message);
         }
 
         public void GetService_DoesNotThrow_WhenScopeFactoryIsInjectedIntoSingleton()
@@ -50,6 +83,21 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
         }
 
+        private class Bar2 : IBar
+        {
+            public Bar2(IBaz baz)
+            {
+            }
+        }
+
+        private interface IBaz
+        {
+        }
+
+        private class Baz : IBaz
+        {
+        }
+
         private interface IBoo
         {
         }
@@ -60,6 +108,5 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             {
             }
         }
-
     }
 }

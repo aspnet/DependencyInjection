@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteValidator: CallSiteVisitor<CallSiteValidatorState, object>
+    internal class CallSiteValidator: CallSiteVisitor<CallSiteValidator.CallSiteValidatorState, object>
     {
         public void Validate(IServiceCallSite callSite)
         {
@@ -64,5 +64,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override object VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite, CallSiteValidatorState state) => null;
 
         protected override object VisitFactoryService(FactoryService factoryService, CallSiteValidatorState state) => null;
+
+        internal struct CallSiteValidatorState
+        {
+            public SingletonCallSite Singleton { get; set; }
+        }
     }
 }
