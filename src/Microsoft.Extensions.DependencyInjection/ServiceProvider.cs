@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     internal class ServiceProvider : IServiceProvider, IDisposable
     {
-        private readonly bool _validateScopes;
+        private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
         private List<IDisposable> _transientDisposables;
@@ -27,15 +27,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
 
-        // CallSiteRuntimeResolver and CallSiteValidator are stateless so can be shared between all instances
+        // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
-        private static readonly CallSiteValidator _callSiteValidator = new CallSiteValidator();
 
         public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, bool validateScopes)
         {
             Root = this;
 
-            _validateScopes = validateScopes;
+            if (validateScopes)
+            {
+                _callSiteValidator = new CallSiteValidator();
+            }
+
             _table = new ServiceTable(serviceDescriptors);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
@@ -48,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Root = parent.Root;
             _table = parent._table;
-            _validateScopes = parent._validateScopes;
+            _callSiteValidator = parent._callSiteValidator;
         }
 
         /// <summary>
@@ -59,6 +62,9 @@ namespace Microsoft.Extensions.DependencyInjection
         public object GetService(Type serviceType)
         {
             var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
+
+            _callSiteValidator?.ValidateResolution(serviceType, this);
+
             return realizedService.Invoke(this);
         }
 
@@ -67,10 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var callSite = serviceProvider.GetServiceCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
-                if (serviceProvider._validateScopes)
-                {
-                    _callSiteValidator.Validate(callSite);
-                }
+                serviceProvider._callSiteValidator?.ValidateCallSite(serviceType, callSite);
                 return RealizeService(serviceProvider._table, serviceType, callSite);
             }
 

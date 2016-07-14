@@ -142,6 +142,9 @@
     <comment>{0} = service type</comment>
   </data>
   <data name="ScopedInSingletonException" xml:space="preserve">
-    <value>Cannot consume scoped service '{0}' from singleton '{1}'.</value>
+    <value>Cannot consume {2} service '{0}' from {3} '{1}'.</value>
+  </data>
+  <data name="ScopedResolvedFromRootException" xml:space="preserve">
+    <value>Cannot resolve '{0}' from root provider because it requires {2} service '{1}'.</value>
   </data>
 </root>

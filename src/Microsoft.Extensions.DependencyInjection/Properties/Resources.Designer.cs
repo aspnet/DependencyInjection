@@ -123,7 +123,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Cannot consume scoped service '{0}' from singleton '{1}'.
+        /// Cannot consume {2} service '{0}' from {3} '{1}'.
         /// </summary>
         internal static string ScopedInSingletonException
         {
@@ -131,11 +131,27 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Cannot consume scoped service '{0}' from singleton '{1}'.
+        /// Cannot consume {2} service '{0}' from {3} '{1}'.
         /// </summary>
-        internal static string FormatScopedInSingletonException(object p0, object p1)
+        internal static string FormatScopedInSingletonException(object p0, object p1, object p2, object p3)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ScopedInSingletonException"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ScopedInSingletonException"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// Cannot resolve '{0}' from root provider because it requires {2} service '{1}'.
+        /// </summary>
+        internal static string ScopedResolvedFromRootException
+        {
+            get { return GetString("ScopedResolvedFromRootException"); }
+        }
+
+        /// <summary>
+        /// Cannot resolve '{0}' from root provider because it requires {2} service '{1}'.
+        /// </summary>
+        internal static string FormatScopedResolvedFromRootException(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ScopedResolvedFromRootException"), p0, p1, p2);
         }
 
         private static string GetString(string name, params string[] formatterNames)
