@@ -122,6 +122,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return string.Format(CultureInfo.CurrentCulture, GetString("NoConstructorMatch"), p0);
         }
 
+        /// <summary>
+        /// Cannot consume scoped service '{0}' from singleton '{1}'.
+        /// </summary>
+        internal static string ScopedInSingletonException
+        {
+            get { return GetString("ScopedInSingletonException"); }
+        }
+
+        /// <summary>
+        /// Cannot consume scoped service '{0}' from singleton '{1}'.
+        /// </summary>
+        internal static string FormatScopedInSingletonException(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ScopedInSingletonException"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

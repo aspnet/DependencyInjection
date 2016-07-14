@@ -141,4 +141,7 @@
     <value>A suitable constructor for type '{0}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.</value>
     <comment>{0} = service type</comment>
   </data>
+  <data name="ScopedInSingletonException" xml:space="preserve">
+    <value>Cannot consume scoped service '{0}' from singleton '{1}'.</value>
+  </data>
 </root>

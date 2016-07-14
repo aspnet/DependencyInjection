@@ -9,7 +9,12 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceProvider BuildServiceProvider(this IServiceCollection services)
         {
-            return new ServiceProvider(services);
+            return BuildServiceProvider(services, validateScopes: false);
+        }
+
+        public static IServiceProvider BuildServiceProvider(this IServiceCollection services, bool validateScopes)
+        {
+            return new ServiceProvider(services, validateScopes);
         }
     }
 }
