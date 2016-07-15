@@ -154,6 +154,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return string.Format(CultureInfo.CurrentCulture, GetString("ScopedResolvedFromRootException"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Cannot resolve {1} service '{0}' from root provider.
+        /// </summary>
+        internal static string DirectScopedResolvedFromRootException
+        {
+            get { return GetString("DirectScopedResolvedFromRootException"); }
+        }
+
+        /// <summary>
+        /// Cannot resolve {1} service '{0}' from root provider.
+        /// </summary>
+        internal static string FormatDirectScopedResolvedFromRootException(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DirectScopedResolvedFromRootException"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

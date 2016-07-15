@@ -147,4 +147,7 @@
   <data name="ScopedResolvedFromRootException" xml:space="preserve">
     <value>Cannot resolve '{0}' from root provider because it requires {2} service '{1}'.</value>
   </data>
+  <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
+    <value>Cannot resolve {1} service '{0}' from root provider.</value>
+  </data>
 </root>

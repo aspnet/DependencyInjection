@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CallSiteValidator: CallSiteVisitor<CallSiteValidator.CallSiteValidatorState, Type>
     {
+        // Keys are services being resolved via GetService, values - first scoped service in their call site tree
         private readonly Dictionary<Type, Type> _scopedServices = new Dictionary<Type, Type>();
 
         public void ValidateCallSite(Type serviceType, IServiceCallSite callSite)
@@ -25,10 +26,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (ReferenceEquals(serviceProvider, serviceProvider.Root)
                 && _scopedServices.TryGetValue(serviceType, out scopedService))
             {
-                throw new InvalidOperationException(Resources.FormatScopedResolvedFromRootException(
-                    serviceType,
-                    scopedService,
-                    nameof(ServiceLifetime.Scoped).ToLowerInvariant()));
+                if (serviceType == scopedService)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatDirectScopedResolvedFromRootException(serviceType,
+                            nameof(ServiceLifetime.Scoped).ToLowerInvariant()));
+                }
+
+                throw new InvalidOperationException(
+                    Resources.FormatScopedResolvedFromRootException(
+                        serviceType,
+                        scopedService,
+                        nameof(ServiceLifetime.Scoped).ToLowerInvariant()));
             }
         }
 
@@ -108,7 +117,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal struct CallSiteValidatorState
         {
             public SingletonCallSite Singleton { get; set; }
-            public List<Type> Scoped { get; set; }
         }
     }
 }

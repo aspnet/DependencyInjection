@@ -57,6 +57,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<IBar, Bar>();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IBar)));
+            Assert.Equal($"Cannot resolve scoped service '{typeof(IBar)}' from root provider.", exception.Message);
+        }
+
+        [Fact]
+        public void GetService_Throws_WhenGetServiceForScopedServiceIsCalledOnRootViaTransient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<IFoo, Foo>();
             serviceCollection.AddScoped<IBar, Bar>();
             var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
@@ -67,7 +80,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         }
 
         [Fact]
-
         public void GetService_DoesNotThrow_WhenScopeFactoryIsInjectedIntoSingleton()
         {
             // Arrange
