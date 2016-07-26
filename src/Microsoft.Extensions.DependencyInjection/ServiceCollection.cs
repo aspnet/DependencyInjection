@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var registeredServiceDescriptor = _descriptors.FirstOrDefault(s => s.ServiceType == item.ServiceType);
             if (registeredServiceDescriptor != null)
             {
-                throw new InvalidOperationException("Cannot add two services of the same type, use ");
+                throw new InvalidOperationException($"There is already descriptor with service type '{registeredServiceDescriptor.ServiceType}' registered.");
             }
             _descriptors.Add(item);
         }

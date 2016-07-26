@@ -393,5 +393,22 @@ namespace Microsoft.Extensions.DependencyInjection
             // Assert
             Assert.Equal(new[] { descriptor2 }, collection);
         }
+
+        [Fact]
+        public void Add_ThrowsWhenAddingMultipleWithSameType()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var descriptor1 = ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            collection.Add(descriptor1);
+            var descriptor2 = ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Singleton);
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(()=> collection.Add(descriptor2));
+            Assert.Equal(exception.Message,
+                $"There is already descriptor with service type '{typeof(IFakeService)}' registered.");
+        }
+
+
     }
 }

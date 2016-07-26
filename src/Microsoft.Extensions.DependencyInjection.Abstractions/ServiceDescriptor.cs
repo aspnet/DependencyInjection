@@ -2,26 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public class OrderedServiceDescriptor: EnumerableServiceDescriptor
+    public abstract class LifetimeServiceDescriptor
     {
-        public OrderedServiceDescriptor(Type serviceType) : base(serviceType)
-        {
-        }
+        
     }
-    public class EnumerableServiceDescriptor: ServiceDescriptor
-    {
-        public EnumerableServiceDescriptor(Type serviceType) : base(serviceType, ServiceLifetime.Transient)
-        {
-        }
-
-        public List<ServiceDescriptor> Descriptors { get; } = new List<ServiceDescriptor>();
-    }
-
     [DebuggerDisplay("Lifetime = {Lifetime}, ServiceType = {ServiceType}, ImplementationType = {ImplementationType}")]
     public class ServiceDescriptor
     {

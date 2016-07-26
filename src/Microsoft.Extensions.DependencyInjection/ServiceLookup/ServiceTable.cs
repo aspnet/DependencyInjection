@@ -31,7 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     Add(typeof(IEnumerable<>).MakeGenericType(descriptor.ServiceType), new ClosedIEnumerableService(
                         descriptor.ServiceType,
-                        enumerableDescriptor.Descriptors.Select(CreateService).ToArray()));
+                        //reverse to break assumptions
+                        enumerableDescriptor.Descriptors.Select(CreateService).Reverse().ToArray()));
                 }
                 else
                 {
