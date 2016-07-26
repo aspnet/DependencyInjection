@@ -43,7 +43,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
             _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
-            _table.Add(typeof(IEnumerable<>), new OpenIEnumerableService(_table));
         }
 
         // This constructor is called exclusively to create a child scope from the parent
@@ -115,13 +114,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     return GetResolveCallSite(entry.Last, callSiteChain);
                 }
-
-                object emptyIEnumerableOrNull = GetEmptyIEnumerableOrNull(serviceType);
-                if (emptyIEnumerableOrNull != null)
-                {
-                    return new EmptyIEnumerableCallSite(serviceType, emptyIEnumerableOrNull);
-                }
-
                 return null;
             }
             finally

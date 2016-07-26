@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
@@ -123,7 +124,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void SingleServiceCanBeIEnumerableResolved()
+        public void NonEnumerablServiceCanNotBeIEnumerableResolved()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -134,9 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var services = provider.GetService<IEnumerable<IFakeService>>();
 
             // Assert
-            Assert.NotNull(services);
-            var service = Assert.Single(services);
-            Assert.IsType<FakeService>(service);
+            Assert.Null(services);
         }
 
         [Fact]
@@ -144,8 +143,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
-            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -162,12 +161,14 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
-            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
 
             var provider = CreateServiceProvider(collection);
 
-            collection.Reverse();
+            collection = new ServiceCollection();
+            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
             var providerReversed = CreateServiceProvider(collection);
 
             // Act
@@ -192,8 +193,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var fakeService = new FakeService();
             collection.AddTransient<IFakeOuterService, FakeOuterService>();
             collection.AddSingleton<IFakeService>(fakeService);
-            collection.AddTransient<IFakeMultipleService, FakeOneMultipleService>();
-            collection.AddTransient<IFakeMultipleService, FakeTwoMultipleService>();
+            collection.AddEnumerable<IFakeMultipleService, FakeOneMultipleService>();
+            collection.AddEnumerable<IFakeMultipleService, FakeTwoMultipleService>();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -590,7 +591,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void NonexistentServiceCanBeIEnumerableResolved()
+        public void NonexistentServiceCanNotBeIEnumerableResolved()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -600,7 +601,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var services = provider.GetService<IEnumerable<INonexistentService>>();
 
             // Assert
-            Assert.Empty(services);
+            Assert.Null(services);
         }
 
         public static TheoryData ServiceContainerPicksConstructorWithLongestMatchesData

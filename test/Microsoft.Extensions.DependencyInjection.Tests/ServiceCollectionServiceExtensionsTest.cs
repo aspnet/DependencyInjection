@@ -351,8 +351,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
-            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), ServiceLifetime.Transient);
+            var descriptor1 = ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            var descriptor2 = ServiceDescriptor.Describe(typeof(IFakeOuterService), typeof(FakeOuterService), ServiceLifetime.Transient);
             var descriptors = new[] { descriptor1, descriptor2 };
 
             // Act
@@ -367,8 +367,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
-            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), ServiceLifetime.Transient);
+            var descriptor1 = ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            var descriptor2 = ServiceDescriptor.Describe(typeof(IFakeOuterService), typeof(FakeOuterService), ServiceLifetime.Transient);
             collection.Add(descriptor1);
 
             // Act
@@ -383,17 +383,15 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
-            var descriptor2 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            var descriptor1 = ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
             collection.Add(descriptor1);
-            collection.Add(descriptor2);
-            var descriptor3 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Singleton);
+            var descriptor2 = ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Singleton);
 
             // Act
-            collection.Replace(descriptor3);
+            collection.Replace(descriptor2);
 
             // Assert
-            Assert.Equal(new[] { descriptor2, descriptor3 }, collection);
+            Assert.Equal(new[] { descriptor2 }, collection);
         }
     }
 }

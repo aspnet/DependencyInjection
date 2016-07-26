@@ -4,18 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ClosedIEnumerableService : IService
     {
         private readonly Type _itemType;
-        private readonly ServiceEntry _serviceEntry;
+        private readonly IEnumerable<IService> _services;
 
-        public ClosedIEnumerableService(Type itemType, ServiceEntry entry)
+        public ClosedIEnumerableService(Type itemType, IEnumerable<IService> services )
         {
             _itemType = itemType;
-            _serviceEntry = entry;
+            _services = services;
         }
 
         public IService Next { get; set; }
@@ -29,12 +30,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
+            if (!_services.Any())
+            {
+                var item = Array.CreateInstance(_itemType, 0);
+                return new EmptyIEnumerableCallSite(_itemType, item);
+            }
             var list = new List<IServiceCallSite>();
-            var service = _serviceEntry.First;
-            while (service != null)
+            foreach (var service in _services)
             {
                 list.Add(provider.GetResolveCallSite(service, callSiteChain));
-                service = service.Next;
             }
             return new ClosedIEnumerableCallSite(_itemType, list.ToArray());
         }

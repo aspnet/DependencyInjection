@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Type closedImplementationType =
                 _descriptor.ImplementationType.MakeGenericType(genericArguments);
 
-            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifetime);
+            var closedServiceDescriptor = ServiceDescriptor.Describe(closedServiceType, closedImplementationType, Lifetime);
             return new Service(closedServiceDescriptor);
         }
     }

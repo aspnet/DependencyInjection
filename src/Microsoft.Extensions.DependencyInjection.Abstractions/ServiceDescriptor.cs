@@ -2,10 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    public class EnumerableServiceDescriptor: ServiceDescriptor
+    {
+        public EnumerableServiceDescriptor(Type serviceType) : base(serviceType, ServiceLifetime.Transient)
+        {
+        }
+
+        public List<ServiceDescriptor> Descriptors { get; } = new List<ServiceDescriptor>();
+    }
+
     [DebuggerDisplay("Lifetime = {Lifetime}, ServiceType = {ServiceType}, ImplementationType = {ImplementationType}")]
     public class ServiceDescriptor
     {
@@ -15,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="implementationType">The <see cref="Type"/> implementing the service.</param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
-        public ServiceDescriptor(
+        protected ServiceDescriptor(
             Type serviceType,
             Type implementationType,
             ServiceLifetime lifetime)
@@ -40,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="instance">The instance implementing the service.</param>
-        public ServiceDescriptor(
+        protected ServiceDescriptor(
             Type serviceType,
             object instance)
             : this(serviceType, ServiceLifetime.Singleton)
@@ -64,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
-        public ServiceDescriptor(
+        protected ServiceDescriptor(
             Type serviceType,
             Func<IServiceProvider, object> factory,
             ServiceLifetime lifetime)
@@ -83,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ImplementationFactory = factory;
         }
 
-        private ServiceDescriptor(Type serviceType, ServiceLifetime lifetime)
+        protected ServiceDescriptor(Type serviceType, ServiceLifetime lifetime)
         {
             Lifetime = lifetime;
             ServiceType = serviceType;

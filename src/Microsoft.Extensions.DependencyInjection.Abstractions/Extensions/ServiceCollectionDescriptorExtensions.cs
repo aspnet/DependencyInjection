@@ -3,11 +3,90 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection.Extensions
 {
+    public static class ServiceCollectionEnumerableExtensions
+    {
+        public static IServiceCollection AddEnumerable<TService, TImplementation>(this IServiceCollection services)
+          where TService : class
+          where TImplementation : class, TService
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            return AddEnumerable(services, ServiceDescriptor.Transient(typeof(TService), typeof(TImplementation)));
+        }
+        public static IServiceCollection AddEnumerable(
+            this IServiceCollection services,
+            Type serviceType,
+            Type implementationType)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationType == null)
+            {
+                throw new ArgumentNullException(nameof(implementationType));
+            }
+
+            return AddEnumerable(services, ServiceDescriptor.Transient(serviceType, implementationType));
+        }
+
+        public static IServiceCollection AddEnumerable(
+           this IServiceCollection collection,
+           ServiceDescriptor descriptor)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (descriptor.Lifetime != ServiceLifetime.Transient)
+            {
+                throw new ArgumentException("Lifetime could only be transient", nameof(descriptor.Lifetime));
+            }
+
+            var collectionDescriptor = GetEnumerableDescriptor(collection, descriptor.ServiceType);
+            collectionDescriptor.Descriptors.Add(descriptor);
+            return collection;
+        }
+
+        private static EnumerableServiceDescriptor GetEnumerableDescriptor(
+            this IServiceCollection collection,
+            Type serviceType)
+        {
+            var descriptor = (EnumerableServiceDescriptor)
+                collection.FirstOrDefault(d =>
+                    d.GetType() == typeof(EnumerableServiceDescriptor) &&
+                    d.ServiceType == serviceType);
+            if (descriptor == null)
+            {
+                descriptor = new EnumerableServiceDescriptor(serviceType);
+                collection.Add(descriptor);
+            }
+            return descriptor;
+        }
+
+    }
+
     public static class ServiceCollectionDescriptorExtensions
     {
         /// <summary>
@@ -29,7 +108,6 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
-
             collection.Add(descriptor);
             return collection;
         }
@@ -76,7 +154,6 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             {
                 throw new ArgumentNullException(nameof(collection));
             }
-
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));

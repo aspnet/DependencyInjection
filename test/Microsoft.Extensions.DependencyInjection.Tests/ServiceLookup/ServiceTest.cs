@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var type = typeof(TypeWithNoPublicConstructors);
             var expectedMessage = $"A suitable constructor for type '{type}' could not be located. " +
                 "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
 
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_CreatesInstanceCallSite_IfTypeHasDefaultOrPublicParameterlessConstructor(Type type)
         {
             // Arrange
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
 
@@ -55,11 +55,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_CreatesConstructorCallSite_IfTypeHasConstructorWithInjectableParameters(Type type)
         {
             // Arrange
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider(
                 descriptor,
-                new ServiceDescriptor(typeof(IFakeService), new FakeService())
+                ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService())
             );
 
             // Act
@@ -75,11 +75,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithEnumerableConstructors);
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider(
                 descriptor,
-                new ServiceDescriptor(typeof(IFakeService), new FakeService())
+                new EnumerableServiceDescriptor(typeof(IFakeService)),
+                new EnumerableServiceDescriptor(typeof(IFactoryService))
             );
 
             // Act
@@ -97,7 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithParameterizedAndNullaryConstructor);
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
 
@@ -114,68 +115,68 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     typeof(TypeWithSupersetConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService))
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFactoryService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeService), typeof(IFactoryService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
+                        ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeService), typeof(IFakeMultipleService), typeof(IFactoryService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService)),
-                        new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService))
+                        ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFactoryService), typeof(IFakeService), typeof(IFakeScopedService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService)),
-                        new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService))
+                        ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFactoryService), typeof(IFakeService), typeof(IFakeScopedService) }
                 },
                 {
                     typeof(TypeWithGenericServices),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeService), typeof(IFakeOpenGenericService<IFakeService>) }
                 },
                 {
                     typeof(TypeWithGenericServices),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeService), typeof(IFactoryService), typeof(IFakeOpenGenericService<IFakeService>) }
                 }
@@ -189,7 +190,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Type[] expectedConstructorParameters)
         {
             // Arrange
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
 
 
@@ -206,20 +207,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 {
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFakeService) }
                 },
                 {
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFactoryService), typeof(IFakeScopedService) }
                 },
                 {
                    GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFactoryService), typeof(IFakeScopedService) }
                 }
@@ -233,7 +234,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithDefaultConstructorParameters);
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
 
             // Act
@@ -249,7 +250,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithParameterizedConstructor);
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider();
 
@@ -267,11 +268,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_ThrowsIfTypeHasNoConstructurWithResolvableParameters(Type type)
         {
             // Arrange
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider(
-                new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient)
+                ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
+                ServiceDescriptor.Describe(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient)
             );
 
             // Act and Assert
@@ -287,8 +288,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     typeof(TypeWithDefaultConstructorParameters),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[]
                     {
@@ -299,8 +300,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     typeof(TypeWithMultipleParameterizedConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[]
                     {
@@ -311,10 +312,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     typeof(TypeWithNonOverlappedConstructors),
                     GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeService), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeOuterService), typeof(FakeService), ServiceLifetime.Transient),
+                        ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[]
                     {
@@ -325,18 +326,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                    typeof(TypeWithUnresolvableEnumerableConstructors),
                    GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient)
-                    ),
-                   new[]
-                   {
-                        new[] { typeof(IFakeService) },
-                        new[] { typeof(IEnumerable<IFakeService>) }
-                   }
-                },
-                {
-                   typeof(TypeWithUnresolvableEnumerableConstructors),
-                   GetServiceProvider(
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
+                        ServiceDescriptor.Describe(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient),
+                        new EnumerableServiceDescriptor(typeof(IFakeService))
                     ),
                    new[]
                    {
@@ -360,7 +351,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     $"Unable to activate type '{type}'. The following constructors are ambigious:",
                     GetConstructor(type, expectedConstructorParameterTypes[0]),
                     GetConstructor(type, expectedConstructorParameterTypes[1]));
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
 
             // Act and Assert
@@ -375,11 +366,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var type = typeof(TypeWithGenericServices);
             var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambigious:";
-            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var descriptor = ServiceDescriptor.Describe(type, type, ServiceLifetime.Transient);
             var serviceProvider = GetServiceProvider(
-                new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient)
+                ServiceDescriptor.Describe(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                ServiceDescriptor.Describe(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
+                ServiceDescriptor.Describe(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient)
             );
             var service = new Service(descriptor);
 

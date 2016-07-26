@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetServices<ClassDependsOnPrivateConstructorClass>());
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService<ClassDependsOnPrivateConstructorClass>());
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -67,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddTransient<DependOnNonexistentService>();
+            collection.AddEnumerable<DependOnNonexistentService, DependOnNonexistentService>();
             var provider = CreateServiceProvider(collection);
 
             // Act and Assert

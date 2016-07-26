@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -15,7 +16,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public void GetService_Returns_CorrectService()
         {
             // Arrange
-            var serviceProvider = CreateTestServiceProvider(1);
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IFoo, Foo1>();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act
             var service = serviceProvider.GetService<IFoo>();
@@ -67,6 +71,27 @@ namespace Microsoft.Extensions.DependencyInjection
             // Act + Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService(typeof(IFoo)),
                 $"No service for type '{typeof(IFoo)}' has been registered.");
+        }
+
+        [Fact]
+        public void NonGeneric_GetServices_Throws_WhenNoServiceRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(0);
+
+            // Act + Assert
+            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetServices(typeof(IFoo)),
+                $"No service for type '{typeof(IEnumerable<IFoo>)}' has been registered.");
+        }
+        [Fact]
+        public void GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(0);
+
+            // Act + Assert
+            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetServices<IFoo>(),
+                $"No service for type '{typeof(IEnumerable<IFoo>)}' has been registered.");
         }
 
         [Fact]
@@ -155,34 +180,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(0);
-
-            // Act
-            var services = serviceProvider.GetServices<IFoo>();
-
-            // Assert
-            Assert.Empty(services);
-            Assert.IsType<IFoo[]>(services);
-        }
-
-        [Fact]
-        public void NonGeneric_GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
-        {
-            // Arrange
-            var serviceProvider = CreateTestServiceProvider(0);
-
-            // Act
-            var services = serviceProvider.GetServices(typeof(IFoo));
-
-            // Assert
-            Assert.Empty(services);
-            Assert.IsType<IFoo[]>(services);
-        }
-
-        [Fact]
         public void GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable()
         {
             // Arrange
@@ -220,22 +217,22 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (count > 0)
             {
-                serviceCollection.AddTransient<IFoo, Foo1>();
+                serviceCollection.AddEnumerable<IFoo, Foo1>();
             }
 
             if (count > 1)
             {
-                serviceCollection.AddTransient<IFoo, Foo2>();
+                serviceCollection.AddEnumerable<IFoo, Foo2>();
             }
 
             if (count > 2)
             {
-                serviceCollection.AddTransient<IBar, Bar1>();
+                serviceCollection.AddEnumerable<IBar, Bar1>();
             }
 
             if (count > 3)
             {
-                serviceCollection.AddTransient<IBar, Bar2>();
+                serviceCollection.AddEnumerable<IBar, Bar2>();
             }
 
             return serviceCollection.BuildServiceProvider();
