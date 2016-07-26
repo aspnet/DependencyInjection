@@ -7,6 +7,12 @@ using System.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    public class OrderedServiceDescriptor: EnumerableServiceDescriptor
+    {
+        public OrderedServiceDescriptor(Type serviceType) : base(serviceType)
+        {
+        }
+    }
     public class EnumerableServiceDescriptor: ServiceDescriptor
     {
         public EnumerableServiceDescriptor(Type serviceType) : base(serviceType, ServiceLifetime.Transient)

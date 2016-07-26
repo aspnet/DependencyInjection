@@ -33,33 +33,36 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         descriptor.ServiceType,
                         enumerableDescriptor.Descriptors.Select(CreateService).ToArray()));
                 }
-                else if (serviceTypeInfo.IsGenericTypeDefinition)
-                {
-                    var implementationTypeInfo = descriptor.ImplementationType?.GetTypeInfo();
-
-                    if (implementationTypeInfo == null ||
-                        !implementationTypeInfo.IsGenericTypeDefinition)
-                    {
-                        throw new ArgumentException(
-                            Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(
-                                descriptor.ServiceType),
-                            nameof(descriptors));
-                    }
-
-                    if (implementationTypeInfo.IsAbstract ||
-                        implementationTypeInfo.IsInterface)
-                    {
-                        throw new ArgumentException(
-                            Resources.FormatTypeCannotBeActivated(
-                                descriptor.ImplementationType,
-                                descriptor.ServiceType));
-                    }
-
-                    Add(descriptor.ServiceType, new GenericService(descriptor));
-                }
                 else
                 {
-                    Add(descriptor.ServiceType, CreateService(descriptor));
+                    if (serviceTypeInfo.IsGenericTypeDefinition)
+                    {
+                        var implementationTypeInfo = descriptor.ImplementationType?.GetTypeInfo();
+
+                        if (implementationTypeInfo == null ||
+                            !implementationTypeInfo.IsGenericTypeDefinition)
+                        {
+                            throw new ArgumentException(
+                                Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(
+                                    descriptor.ServiceType),
+                                nameof(descriptors));
+                        }
+
+                        if (implementationTypeInfo.IsAbstract ||
+                            implementationTypeInfo.IsInterface)
+                        {
+                            throw new ArgumentException(
+                                Resources.FormatTypeCannotBeActivated(
+                                    descriptor.ImplementationType,
+                                    descriptor.ServiceType));
+                        }
+
+                        Add(descriptor.ServiceType, new GenericService(descriptor));
+                    }
+                    else
+                    {
+                        Add(descriptor.ServiceType, CreateService(descriptor));
+                    }
                 }
             }
         }

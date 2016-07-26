@@ -157,23 +157,23 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void RegistrationOrderIsPreservedWhenServicesAreIEnumerableResolved()
+        public void RegistrationOrderIsPreservedWhenServicesAreIOrderedResolved()
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
-            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
 
             var provider = CreateServiceProvider(collection);
 
             collection = new ServiceCollection();
-            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
-            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
             var providerReversed = CreateServiceProvider(collection);
 
             // Act
-            var services = provider.GetService<IEnumerable<IFakeMultipleService>>();
-            var servicesReversed = providerReversed.GetService<IEnumerable<IFakeMultipleService>>();
+            var services = provider.GetService<IOrdered<IFakeMultipleService>>();
+            var servicesReversed = providerReversed.GetService<IOrdered<IFakeMultipleService>>();
 
             // Assert
             Assert.Collection(services,
