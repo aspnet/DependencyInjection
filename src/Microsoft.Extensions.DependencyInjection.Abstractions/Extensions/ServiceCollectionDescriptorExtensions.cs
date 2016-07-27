@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var descriptor = ServiceDescriptor.Transient(service, service);
+            var descriptor = TypeServiceDescriptor.Transient(service, service);
             TryAdd(collection, descriptor);
         }
 
@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            var descriptor = ServiceDescriptor.Transient(service, implementationType);
+            var descriptor = TypeServiceDescriptor.Transient(service, implementationType);
             TryAdd(collection, descriptor);
         }
 
@@ -174,7 +174,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            var descriptor = ServiceDescriptor.Transient(service, implementationFactory);
+            var descriptor = FactoryServiceDescriptor.Transient(service, implementationFactory);
             TryAdd(collection, descriptor);
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            services.TryAdd(ServiceDescriptor.Transient(implementationFactory));
+            services.TryAdd(FactoryServiceDescriptor.Transient(implementationFactory));
         }
 
         public static void TryAddScoped(
@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var descriptor = ServiceDescriptor.Scoped(service, service);
+            var descriptor = TypeServiceDescriptor.Scoped(service, service);
             TryAdd(collection, descriptor);
         }
 
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            var descriptor = ServiceDescriptor.Scoped(service, implementationType);
+            var descriptor = TypeServiceDescriptor.Scoped(service, implementationType);
             TryAdd(collection, descriptor);
         }
 
@@ -271,7 +271,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            var descriptor = ServiceDescriptor.Scoped(service, implementationFactory);
+            var descriptor = FactoryServiceDescriptor.Scoped(service, implementationFactory);
             TryAdd(collection, descriptor);
         }
 
@@ -303,7 +303,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            services.TryAdd(ServiceDescriptor.Scoped(implementationFactory));
+            services.TryAdd(FactoryServiceDescriptor.Scoped(implementationFactory));
         }
 
         public static void TryAddSingleton(
@@ -320,7 +320,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var descriptor = ServiceDescriptor.Singleton(service, service);
+            var descriptor = TypeServiceDescriptor.Singleton(service, service);
             TryAdd(collection, descriptor);
         }
 
@@ -344,7 +344,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            var descriptor = ServiceDescriptor.Singleton(service, implementationType);
+            var descriptor = TypeServiceDescriptor.Singleton(service, implementationType);
             TryAdd(collection, descriptor);
         }
 
@@ -368,7 +368,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            var descriptor = ServiceDescriptor.Singleton(service, implementationFactory);
+            var descriptor = FactoryServiceDescriptor.Singleton(service, implementationFactory);
             TryAdd(collection, descriptor);
         }
 
@@ -408,7 +408,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(instance));
             }
 
-            var descriptor = ServiceDescriptor.Singleton(typeof(TService), instance);
+            var descriptor = InstanceServiceDescriptor.Singleton(typeof(TService), instance);
             TryAdd(collection, descriptor);
         }
 
@@ -417,95 +417,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            services.TryAdd(ServiceDescriptor.Singleton(implementationFactory));
-        }
-
-        /// <summary>
-        /// Adds a <see cref="ServiceDescriptor"/> if an existing descriptor with the same
-        /// <see cref="ServiceDescriptor.ServiceType"/> and an implementation that does not already exist
-        /// in <paramref name="services."/>.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="ServiceDescriptor"/>.</param>
-        /// <remarks>
-        /// Use <see cref="TryAddEnumerable(IServiceCollection, ServiceDescriptor)"/> when registing a service implementation of a
-        /// service type that
-        /// supports multiple registrations of the same service type. Using
-        /// <see cref="Add(IServiceCollection, ServiceDescriptor)"/> is not idempotent and can add
-        /// duplicate
-        /// <see cref="ServiceDescriptor"/> instances if called twice. Using
-        /// <see cref="TryAddEnumerable(IServiceCollection, ServiceDescriptor)"/> will prevent registration
-        /// of multiple implementation types.
-        /// </remarks>
-        public static void TryAddEnumerable(
-            this IServiceCollection services,
-            ServiceDescriptor descriptor)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var implementationType = descriptor.GetImplementationType();
-
-            if (implementationType == typeof(object) ||
-                implementationType == descriptor.ServiceType)
-            {
-                throw new ArgumentException(
-                    Resources.FormatTryAddIndistinguishableTypeToEnumerable(
-                        implementationType,
-                        descriptor.ServiceType),
-                    nameof(descriptor));
-            }
-
-            if (!services.Any(d =>
-                              d.ServiceType == descriptor.ServiceType &&
-                              d.GetImplementationType() == implementationType))
-            {
-                services.Add(descriptor);
-            }
-        }
-
-        /// <summary>
-        /// Adds the specified <see cref="ServiceDescriptor"/>s if an existing descriptor with the same
-        /// <see cref="ServiceDescriptor.ServiceType"/> and an implementation that does not already exist
-        /// in <paramref name="services."/>.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptors">The <see cref="ServiceDescriptor"/>s.</param>
-        /// <remarks>
-        /// Use <see cref="TryAddEnumerable(IServiceCollection, ServiceDescriptor)"/> when registing a service
-        /// implementation of a service type that
-        /// supports multiple registrations of the same service type. Using
-        /// <see cref="Add(IServiceCollection, ServiceDescriptor)"/> is not idempotent and can add
-        /// duplicate
-        /// <see cref="ServiceDescriptor"/> instances if called twice. Using
-        /// <see cref="TryAddEnumerable(IServiceCollection, ServiceDescriptor)"/> will prevent registration
-        /// of multiple implementation types.
-        /// </remarks>
-        public static void TryAddEnumerable(
-            this IServiceCollection services,
-            IEnumerable<ServiceDescriptor> descriptors)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (descriptors == null)
-            {
-                throw new ArgumentNullException(nameof(descriptors));
-            }
-
-            foreach (var d in descriptors)
-            {
-                services.TryAddEnumerable(d);
-            }
+            services.TryAdd(FactoryServiceDescriptor.Singleton(implementationFactory));
         }
 
         /// <summary>

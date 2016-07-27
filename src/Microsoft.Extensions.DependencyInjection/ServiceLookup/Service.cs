@@ -11,9 +11,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class Service : IService
     {
-        private readonly ServiceDescriptor _descriptor;
+        private readonly TypeServiceDescriptor _descriptor;
 
-        public Service(ServiceDescriptor descriptor)
+        public Service(TypeServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }

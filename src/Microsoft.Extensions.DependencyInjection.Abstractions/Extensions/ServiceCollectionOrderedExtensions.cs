@@ -40,8 +40,9 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return AddOrdered(services, ServiceDescriptor.Transient(typeof(TService), typeof(TImplementation)));
+            return AddOrdered(services, (ServiceDescriptor) TypeServiceDescriptor.Transient(typeof(TService), typeof(TImplementation)));
         }
+
         public static IServiceCollection AddOrdered<TService>(
             this IServiceCollection services,
             TService implementationInstance)
@@ -57,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return AddOrdered(services, ServiceDescriptor.Singleton(typeof(TService), implementationInstance));
+            return AddOrdered(services, (ServiceDescriptor) InstanceServiceDescriptor.Singleton(typeof(TService), implementationInstance));
         }
 
         public static IServiceCollection AddOrdered(
@@ -80,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return AddOrdered(services, ServiceDescriptor.Singleton(serviceType, implementationInstance));
+            return AddOrdered(services, (ServiceDescriptor) InstanceServiceDescriptor.Singleton(serviceType, implementationInstance));
         }
 
         public static IServiceCollection AddOrdered(
@@ -103,7 +104,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            return AddOrdered(services, ServiceDescriptor.Transient(serviceType, implementationType));
+            return AddOrdered(services, (ServiceDescriptor) TypeServiceDescriptor.Transient(serviceType, implementationType));
         }
 
         public static IServiceCollection AddOrdered(

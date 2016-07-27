@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class FactoryService : IService, IServiceCallSite
     {
-        internal ServiceDescriptor Descriptor { get; }
+        internal FactoryServiceDescriptor Descriptor { get; }
 
-        public FactoryService(ServiceDescriptor descriptor)
+        public FactoryService(FactoryServiceDescriptor descriptor)
         {
             Descriptor = descriptor;
         }

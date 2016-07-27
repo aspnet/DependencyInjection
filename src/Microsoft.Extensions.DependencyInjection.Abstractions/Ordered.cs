@@ -25,17 +25,26 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
         {
             foreach (var descriptor in _descriptorHolder.ServiceDescriptor.Descriptors)
             {
-                if (descriptor.ImplementationFactory != null)
+                var factoryServiceDescriptor = descriptor as FactoryServiceDescriptor;
+                if (factoryServiceDescriptor != null)
                 {
-                    yield return (T) descriptor.ImplementationFactory(_serviceProvider);
-                }
-                else if (descriptor.ImplementationType != null)
-                {
-                    yield return (T) ActivatorUtilities.CreateInstance(_serviceProvider, descriptor.ImplementationType);
+                    yield return (T)factoryServiceDescriptor.ImplementationFactory(_serviceProvider);
                 }
                 else
                 {
-                    yield return (T) descriptor.ImplementationInstance;
+                    var typeServiceDescriptor = descriptor as TypeServiceDescriptor;
+                    if (typeServiceDescriptor != null)
+                    {
+                        yield return (T) ActivatorUtilities.CreateInstance(_serviceProvider, typeServiceDescriptor.ImplementationType);
+                    }
+                    else
+                    {
+                        var instanceServiceDescriptor = descriptor as InstanceServiceDescriptor;
+                        if (instanceServiceDescriptor != null)
+                        {
+                            yield return (T)instanceServiceDescriptor.ImplementationInstance;
+                        }
+                    }
                 }
             }
         }

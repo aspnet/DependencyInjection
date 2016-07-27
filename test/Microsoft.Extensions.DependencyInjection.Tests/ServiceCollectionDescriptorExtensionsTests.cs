@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            var descriptor = ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
+            var descriptor = InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
 
             // Act
             serviceCollection.Add(descriptor);
@@ -45,8 +45,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            var descriptor1 = ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
-            var descriptor2 = ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient);
+            var descriptor1 = InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
+            var descriptor2 = TypeServiceDescriptor.Transient(typeof(IFactoryService), typeof(TransientFactoryService));
 
             // Act
             serviceCollection.Add(descriptor1);
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Equal(2, serviceCollection.Count);
-            Assert.Equal(new[] { descriptor1, descriptor2 }, serviceCollection);
+            Assert.Equal(new ServiceDescriptor[] { descriptor1, descriptor2 }, serviceCollection);
         }
 
         [Fact]
@@ -62,8 +62,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            var descriptor1 = ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
-            var descriptor2 = ServiceDescriptor.Describe(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient);
+            var descriptor1 = InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
+            var descriptor2 = TypeServiceDescriptor.Transient(typeof(IFactoryService), typeof(TransientFactoryService));
 
             // Act
             serviceCollection.Add(descriptor1);

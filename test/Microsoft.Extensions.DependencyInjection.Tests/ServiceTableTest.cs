@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var serviceDescriptors = new[]
             {
-                ServiceDescriptor.Describe(typeof(IList<>), type, ServiceLifetime.Transient)
+                TypeServiceDescriptor.Transient(typeof(IList<>), type)
             };
 
             // Act and Assert
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var serviceDescriptors = new[]
             {
-                ServiceDescriptor.Singleton(typeof(IEnumerable<>), instance)
+                InstanceServiceDescriptor.Singleton(typeof(IEnumerable<>), instance)
             };
 
             // Act and Assert
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var serviceDescriptors = new[]
             {
-                ServiceDescriptor.Describe(typeof(Tuple<>), _ => new Tuple<int>(1), ServiceLifetime.Transient)
+                FactoryServiceDescriptor.Transient(typeof(Tuple<>), _ => new Tuple<int>(1))
             };
 
             // Act and Assert

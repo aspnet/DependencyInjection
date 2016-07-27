@@ -57,7 +57,24 @@ namespace Microsoft.Extensions.DependencyInjection
             var array2 = ordered.ToArray();
 
             // Assert
-            Assert.Equal(array1, array2);
+            Assert.Equal((IEnumerable<IFakeService>)array1, array2);
+        }
+
+        [Fact]
+        public void AddOrdered_SupportsTwoInstancesOfSameType()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddOrdered<IFakeService, FakeService>();
+            collection.AddOrdered<IFakeService, FakeService>();
+            var provider = collection.BuildServiceProvider();
+
+            // Act
+            var ordered = provider.GetService<IEnumerable<IFakeService>>();
+            var array = ordered.ToArray();
+
+            // Assert
+            Assert.NotEqual(array[0], array[1]);
         }
     }
 }
