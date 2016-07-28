@@ -38,23 +38,5 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return ImplementationInstance.GetType();
         }
-
-        public static InstanceServiceDescriptor Singleton<TService>(TService implementationInstance)
-            where TService : class
-        {
-            if (implementationInstance == null)
-            {
-                throw new ArgumentNullException(nameof(implementationInstance));
-            }
-
-            return Singleton(typeof(TService), implementationInstance);
-        }
-
-        public static InstanceServiceDescriptor Singleton(
-            Type serviceType,
-            object implementationInstance)
-        {
-            return new InstanceServiceDescriptor(serviceType, implementationInstance);
-        }
     }
 }

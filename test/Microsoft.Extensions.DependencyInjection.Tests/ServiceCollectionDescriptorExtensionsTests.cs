@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            var descriptor = InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
+            var descriptor = ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
 
             // Act
             serviceCollection.Add(descriptor);
@@ -45,8 +45,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            var descriptor1 = InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
-            var descriptor2 = TypeServiceDescriptor.Transient(typeof(IFactoryService), typeof(TransientFactoryService));
+            var descriptor1 = ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
+            var descriptor2 = ServiceDescriptor.Transient(typeof(IFactoryService), typeof(TransientFactoryService));
 
             // Act
             serviceCollection.Add(descriptor1);
@@ -62,8 +62,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            var descriptor1 = InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
-            var descriptor2 = TypeServiceDescriptor.Transient(typeof(IFactoryService), typeof(TransientFactoryService));
+            var descriptor1 = ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService());
+            var descriptor2 = ServiceDescriptor.Transient(typeof(IFactoryService), typeof(TransientFactoryService));
 
             // Act
             serviceCollection.Add(descriptor1);

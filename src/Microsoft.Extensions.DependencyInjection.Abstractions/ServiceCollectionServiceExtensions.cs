@@ -616,7 +616,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            var serviceDescriptor = InstanceServiceDescriptor.Singleton(serviceType, implementationInstance);
+            var serviceDescriptor = ServiceDescriptor.Singleton(serviceType, implementationInstance);
             services.Add(serviceDescriptor);
             return services;
         }

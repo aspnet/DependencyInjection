@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return AddOrdered(services, (ServiceDescriptor) TypeServiceDescriptor.Transient(typeof(TService), typeof(TImplementation)));
+            return AddOrdered(services, (ServiceDescriptor) ServiceDescriptor.Transient(typeof(TService), typeof(TImplementation)));
         }
 
         public static IServiceCollection AddOrdered<TService>(
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return AddOrdered(services, (ServiceDescriptor) InstanceServiceDescriptor.Singleton(typeof(TService), implementationInstance));
+            return AddOrdered(services, (ServiceDescriptor) ServiceDescriptor.Singleton(typeof(TService), implementationInstance));
         }
 
         public static IServiceCollection AddOrdered(
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return AddOrdered(services, (ServiceDescriptor) InstanceServiceDescriptor.Singleton(serviceType, implementationInstance));
+            return AddOrdered(services, (ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, implementationInstance));
         }
 
         public static IServiceCollection AddOrdered(
@@ -104,7 +104,49 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            return AddOrdered(services, (ServiceDescriptor) TypeServiceDescriptor.Transient(serviceType, implementationType));
+            return AddOrdered(services, (ServiceDescriptor) ServiceDescriptor.Transient(serviceType, implementationType));
+        }
+
+        public static IServiceCollection AddOrdered(
+           this IServiceCollection services,
+           Type serviceType,
+           Func<IServiceProvider, object> implementationFactory)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationFactory == null)
+            {
+                throw new ArgumentNullException(nameof(implementationFactory));
+            }
+
+            return AddOrdered(services, (ServiceDescriptor) ServiceDescriptor.Transient(serviceType, implementationFactory));
+        }
+
+        public static IServiceCollection AddOrdered<TService, TImplementation>(
+           this IServiceCollection services,
+           Func<IServiceProvider, TImplementation> implementationFactory)
+           where TService : class
+           where TImplementation : class, TService
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (implementationFactory == null)
+            {
+                throw new ArgumentNullException(nameof(implementationFactory));
+            }
+
+            return AddOrdered(services, (ServiceDescriptor) ServiceDescriptor.Transient(typeof(TService), implementationFactory));
         }
 
         public static IServiceCollection AddOrdered(

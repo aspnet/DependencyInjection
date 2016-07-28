@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var type = typeof(TypeWithNoPublicConstructors);
             var expectedMessage = $"A suitable constructor for type '{type}' could not be located. " +
                 "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
 
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_CreatesInstanceCallSite_IfTypeHasDefaultOrPublicParameterlessConstructor(Type type)
         {
             // Arrange
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
 
@@ -55,11 +55,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_CreatesConstructorCallSite_IfTypeHasConstructorWithInjectableParameters(Type type)
         {
             // Arrange
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider(
                 descriptor,
-                InstanceServiceDescriptor.Singleton(typeof(IFakeService), new FakeService())
+                ServiceDescriptor.Singleton(typeof(IFakeService), new FakeService())
             );
 
             // Act
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithEnumerableConstructors);
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider(
                 descriptor,
@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithParameterizedAndNullaryConstructor);
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
 
@@ -190,7 +190,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Type[] expectedConstructorParameters)
         {
             // Arrange
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
 
 
@@ -234,7 +234,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithDefaultConstructorParameters);
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
 
             // Act
@@ -250,7 +250,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithParameterizedConstructor);
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider();
 
@@ -268,11 +268,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_ThrowsIfTypeHasNoConstructurWithResolvableParameters(Type type)
         {
             // Arrange
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
             var serviceProvider = GetServiceProvider(
-                TypeServiceDescriptor.Transient(typeof(IFakeMultipleService), typeof(FakeService)),
-                TypeServiceDescriptor.Transient(typeof(IFakeScopedService), typeof(FakeService))
+                ServiceDescriptor.Transient(typeof(IFakeMultipleService), typeof(FakeService)),
+                ServiceDescriptor.Transient(typeof(IFakeScopedService), typeof(FakeService))
             );
 
             // Act and Assert
@@ -351,7 +351,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     $"Unable to activate type '{type}'. The following constructors are ambigious:",
                     GetConstructor(type, expectedConstructorParameterTypes[0]),
                     GetConstructor(type, expectedConstructorParameterTypes[1]));
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var service = new Service(descriptor);
 
             // Act and Assert
@@ -366,11 +366,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var type = typeof(TypeWithGenericServices);
             var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambigious:";
-            var descriptor = TypeServiceDescriptor.Transient(type, type);
+            var descriptor = ServiceDescriptor.Transient(type, type);
             var serviceProvider = GetServiceProvider(
-                TypeServiceDescriptor.Transient(typeof(IFakeService), typeof(FakeService)),
-                TypeServiceDescriptor.Transient(typeof(IFakeMultipleService), typeof(FakeService)),
-                TypeServiceDescriptor.Transient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>))
+                ServiceDescriptor.Transient(typeof(IFakeService), typeof(FakeService)),
+                ServiceDescriptor.Transient(typeof(IFakeMultipleService), typeof(FakeService)),
+                ServiceDescriptor.Transient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>))
             );
             var service = new Service(descriptor);
 

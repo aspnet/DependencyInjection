@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var descriptor = TypeServiceDescriptor.Transient(service, service);
+            var descriptor = ServiceDescriptor.Transient(service, service);
             TryAdd(collection, descriptor);
         }
 
@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            var descriptor = TypeServiceDescriptor.Transient(service, implementationType);
+            var descriptor = ServiceDescriptor.Transient(service, implementationType);
             TryAdd(collection, descriptor);
         }
 
@@ -174,7 +174,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            var descriptor = FactoryServiceDescriptor.Transient(service, implementationFactory);
+            var descriptor = ServiceDescriptor.Transient(service, implementationFactory);
             TryAdd(collection, descriptor);
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            services.TryAdd(FactoryServiceDescriptor.Transient(implementationFactory));
+            services.TryAdd(ServiceDescriptor.Transient(implementationFactory));
         }
 
         public static void TryAddScoped(
@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var descriptor = TypeServiceDescriptor.Scoped(service, service);
+            var descriptor = ServiceDescriptor.Scoped(service, service);
             TryAdd(collection, descriptor);
         }
 
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            var descriptor = TypeServiceDescriptor.Scoped(service, implementationType);
+            var descriptor = ServiceDescriptor.Scoped(service, implementationType);
             TryAdd(collection, descriptor);
         }
 
@@ -271,7 +271,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            var descriptor = FactoryServiceDescriptor.Scoped(service, implementationFactory);
+            var descriptor = ServiceDescriptor.Scoped(service, implementationFactory);
             TryAdd(collection, descriptor);
         }
 
@@ -303,7 +303,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            services.TryAdd(FactoryServiceDescriptor.Scoped(implementationFactory));
+            services.TryAdd(ServiceDescriptor.Scoped(implementationFactory));
         }
 
         public static void TryAddSingleton(
@@ -320,7 +320,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var descriptor = TypeServiceDescriptor.Singleton(service, service);
+            var descriptor = ServiceDescriptor.Singleton(service, service);
             TryAdd(collection, descriptor);
         }
 
@@ -344,7 +344,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            var descriptor = TypeServiceDescriptor.Singleton(service, implementationType);
+            var descriptor = ServiceDescriptor.Singleton(service, implementationType);
             TryAdd(collection, descriptor);
         }
 
@@ -408,7 +408,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(instance));
             }
 
-            var descriptor = InstanceServiceDescriptor.Singleton(typeof(TService), instance);
+            var descriptor = ServiceDescriptor.Singleton(typeof(TService), instance);
             TryAdd(collection, descriptor);
         }
 

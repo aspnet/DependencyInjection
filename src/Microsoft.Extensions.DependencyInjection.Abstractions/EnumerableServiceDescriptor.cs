@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public class EnumerableServiceDescriptor: ServiceDescriptor
+    public class EnumerableServiceDescriptor : ServiceDescriptor
     {
         public EnumerableServiceDescriptor(Type serviceType) : base(serviceType, ServiceLifetime.Transient)
         {

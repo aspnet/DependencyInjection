@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var provider = collection.BuildServiceProvider();
 
             // Act
-            var ordered = provider.GetService<IEnumerable<IFakeService>>();
+            var ordered = provider.GetService<IOrdered<IFakeService>>();
             var array1 = ordered.ToArray();
             var array2 = ordered.ToArray();
 
@@ -75,6 +75,56 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.NotEqual(array[0], array[1]);
+        }
+
+        public static TheoryData AddOrderedOverloads
+        {
+            get
+            {
+                var serviceType = typeof(IFakeService);
+                var implementationType = typeof(FakeServiceWithId);
+                return new TheoryData<Action<IServiceCollection>>
+                {
+                    collection =>
+                    {
+                        collection.AddOrdered<IFakeService, FakeServiceWithId>();
+                        collection.AddOrdered<IFakeService, FakeServiceWithId>(_ => new FakeServiceWithId(1));
+                        collection.AddOrdered<IFakeService>(new FakeServiceWithId(2));
+                    },
+                    collection =>
+                    {
+                        collection.AddOrdered(serviceType, implementationType);
+                        collection.AddOrdered(serviceType, _ => new FakeServiceWithId(1));
+                        collection.AddOrdered(serviceType, new FakeServiceWithId(2));
+                    },
+                    collection =>
+                    {
+                        collection.AddOrdered((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, implementationType));
+                        collection.AddOrdered((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, _ => new FakeServiceWithId(1)));
+                        collection.AddOrdered((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, new FakeServiceWithId(2)));
+                    },
+
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AddOrderedOverloads))]
+        public void AddOrdered_SupportsAllServiceKinds(Action<IServiceCollection> addServices)
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            addServices(collection);
+            var provider = collection.BuildServiceProvider();
+
+            // Act
+            var ordered = provider.GetService<IOrdered<IFakeService>>();
+            var array = ordered.OfType<FakeServiceWithId>().ToArray();
+
+            // Assert
+            Assert.Equal(0, array[0].Id);
+            Assert.Equal(1, array[1].Id);
+            Assert.Equal(2, array[2].Id);
         }
     }
 }
