@@ -3,8 +3,9 @@
 
 using System;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection.Extensions
+namespace Microsoft.Extensions.DependencyInjection.Ordered
 {
     public static class ServiceCollectionOrderedExtensions
     {

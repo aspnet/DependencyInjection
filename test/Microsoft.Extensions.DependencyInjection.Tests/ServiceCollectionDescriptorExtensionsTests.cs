@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
@@ -11,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public class ServiceCollectionDescriptorExtensionsTest
     {
         [Fact]
-        public void NonEnumerablServiceCanNotBeIEnumerableResolved()
+        public void NonEnumerableServiceCannotBeIEnumerableResolved_Directly()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -23,6 +24,20 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Null(services);
+        }
+
+        [Fact]
+        public void NonEnumerableServiceCannotBeIEnumerableResolved_Indirectly()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddTransient(typeof(IFakeService), typeof(FakeService));
+            collection.AddTransient(typeof(IFakeOuterService), typeof(FakeOuterService));
+            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            var provider = collection.BuildServiceProvider();
+
+            // Act + Assert
+            Assert.Throws<InvalidOperationException>(() => provider.GetService<IFakeOuterService>());
         }
 
         [Fact]

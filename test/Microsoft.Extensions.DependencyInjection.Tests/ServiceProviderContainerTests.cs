@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
-using Xunit;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {

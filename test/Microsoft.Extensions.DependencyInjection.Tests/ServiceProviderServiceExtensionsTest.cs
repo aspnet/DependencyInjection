@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -16,7 +16,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public void GetService_Returns_CorrectService()
         {
             // Arrange
-
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<IFoo, Foo1>();
             var serviceProvider = serviceCollection.BuildServiceProvider();

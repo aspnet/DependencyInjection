@@ -368,7 +368,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            var descriptor = FactoryServiceDescriptor.Singleton(service, implementationFactory);
+            var descriptor = ServiceDescriptor.Singleton(service, implementationFactory);
             TryAdd(collection, descriptor);
         }
 
@@ -417,7 +417,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             Func<IServiceProvider, TService> implementationFactory)
             where TService : class
         {
-            services.TryAdd(FactoryServiceDescriptor.Singleton(implementationFactory));
+            services.TryAdd(ServiceDescriptor.Singleton(implementationFactory));
         }
 
         /// <summary>

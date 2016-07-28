@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection.Ordered;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
-using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -125,6 +124,35 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal(0, array[0].Id);
             Assert.Equal(1, array[1].Id);
             Assert.Equal(2, array[2].Id);
+        }
+
+        [Fact]
+        public void RegistrationOrderIsPreservedWhenServicesAreIOrderedResolved()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+
+            var provider = collection.BuildServiceProvider();
+
+            collection = new ServiceCollection();
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            var providerReversed = collection.BuildServiceProvider();
+
+            // Act
+            var services = provider.GetService<IOrdered<IFakeMultipleService>>();
+            var servicesReversed = providerReversed.GetService<IOrdered<IFakeMultipleService>>();
+
+            // Assert
+            Assert.Collection(services,
+                service => Assert.IsType<FakeOneMultipleService>(service),
+                service => Assert.IsType<FakeTwoMultipleService>(service));
+
+            Assert.Collection(servicesReversed,
+                service => Assert.IsType<FakeTwoMultipleService>(service),
+                service => Assert.IsType<FakeOneMultipleService>(service));
         }
     }
 }
