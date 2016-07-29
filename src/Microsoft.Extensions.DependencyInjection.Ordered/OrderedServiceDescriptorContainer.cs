@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.DependencyInjection.Ordered
 {
-    internal class OrderedServiceDescriptorHolder<T>
+    internal class OrderedServiceDescriptorContainer<T>
     {
-        public OrderedServiceDescriptorHolder(OrderedServiceDescriptor serviceDescriptor)
+        public OrderedServiceDescriptorContainer(OrderedServiceDescriptor serviceDescriptor)
         {
             ServiceDescriptor = serviceDescriptor;
         }

@@ -12,6 +12,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
         }
 
-        public List<ServiceDescriptor> Descriptors { get; } = new List<ServiceDescriptor>();
+        public IList<ServiceDescriptor> Descriptors { get; } = new List<ServiceDescriptor>();
     }
 }

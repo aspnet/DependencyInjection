@@ -10,19 +10,19 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
     internal class Ordered<T>: IOrdered<T>, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly OrderedServiceDescriptorHolder<T> _descriptorHolder;
+        private readonly OrderedServiceDescriptorContainer<T> _descriptorContainer;
         private List<T> _values;
         private List<IDisposable> _dispose;
 
-        public Ordered(IServiceProvider serviceProvider, OrderedServiceDescriptorHolder<T> descriptorHolder)
+        public Ordered(IServiceProvider serviceProvider, OrderedServiceDescriptorContainer<T> descriptorContainer)
         {
             _serviceProvider = serviceProvider;
-            _descriptorHolder = descriptorHolder;
+            _descriptorContainer = descriptorContainer;
         }
 
         private void EnsureValues()
         {
-            lock (_descriptorHolder)
+            lock (_descriptorContainer)
             {
                 if (_values != null)
                 {
@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
 
                 _values = new List<T>();
                 _dispose = new List<IDisposable>();
-                foreach (var descriptor in _descriptorHolder.ServiceDescriptor.Descriptors)
+                foreach (var descriptor in _descriptorContainer.ServiceDescriptor.Descriptors)
                 {
                     var factoryServiceDescriptor = descriptor as FactoryServiceDescriptor;
                     T value;
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
 
         public void Dispose()
         {
-            lock (_descriptorHolder)
+            lock (_descriptorContainer)
             {
                 if (_dispose != null)
                 {
