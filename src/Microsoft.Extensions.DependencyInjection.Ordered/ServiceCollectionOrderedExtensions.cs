@@ -169,19 +169,19 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
             return collection;
         }
 
-        private static OrderedServiceDescriptor GetOrderedDescriptor(
+        private static OrderedEnumerableServiceDescriptor GetOrderedDescriptor(
             this IServiceCollection collection,
             Type serviceType)
         {
-            var descriptor = (OrderedServiceDescriptor)
+            var descriptor = (OrderedEnumerableServiceDescriptor)
                 collection.FirstOrDefault(d =>
-                    d.GetType() == typeof(OrderedServiceDescriptor) &&
+                    d.GetType() == typeof(OrderedEnumerableServiceDescriptor) &&
                     d.ServiceType == serviceType);
             if (descriptor == null)
             {
-                descriptor = new OrderedServiceDescriptor(serviceType);
+                descriptor = new OrderedEnumerableServiceDescriptor(serviceType);
                 collection.Add(descriptor);
-                var holderType = typeof(OrderedServiceDescriptorContainer<>).MakeGenericType(serviceType);
+                var holderType = typeof(OrderedEnumerableServiceDescriptorContainer<>).MakeGenericType(serviceType);
                 collection.AddSingleton(holderType,
                     Activator.CreateInstance(holderType, descriptor));
                 collection.TryAddTransient(

@@ -10,11 +10,11 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
     internal class Ordered<T>: IOrdered<T>, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly OrderedServiceDescriptorContainer<T> _descriptorContainer;
+        private readonly OrderedEnumerableServiceDescriptorContainer<T> _descriptorContainer;
         private List<T> _values;
         private List<IDisposable> _dispose;
 
-        public Ordered(IServiceProvider serviceProvider, OrderedServiceDescriptorContainer<T> descriptorContainer)
+        public Ordered(IServiceProvider serviceProvider, OrderedEnumerableServiceDescriptorContainer<T> descriptorContainer)
         {
             _serviceProvider = serviceProvider;
             _descriptorContainer = descriptorContainer;

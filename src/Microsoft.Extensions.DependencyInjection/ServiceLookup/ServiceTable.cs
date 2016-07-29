@@ -29,10 +29,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var enumerableDescriptor = descriptor as EnumerableServiceDescriptor;
                 if (enumerableDescriptor != null)
                 {
-                    Add(typeof(IEnumerable<>).MakeGenericType(descriptor.ServiceType), new ClosedIEnumerableService(
-                        descriptor.ServiceType,
-                        //reverse to break assumptions
-                        enumerableDescriptor.Descriptors.Select(CreateService).Reverse().ToArray()));
+                    Add(typeof(IEnumerable<>).MakeGenericType(descriptor.ServiceType),
+                        new ClosedIEnumerableService(
+                            descriptor.ServiceType,
+                            enumerableDescriptor.Descriptors.Select(CreateService)));
                 }
                 else
                 {

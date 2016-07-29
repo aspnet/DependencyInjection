@@ -3,13 +3,13 @@
 
 namespace Microsoft.Extensions.DependencyInjection.Ordered
 {
-    internal class OrderedServiceDescriptorContainer<T>
+    internal class OrderedEnumerableServiceDescriptorContainer<T>
     {
-        public OrderedServiceDescriptorContainer(OrderedServiceDescriptor serviceDescriptor)
+        public OrderedEnumerableServiceDescriptorContainer(OrderedEnumerableServiceDescriptor serviceDescriptor)
         {
             ServiceDescriptor = serviceDescriptor;
         }
 
-        public OrderedServiceDescriptor ServiceDescriptor { get; }
+        public OrderedEnumerableServiceDescriptor ServiceDescriptor { get; }
     }
 }

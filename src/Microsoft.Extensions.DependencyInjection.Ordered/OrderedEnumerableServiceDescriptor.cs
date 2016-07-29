@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.Ordered
 {
-    public class OrderedServiceDescriptor: EnumerableServiceDescriptor
+    public class OrderedEnumerableServiceDescriptor: EnumerableServiceDescriptor
     {
-        public OrderedServiceDescriptor(Type serviceType) : base(serviceType)
+        public OrderedEnumerableServiceDescriptor(Type serviceType) : base(serviceType)
         {
         }
     }
