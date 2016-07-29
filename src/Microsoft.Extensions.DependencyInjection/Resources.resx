@@ -150,8 +150,4 @@
   <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
     <value>Cannot resolve {1} service '{0}' from root provider.</value>
   </data>
-  <data name="UnsupportedServiceDescriptorType" xml:space="preserve">
-    <value>Unsupported service descriptor type '{0}'</value>
-    <comment>{0} = service descriptor type</comment>
-  </data>
 </root>

@@ -170,22 +170,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return string.Format(CultureInfo.CurrentCulture, GetString("DirectScopedResolvedFromRootException"), p0, p1);
         }
 
-        /// <summary>
-        /// Unsupported service descriptor type '{0}'
-        /// </summary>
-        internal static string UnsupportedServiceDescriptorType
-        {
-            get { return GetString("UnsupportedServiceDescriptorType"); }
-        }
-
-        /// <summary>
-        /// Unsupported service descriptor type '{0}'
-        /// </summary>
-        internal static string FormatUnsupportedServiceDescriptorType(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedServiceDescriptorType"), p0);
-        }
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

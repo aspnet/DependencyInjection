@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
                             }
                             else
                             {
-                                throw new NotSupportedException(Resources.FormatUnsupportedServiceDescriptorType(descriptor.GetType()));
+                                throw new NotSupportedException($"Unsupported service descriptor type '{descriptor.GetType()}'");
                             }
                         }
                     }
