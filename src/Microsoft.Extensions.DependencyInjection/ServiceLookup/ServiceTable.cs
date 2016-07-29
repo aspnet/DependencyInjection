@@ -108,7 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 return new Service(typeServiceDescriptor);
             }
 
-            throw new NotSupportedException($"Unsupported service descriptor type '{descriptor.GetType()}'");
+            throw new NotSupportedException(Resources.FormatUnsupportedServiceDescriptorType(descriptor.GetType()));
         }
 
         public ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices
