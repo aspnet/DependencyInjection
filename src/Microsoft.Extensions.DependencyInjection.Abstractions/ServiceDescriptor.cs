@@ -22,8 +22,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <inheritdoc />
         public Type ServiceType { get; }
 
-        internal abstract Type GetImplementationType();
-
         public static TypeServiceDescriptor Transient<TService, TImplementation>()
             where TService : class
             where TImplementation : class, TService

@@ -13,10 +13,5 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public List<ServiceDescriptor> Descriptors { get; } = new List<ServiceDescriptor>();
-
-        internal override Type GetImplementationType()
-        {
-            return null;
-        }
     }
 }

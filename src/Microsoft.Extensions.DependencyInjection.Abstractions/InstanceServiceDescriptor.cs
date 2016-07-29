@@ -33,10 +33,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <inheritdoc />
         public object ImplementationInstance { get; }
-
-        internal override Type GetImplementationType()
-        {
-            return ImplementationInstance.GetType();
-        }
     }
 }

@@ -20,7 +20,6 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*"
   },
   "frameworks": {

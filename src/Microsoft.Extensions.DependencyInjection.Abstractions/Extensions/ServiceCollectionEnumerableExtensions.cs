@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Abstractions;
 
@@ -275,5 +276,31 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             }
         }
 
+        internal static Type GetImplementationType(this ServiceDescriptor descriptor)
+        {
+            var factoryServiceDescriptor = descriptor as FactoryServiceDescriptor;
+            if (factoryServiceDescriptor != null)
+            {
+                var typeArguments = factoryServiceDescriptor.ImplementationFactory.GetType().GenericTypeArguments;
+
+                Debug.Assert(typeArguments.Length == 2);
+
+                return typeArguments[1];
+            }
+
+            var typeServiceDescriptor = descriptor as TypeServiceDescriptor;
+            if (typeServiceDescriptor != null)
+            {
+                return typeServiceDescriptor.ImplementationType;
+            }
+
+            var instanceServiceDescriptor = descriptor as InstanceServiceDescriptor;
+            if (instanceServiceDescriptor != null)
+            {
+                return instanceServiceDescriptor.ImplementationInstance.GetType();
+            }
+
+            throw new NotSupportedException($"Unsupported service descriptor type '{descriptor.GetType()}'");
+        }
     }
 }

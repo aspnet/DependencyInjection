@@ -124,7 +124,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void NonEnumerableServiceCanNotBeIEnumerableResolved()
+        public void NonEnumerableServiceCannotBeIEnumerableResolved()
         {
             // Arrange
             var collection = new ServiceCollection();

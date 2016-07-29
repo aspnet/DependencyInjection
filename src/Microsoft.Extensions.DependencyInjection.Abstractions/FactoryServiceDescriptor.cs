@@ -15,7 +15,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the service.</param>
-        public FactoryServiceDescriptor(Type serviceType, Func<IServiceProvider, object> factory, ServiceLifetime lifetime)
+        public FactoryServiceDescriptor(Type serviceType, Func<IServiceProvider, object> factory,
+            ServiceLifetime lifetime)
             : base(serviceType, lifetime)
         {
             if (serviceType == null)
@@ -33,14 +34,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <inheritdoc />
         public Func<IServiceProvider, object> ImplementationFactory { get; }
-
-        internal override Type GetImplementationType()
-        {
-            var typeArguments = ImplementationFactory.GetType().GenericTypeArguments;
-
-            Debug.Assert(typeArguments.Length == 2);
-
-            return typeArguments[1];
-        }
     }
 }
