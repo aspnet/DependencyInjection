@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection.Ordered;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public class ServiceCollectionOrderedServiceExtensionsTest
+    public abstract partial class DependencyInjectionSpecificationTests
     {
         [Fact]
         public void AddOrdered_AllowsResolvingEmptyIOrdered()
@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Arrange
             var collection = new ServiceCollection();
             collection.AddOrdered<IFakeService>();
-            var provider = collection.BuildServiceProvider();
+            var provider = CreateServiceProvider(collection);
 
             // Act
             var ordered = provider.GetService<IOrdered<IFakeService>>();
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Arrange
             var collection = new ServiceCollection();
             collection.AddOrdered<IFakeService, FakeService>();
-            var provider = collection.BuildServiceProvider();
+            var provider = CreateServiceProvider(collection);
 
             // Act
             var ordered = provider.GetService<IEnumerable<IFakeService>>();
@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Arrange
             var collection = new ServiceCollection();
             collection.AddOrdered<IFakeService, FakeService>();
-            var provider = collection.BuildServiceProvider();
+            var provider = CreateServiceProvider(collection);
 
             // Act
             var ordered = provider.GetService<IOrdered<IFakeService>>();
@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var collection = new ServiceCollection();
             collection.AddOrdered<IFakeService, FakeService>();
             collection.AddOrdered<IFakeService, FakeService>();
-            var provider = collection.BuildServiceProvider();
+            var provider = CreateServiceProvider(collection);
 
             // Act
             var ordered = provider.GetService<IEnumerable<IFakeService>>();
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Arrange
             var collection = new ServiceCollection();
             addServices(collection);
-            var provider = collection.BuildServiceProvider();
+            var provider = CreateServiceProvider(collection);
 
             // Act
             var ordered = provider.GetService<IOrdered<IFakeService>>();
@@ -134,12 +134,12 @@ namespace Microsoft.Extensions.DependencyInjection
             collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
             collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
 
-            var provider = collection.BuildServiceProvider();
+            var provider = CreateServiceProvider(collection);
 
             collection = new ServiceCollection();
             collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
             collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
-            var providerReversed = collection.BuildServiceProvider();
+            var providerReversed = CreateServiceProvider(collection);
 
             // Act
             var services = provider.GetService<IOrdered<IFakeMultipleService>>();
