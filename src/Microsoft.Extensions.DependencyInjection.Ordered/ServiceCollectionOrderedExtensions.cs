@@ -173,10 +173,10 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
             this IServiceCollection collection,
             Type serviceType)
         {
-            var descriptor = (OrderedEnumerableServiceDescriptor)
-                collection.FirstOrDefault(d =>
-                    d.GetType() == typeof(OrderedEnumerableServiceDescriptor) &&
-                    d.ServiceType == serviceType);
+            var descriptor = collection
+                .OfType<OrderedEnumerableServiceDescriptor>()
+                .FirstOrDefault(d => d.ServiceType == serviceType);
+
             if (descriptor == null)
             {
                 descriptor = new OrderedEnumerableServiceDescriptor(serviceType);
