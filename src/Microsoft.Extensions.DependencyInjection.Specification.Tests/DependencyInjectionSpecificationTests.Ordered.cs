@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void AddOrdered_AllowsResolvingAsIEnumerable()
+        public void AddOrdered_DoesNotResolveAsIEnumerable()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var ordered = provider.GetService<IEnumerable<IFakeService>>();
 
             // Assert
-            Assert.IsType<FakeService>(ordered.Single());
+            Assert.Null(ordered);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var provider = CreateServiceProvider(collection);
 
             // Act
-            var ordered = provider.GetService<IEnumerable<IFakeService>>();
+            var ordered = provider.GetService<IOrdered<IFakeService>>();
             var array = ordered.ToArray();
 
             // Assert

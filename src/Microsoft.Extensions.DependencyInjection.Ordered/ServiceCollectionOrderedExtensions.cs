@@ -181,9 +181,9 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
             {
                 descriptor = new OrderedEnumerableServiceDescriptor(serviceType);
                 collection.Add(descriptor);
-                var holderType = typeof(OrderedEnumerableServiceDescriptorContainer<>).MakeGenericType(serviceType);
-                collection.AddSingleton(holderType,
-                    Activator.CreateInstance(holderType, descriptor));
+                var containerType = typeof(OrderedEnumerableServiceDescriptorContainer<>).MakeGenericType(serviceType);
+                collection.AddSingleton(containerType,
+                    Activator.CreateInstance(containerType, descriptor));
                 collection.TryAddTransient(
                     typeof(IOrdered<>).MakeGenericType(serviceType),
                     typeof(Ordered<>).MakeGenericType(serviceType));

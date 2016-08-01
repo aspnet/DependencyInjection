@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static FactoryServiceDescriptor Transient(Type service,
-                                                  Func<IServiceProvider, object> implementationFactory)
+            Func<IServiceProvider, object> implementationFactory)
         {
             if (service == null)
             {

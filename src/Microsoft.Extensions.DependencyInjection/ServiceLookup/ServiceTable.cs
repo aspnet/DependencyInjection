@@ -26,13 +26,22 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             foreach (var descriptor in descriptors)
             {
                 var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
+
                 var enumerableDescriptor = descriptor as EnumerableServiceDescriptor;
                 if (enumerableDescriptor != null)
                 {
-                    Add(typeof(IEnumerable<>).MakeGenericType(descriptor.ServiceType),
-                        new ClosedIEnumerableService(
-                            descriptor.ServiceType,
-                            enumerableDescriptor.Descriptors.Select(CreateService)));
+                    var services = new List<IService>();
+                    foreach (var childDescriptor in enumerableDescriptor.Descriptors)
+                    {
+                        IService service;
+                        if (TryCreateService(childDescriptor, out service))
+                        {
+                            services.Add(service);
+                        }
+                    }
+
+                    Add(typeof(IEnumerable<>).MakeGenericType(enumerableDescriptor.ServiceType),
+                        new ClosedIEnumerableService(enumerableDescriptor.ServiceType,services));
                 }
                 else
                 {
@@ -43,7 +52,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     }
                     else
                     {
-                        Add(descriptor.ServiceType, CreateService(descriptor));
+                        IService service;
+                        if (TryCreateService(descriptor, out service))
+                        {
+                            Add(descriptor.ServiceType, service);
+                        }
                     }
                 }
             }
@@ -76,18 +89,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return new GenericService(typeServiceDescriptor);
         }
 
-        private IService CreateService(ServiceDescriptor descriptor)
+        private bool TryCreateService(ServiceDescriptor descriptor, out IService service)
         {
+            service = null;
+
             var instanceServiceDescriptor = descriptor as InstanceServiceDescriptor;
             if (instanceServiceDescriptor != null)
             {
-                return new InstanceService(instanceServiceDescriptor);
+                service = new InstanceService(instanceServiceDescriptor);
             }
 
             var factoryServiceDescriptor = descriptor as FactoryServiceDescriptor;
             if (factoryServiceDescriptor != null)
             {
-                return new FactoryService(factoryServiceDescriptor);
+                service = new FactoryService(factoryServiceDescriptor);
             }
 
             var typeServiceDescriptor = descriptor as TypeServiceDescriptor;
@@ -105,10 +120,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                             typeServiceDescriptor.ServiceType));
                 }
 
-                return new Service(typeServiceDescriptor);
+                service = new Service(typeServiceDescriptor);
             }
 
-            throw new NotSupportedException(Resources.FormatUnsupportedServiceDescriptorType(descriptor.GetType()));
+            return service != null;
         }
 
         public ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices

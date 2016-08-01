@@ -7,14 +7,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.Ordered
 {
-    internal class Ordered<T>: IOrdered<T>, IDisposable
+    internal class Ordered<TService> : IOrdered<TService>, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly OrderedEnumerableServiceDescriptorContainer<T> _descriptorContainer;
-        private List<T> _values;
+        private readonly OrderedEnumerableServiceDescriptorContainer<TService> _descriptorContainer;
+        private readonly object _valuesLock = new object();
+        private List<TService> _values;
         private List<IDisposable> _dispose;
+        private bool _disposed;
 
-        public Ordered(IServiceProvider serviceProvider, OrderedEnumerableServiceDescriptorContainer<T> descriptorContainer)
+        public Ordered(IServiceProvider serviceProvider, OrderedEnumerableServiceDescriptorContainer<TService> descriptorContainer)
         {
             _serviceProvider = serviceProvider;
             _descriptorContainer = descriptorContainer;
@@ -22,47 +24,47 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
 
         private void EnsureValues()
         {
-            lock (_descriptorContainer)
+            lock (_valuesLock)
             {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(Resources.FormatObjectDisposedException(this.GetType()));
+                }
                 if (_values != null)
                 {
                     return;
                 }
 
-                _values = new List<T>();
+                _values = new List<TService>();
                 _dispose = new List<IDisposable>();
                 foreach (var descriptor in _descriptorContainer.ServiceDescriptor.Descriptors)
                 {
-                    var factoryServiceDescriptor = descriptor as FactoryServiceDescriptor;
-                    T value;
+                    TService value;
                     IDisposable disposable = null;
 
-                    if (factoryServiceDescriptor != null)
+                    if (descriptor is FactoryServiceDescriptor)
                     {
-                        value = (T)factoryServiceDescriptor.ImplementationFactory(_serviceProvider);
+                        var factoryServiceDescriptor = (FactoryServiceDescriptor) descriptor;
+                        value = (TService)factoryServiceDescriptor.ImplementationFactory(_serviceProvider);
                         disposable = value as IDisposable;
+                    }
+                    else if (descriptor is TypeServiceDescriptor)
+                    {
+                        var typeServiceDescriptor = (TypeServiceDescriptor) descriptor;
+                        value = (TService)ActivatorUtilities.CreateInstance(_serviceProvider, typeServiceDescriptor.ImplementationType);
+                        disposable = value as IDisposable;
+                    }
+                    else if (descriptor is InstanceServiceDescriptor)
+                    {
+                        var instanceServiceDescriptor = (InstanceServiceDescriptor) descriptor;
+                        value = (TService)instanceServiceDescriptor.ImplementationInstance;
                     }
                     else
                     {
-                        var typeServiceDescriptor = descriptor as TypeServiceDescriptor;
-                        if (typeServiceDescriptor != null)
-                        {
-                            value = (T) ActivatorUtilities.CreateInstance(_serviceProvider, typeServiceDescriptor.ImplementationType);
-                            disposable = value as IDisposable;
-                        }
-                        else
-                        {
-                            var instanceServiceDescriptor = descriptor as InstanceServiceDescriptor;
-                            if (instanceServiceDescriptor != null)
-                            {
-                                value = (T) instanceServiceDescriptor.ImplementationInstance;
-                            }
-                            else
-                            {
-                                throw new NotSupportedException(Resources.FormatUnsupportedServiceDescriptorType(descriptor.GetType()));
-                            }
-                        }
+                        throw new NotSupportedException(
+                            Resources.FormatUnsupportedServiceDescriptorType(descriptor.GetType()));
                     }
+
                     _values.Add(value);
                     if (disposable != null)
                     {
@@ -72,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
             }
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<TService> GetEnumerator()
         {
             EnsureValues();
             return _values.GetEnumerator();
@@ -85,8 +87,10 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
 
         public void Dispose()
         {
-            lock (_descriptorContainer)
+            lock (_valuesLock)
             {
+                if (_disposed) return;
+
                 if (_dispose != null)
                 {
                     foreach (var value in _dispose)
@@ -94,6 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
                         value?.Dispose();
                     }
                 }
+                _disposed = true;
             }
         }
     }

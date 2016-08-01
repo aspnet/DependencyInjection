@@ -11,6 +11,22 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
             = new ResourceManager("Microsoft.Extensions.DependencyInjection.Ordered.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// '{0}' object has been disposed.
+        /// </summary>
+        internal static string ObjectDisposedException
+        {
+            get { return GetString("ObjectDisposedException"); }
+        }
+
+        /// <summary>
+        /// '{0}' object has been disposed.
+        /// </summary>
+        internal static string FormatObjectDisposedException(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ObjectDisposedException"), p0);
+        }
+
+        /// <summary>
         /// Unsupported service descriptor type '{0}'
         /// </summary>
         internal static string UnsupportedServiceDescriptorType
