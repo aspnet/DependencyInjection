@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Abstractions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection.Extensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionEnumerableExtensions
     {

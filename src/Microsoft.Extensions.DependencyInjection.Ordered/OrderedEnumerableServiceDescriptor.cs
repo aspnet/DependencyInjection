@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.Ordered
 {
-    public class OrderedEnumerableServiceDescriptor: ServiceDescriptor
+    public class OrderedEnumerableServiceDescriptor : ServiceDescriptor
     {
         public OrderedEnumerableServiceDescriptor(Type serviceType) : base(serviceType, ServiceLifetime.Transient)
         {

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public class FactoryServiceDescriptor : ServiceDescriptor
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="factory"/>.
+        /// Initializes a new instance of <see cref="FactoryServiceDescriptor"/> with the specified <paramref name="factory"/>.
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>

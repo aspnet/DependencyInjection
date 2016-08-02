@@ -89,7 +89,10 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
         {
             lock (_valuesLock)
             {
-                if (_disposed) return;
+                if (_disposed)
+                {
+                    return;
+                }
 
                 if (_dispose != null)
                 {
