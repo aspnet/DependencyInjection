@@ -2,14 +2,14 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public class DefaultServiceProviderFactory : ServiceProviderFactory<IServiceCollection>
+    public class DefaultServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
     {
-        public override IServiceCollection CreateBuilder(IServiceCollection services)
+        public IServiceCollection CreateBuilder(IServiceCollection services)
         {
             return services;
         }
 
-        public override IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
+        public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
         {
             return containerBuilder.BuildServiceProvider();
         }
