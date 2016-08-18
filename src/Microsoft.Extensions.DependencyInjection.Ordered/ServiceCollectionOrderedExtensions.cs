@@ -184,9 +184,19 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
                 var containerType = typeof(OrderedEnumerableServiceDescriptorContainer<>).MakeGenericType(serviceType);
                 collection.AddSingleton(containerType,
                     Activator.CreateInstance(containerType, descriptor));
+
                 collection.TryAddTransient(
                     typeof(IOrdered<>).MakeGenericType(serviceType),
                     typeof(Ordered<>).MakeGenericType(serviceType));
+
+                var transientProviderType = typeof(OrderedScopeProvider<>.TransientOrderedScopeProvider).MakeGenericType(serviceType);
+                collection.TryAddTransient(transientProviderType, transientProviderType);
+
+                var scopedProviderType = typeof(OrderedScopeProvider<>.ScopedOrderedScopeProvider).MakeGenericType(serviceType);
+                collection.TryAddScoped(scopedProviderType, scopedProviderType);
+
+                var singletonProviderType = typeof(OrderedScopeProvider<>.SingletonOrderedScopeProvider).MakeGenericType(serviceType);
+                collection.TryAddSingleton(singletonProviderType, singletonProviderType);
             }
             return descriptor;
         }
