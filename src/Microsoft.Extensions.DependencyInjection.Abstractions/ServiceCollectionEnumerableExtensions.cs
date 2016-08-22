@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServicesEditor AddEnumerable(this IServiceCollection services, Type serviceType)
         {
-            return new ServiceEditor<object>(GetEnumerableDescriptor(services, serviceType).Descriptors);
+            return new ServiceEditor<object>(GetEnumerableDescriptor(services, serviceType).Descriptors, serviceType);
         }
 
         private static EnumerableServiceDescriptor GetEnumerableDescriptor(

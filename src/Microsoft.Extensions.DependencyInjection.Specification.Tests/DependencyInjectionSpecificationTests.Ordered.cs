@@ -28,21 +28,6 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void AddOrdered_DoesNotResolveAsIEnumerable()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.AddOrdered<IFakeService>().AddTransient<FakeService>();
-            var provider = CreateServiceProvider(collection);
-
-            // Act
-            var ordered = provider.GetService<IEnumerable<IFakeService>>();
-
-            // Assert
-            Assert.Null(ordered);
-        }
-
-        [Fact]
         public void AddOrdered_CachesInstances()
         {
             // Arrange

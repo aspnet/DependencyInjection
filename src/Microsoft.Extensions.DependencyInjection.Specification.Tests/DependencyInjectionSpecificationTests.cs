@@ -125,21 +125,6 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void NonEnumerableServiceCannotBeIEnumerableResolved()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var provider = CreateServiceProvider(collection);
-
-            // Act
-            var services = provider.GetService<IEnumerable<IFakeService>>();
-
-            // Assert
-            Assert.Null(services);
-        }
-
-        [Fact]
         public void MultipleServiceCanBeIEnumerableResolved()
         {
             // Arrange
@@ -610,20 +595,6 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Assert
             Assert.Null(service);
-        }
-
-        [Fact]
-        public void NonexistentServiceCanNotBeIEnumerableResolved()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            var provider = CreateServiceProvider(collection);
-
-            // Act
-            var services = provider.GetService<IEnumerable<INonexistentService>>();
-
-            // Assert
-            Assert.Null(services);
         }
 
         public static TheoryData ServiceContainerPicksConstructorWithLongestMatchesData

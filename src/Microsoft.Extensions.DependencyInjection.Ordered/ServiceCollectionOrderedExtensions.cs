@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
 
         public static IServicesEditor AddOrdered(this IServiceCollection services, Type serviceType)
         {
-            return new ServiceEditor<object>(GetOrderedDescriptor(services, serviceType).Descriptors);
+            return new ServiceEditor<object>(GetOrderedDescriptor(services, serviceType).Descriptors, serviceType);
         }
 
         private static OrderedEnumerableServiceDescriptor GetOrderedDescriptor(
@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection.Ordered
             {
                 descriptor = new OrderedEnumerableServiceDescriptor(serviceType);
                 collection.Add(descriptor);
+
                 var containerType = typeof(OrderedEnumerableServiceDescriptorContainer<>).MakeGenericType(serviceType);
                 collection.AddSingleton(containerType,
                     Activator.CreateInstance(containerType, descriptor));
