@@ -266,17 +266,40 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.IsType<FakeTwoMultipleService>(service);
         }
 
-        [Fact]
-        public void SingletonServiceCanBeResolved()
+        public static TheoryData<Action<IServiceCollection>, Func<IServiceProvider, IFakeService>> SingletonRegistrations
+        {
+            get
+            {
+                return new TheoryData<Action<IServiceCollection>, Func<IServiceProvider, IFakeService>>()
+                {
+                    {
+                        c => c.AddSingleton<IFakeScopedService, FakeService>(),
+                        p => p.GetService<IFakeScopedService>()
+                    },
+                    {
+                        c => c.AddOrdered<IFakeScopedService>().AddSingleton<FakeService>(),
+                        p => p.GetService<IOrdered<IFakeScopedService>>().First()
+                    },
+                    {
+                        c => c.AddEnumerable<IFakeScopedService>().AddSingleton<FakeService>(),
+                        p => p.GetService<IEnumerable<IFakeScopedService>>().First()
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SingletonRegistrations))]
+        public void SingletonServiceCanBeResolved(Action<IServiceCollection> add, Func<IServiceProvider, IFakeService> get)
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddSingleton<IFakeSingletonService, FakeService>();
+            add(collection);
             var provider = CreateServiceProvider(collection);
 
             // Act
-            var service1 = provider.GetService<IFakeSingletonService>();
-            var service2 = provider.GetService<IFakeSingletonService>();
+            var service1 = get(provider);
+            var service2 = get(provider);
 
             // Assert
             Assert.NotNull(service1);
@@ -484,12 +507,13 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             nester.Dispose();
         }
 
-        [Fact]
-        public void SingletonServicesComeFromRootProvider()
+        [Theory]
+        [MemberData(nameof(SingletonRegistrations))]
+        public void SingletonServicesComeFromRootProvider(Action<IServiceCollection> add, Func<IServiceProvider, IFakeService> get)
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddSingleton<IFakeSingletonService, FakeService>();
+            add(collection);
             var provider = CreateServiceProvider(collection);
             FakeService disposableService1;
             FakeService disposableService2;
@@ -498,7 +522,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
             using (var scope = scopeFactory.CreateScope())
             {
-                var service = scope.ServiceProvider.GetService<IFakeSingletonService>();
+                var service = get(scope.ServiceProvider);
                 disposableService1 = Assert.IsType<FakeService>(service);
                 Assert.False(disposableService1.Disposed);
             }
@@ -507,7 +531,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             using (var scope = scopeFactory.CreateScope())
             {
-                var service = scope.ServiceProvider.GetService<IFakeSingletonService>();
+                var service = get(scope.ServiceProvider);
                 disposableService2 = Assert.IsType<FakeService>(service);
                 Assert.False(disposableService2.Disposed);
             }
