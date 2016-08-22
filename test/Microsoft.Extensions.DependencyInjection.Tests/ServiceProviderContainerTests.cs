@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddEnumerable<DependOnNonexistentService, DependOnNonexistentService>();
+            collection.AddEnumerable<DependOnNonexistentService>().AddTransient<DependOnNonexistentService>();
             var provider = CreateServiceProvider(collection);
 
             // Act and Assert

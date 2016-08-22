@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddOrdered<IFakeService, FakeService>();
+            collection.AddOrdered<IFakeService>().AddTransient<FakeService>();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddOrdered<IFakeService, FakeService>();
+            collection.AddOrdered<IFakeService>().AddTransient<FakeService>();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -64,8 +64,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddOrdered<IFakeService, FakeService>();
-            collection.AddOrdered<IFakeService, FakeService>();
+            collection.AddOrdered<IFakeService>().AddTransient<FakeService>();
+            collection.AddOrdered<IFakeService>().AddTransient<FakeService>();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -86,23 +86,22 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 {
                     collection =>
                     {
-                        collection.AddOrdered<IFakeService, FakeServiceWithId>();
-                        collection.AddOrdered<IFakeService, FakeServiceWithId>(_ => new FakeServiceWithId(1));
-                        collection.AddOrdered<IFakeService>(new FakeServiceWithId(2));
+                        collection.AddOrdered<IFakeService>().AddTransient<FakeServiceWithId>();
+                        collection.AddOrdered<IFakeService>().AddTransient(_ => new FakeServiceWithId(1));
+                        collection.AddOrdered<IFakeService>().AddSingleton(new FakeServiceWithId(2));
                     },
                     collection =>
                     {
-                        collection.AddOrdered(serviceType, implementationType);
-                        collection.AddOrdered(serviceType, _ => new FakeServiceWithId(1));
-                        collection.AddOrdered(serviceType, new FakeServiceWithId(2));
+                        collection.AddOrdered(serviceType).AddTransient(implementationType);
+                        collection.AddOrdered(serviceType).AddTransient(_ => new FakeServiceWithId(1));
+                        collection.AddOrdered(serviceType).AddSingleton(new FakeServiceWithId(2));
                     },
                     collection =>
                     {
-                        collection.AddOrdered((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, implementationType));
-                        collection.AddOrdered((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, _ => new FakeServiceWithId(1)));
-                        collection.AddOrdered((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, new FakeServiceWithId(2)));
+                        collection.AddOrdered(serviceType).Add(ServiceDescriptor.Transient(serviceType, implementationType));
+                        collection.AddOrdered(serviceType).Add(ServiceDescriptor.Transient(serviceType, _ => new FakeServiceWithId(1)));
+                        collection.AddOrdered(serviceType).Add(ServiceDescriptor.Singleton(serviceType, new FakeServiceWithId(2)));
                     },
-
                 };
             }
         }
@@ -131,14 +130,14 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
-            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService)).AddTransient(typeof(FakeOneMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService)).AddTransient(typeof(FakeTwoMultipleService));
 
             var provider = CreateServiceProvider(collection);
 
             collection = new ServiceCollection();
-            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
-            collection.AddOrdered(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService)).AddTransient(typeof(FakeTwoMultipleService));
+            collection.AddOrdered(typeof(IFakeMultipleService)).AddTransient(typeof(FakeOneMultipleService));
             var providerReversed = CreateServiceProvider(collection);
 
             // Act
@@ -153,6 +152,46 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Collection(servicesReversed,
                 service => Assert.IsType<FakeTwoMultipleService>(service),
                 service => Assert.IsType<FakeOneMultipleService>(service));
+        }
+
+        [Fact]
+        public void OrderedSupportsScoped()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddOrdered<IFakeScopedService>().AddScoped<FakeService>();
+            var provider = CreateServiceProvider(collection);
+            var cachedScopeFactory = provider.GetService<IServiceScopeFactory>();
+
+            // Act
+            for (var i = 0; i < 3; i++)
+            {
+                FakeService outerScopedService;
+                using (var outerScope = cachedScopeFactory.CreateScope())
+                {
+                    var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
+
+                    FakeService innerScopedService;
+                    using (var innerScope = innerScopeFactory.CreateScope())
+                    {
+                        outerScopedService = outerScope.ServiceProvider
+                            .GetService<IOrdered<IFakeScopedService>>().First() as FakeService;
+
+                        innerScopedService = innerScope.ServiceProvider
+                            .GetService<IOrdered<IFakeScopedService>>().First() as FakeService;
+
+                        // Assert
+                        Assert.NotNull(outerScopedService);
+                        Assert.NotNull(innerScopedService);
+                        Assert.NotSame(outerScopedService, innerScopedService);
+                    }
+
+                    Assert.False(outerScopedService.Disposed);
+                    Assert.True(innerScopedService.Disposed);
+                }
+
+                Assert.True(outerScopedService.Disposed);
+            }
         }
     }
 }

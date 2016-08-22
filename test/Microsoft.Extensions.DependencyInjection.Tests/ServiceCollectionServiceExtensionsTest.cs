@@ -286,7 +286,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var collection = new ServiceCollection();
 
             // Act
-            collection.TryAddEnumerable(descriptor);
+            collection.AddEnumerable(descriptor.ServiceType).TryAddImplementation(descriptor);
 
             // Assert
             descriptor = Assert.Single(collection);
@@ -309,10 +309,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.TryAddEnumerable(descriptor);
+            collection.AddEnumerable(descriptor.ServiceType).TryAddImplementation(descriptor);
 
             // Act
-            collection.TryAddEnumerable(descriptor);
+            collection.AddEnumerable(descriptor.ServiceType).TryAddImplementation(descriptor);
 
             // Assert
             descriptor = Assert.Single(collection);
@@ -357,7 +357,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
-                () => collection.TryAddEnumerable(descriptor),
+                () => collection.AddEnumerable(descriptor.ServiceType).TryAddImplementation(descriptor),
                 "descriptor",
                 AbstractionResources.FormatTryAddIndistinguishableTypeToEnumerable(implementationType, serviceType));
         }
@@ -435,21 +435,21 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     collection =>
                     {
-                        collection.AddEnumerable<IFakeService, FakeServiceWithId>();
-                        collection.AddEnumerable<IFakeService, FakeServiceWithId>(_ => new FakeServiceWithId(1));
-                        collection.AddEnumerable<IFakeService>(new FakeServiceWithId(2));
+                        collection.AddEnumerable<IFakeService>().AddTransient<FakeServiceWithId>();
+                        collection.AddEnumerable<IFakeService>().AddTransient(_ => new FakeServiceWithId(1));
+                        collection.AddEnumerable<IFakeService>().AddSingleton(new FakeServiceWithId(2));
                     },
                     collection =>
                     {
-                        collection.AddEnumerable(serviceType, implementationType);
-                        collection.AddEnumerable(serviceType, _ => new FakeServiceWithId(1));
-                        collection.AddEnumerable(serviceType, new FakeServiceWithId(2));
+                        collection.AddEnumerable(serviceType).AddTransient(implementationType);
+                        collection.AddEnumerable(serviceType).AddTransient(_ => new FakeServiceWithId(1));
+                        collection.AddEnumerable(serviceType).AddSingleton(new FakeServiceWithId(2));
                     },
                     collection =>
                     {
-                        collection.AddEnumerable((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, implementationType));
-                        collection.AddEnumerable((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, _ => new FakeServiceWithId(1)));
-                        collection.AddEnumerable((ServiceDescriptor) ServiceDescriptor.Singleton(serviceType, new FakeServiceWithId(2)));
+                        collection.AddEnumerable(serviceType).Add(ServiceDescriptor.Transient(serviceType, implementationType));
+                        collection.AddEnumerable(serviceType).Add(ServiceDescriptor.Transient(serviceType, _ => new FakeServiceWithId(1)));
+                        collection.AddEnumerable(serviceType).Add(ServiceDescriptor.Singleton(serviceType, new FakeServiceWithId(2)));
                     },
 
                 };

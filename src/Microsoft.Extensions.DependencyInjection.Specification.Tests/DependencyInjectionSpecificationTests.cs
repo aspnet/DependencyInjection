@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection.Ordered;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
@@ -143,8 +144,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
-            collection.AddEnumerable(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService)).AddTransient(typeof(FakeOneMultipleService));
+            collection.AddEnumerable(typeof(IFakeMultipleService)).AddTransient(typeof(FakeTwoMultipleService));
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -164,8 +165,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var fakeService = new FakeService();
             collection.AddTransient<IFakeOuterService, FakeOuterService>();
             collection.AddSingleton<IFakeService>(fakeService);
-            collection.AddEnumerable<IFakeMultipleService, FakeOneMultipleService>();
-            collection.AddEnumerable<IFakeMultipleService, FakeTwoMultipleService>();
+            collection.AddEnumerable<IFakeMultipleService>().AddTransient<FakeOneMultipleService>();
+            collection.AddEnumerable<IFakeMultipleService>().AddTransient<FakeTwoMultipleService>();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -296,21 +297,45 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.NotNull(scopeFactory);
         }
 
-        [Fact]
-        public void ScopedServiceCanBeResolved()
+
+        public static TheoryData<Action<IServiceCollection>, Func<IServiceProvider, IFakeService>> ScopedRegistrations
+        {
+            get
+            {
+                return new TheoryData<Action<IServiceCollection>, Func<IServiceProvider, IFakeService>>()
+                {
+                    {
+                        c => c.AddScoped<IFakeScopedService, FakeService>(),
+                        p => p.GetService<IFakeScopedService>()
+                    },
+                    {
+                        c => c.AddOrdered<IFakeScopedService>().AddScoped<FakeService>(),
+                        p => p.GetService<IOrdered<IFakeScopedService>>().First()
+                    },
+                    {
+                        c => c.AddEnumerable<IFakeScopedService>().AddScoped<FakeService>(),
+                        p => p.GetService<IEnumerable<IFakeScopedService>>().First()
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ScopedRegistrations))]
+        public void ScopedServiceCanBeResolved(Action<IServiceCollection> add, Func<IServiceProvider, IFakeService> get)
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddScoped<IFakeScopedService, FakeService>();
+            add(collection);
             var provider = CreateServiceProvider(collection);
 
             // Act
             var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
             using (var scope = scopeFactory.CreateScope())
             {
-                var providerScopedService = provider.GetService<IFakeScopedService>();
-                var scopedService1 = scope.ServiceProvider.GetService<IFakeScopedService>();
-                var scopedService2 = scope.ServiceProvider.GetService<IFakeScopedService>();
+                var providerScopedService = get(provider);
+                var scopedService1 = get(scope.ServiceProvider);
+                var scopedService2 = get(scope.ServiceProvider);
 
                 // Assert
                 Assert.NotSame(providerScopedService, scopedService1);
@@ -318,12 +343,13 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             }
         }
 
-        [Fact]
-        public void NestedScopedServiceCanBeResolved()
+        [Theory]
+        [MemberData(nameof(ScopedRegistrations))]
+        public void NestedScopedServiceCanBeResolved(Action<IServiceCollection> add, Func<IServiceProvider, IFakeService> get)
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddScoped<IFakeScopedService, FakeService>();
+            add(collection);
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -333,8 +359,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
                 using (var innerScope = innerScopeFactory.CreateScope())
                 {
-                    var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
-                    var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
+                    var outerScopedService = get(outerScope.ServiceProvider);
+                    var innerScopedService = get(innerScope.ServiceProvider);
 
                     // Assert
                     Assert.NotNull(outerScopedService);
@@ -344,12 +370,13 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             }
         }
 
-        [Fact]
-        public void ScopedServices_FromCachedScopeFactory_CanBeResolvedAndDisposed()
+        [Theory]
+        [MemberData(nameof(ScopedRegistrations))]
+        public void ScopedServices_FromCachedScopeFactory_CanBeResolvedAndDisposed(Action<IServiceCollection> add, Func<IServiceProvider, IFakeService> get)
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddScoped<IFakeScopedService, FakeService>();
+            add(collection);
             var provider = CreateServiceProvider(collection);
             var cachedScopeFactory = provider.GetService<IServiceScopeFactory>();
 
@@ -364,8 +391,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                     FakeService innerScopedService;
                     using (var innerScope = innerScopeFactory.CreateScope())
                     {
-                        outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>() as FakeService;
-                        innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>() as FakeService;
+                        outerScopedService = get(outerScope.ServiceProvider) as FakeService;
+                        innerScopedService = get(innerScope.ServiceProvider) as FakeService;
 
                         // Assert
                         Assert.NotNull(outerScopedService);

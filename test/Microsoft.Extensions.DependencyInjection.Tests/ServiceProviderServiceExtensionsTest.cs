@@ -216,22 +216,22 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (count > 0)
             {
-                serviceCollection.AddEnumerable<IFoo, Foo1>();
+                serviceCollection.AddEnumerable<IFoo>().AddTransient<Foo1>();
             }
 
             if (count > 1)
             {
-                serviceCollection.AddEnumerable<IFoo, Foo2>();
+                serviceCollection.AddEnumerable<IFoo>().AddTransient<Foo2>();
             }
 
             if (count > 2)
             {
-                serviceCollection.AddEnumerable<IBar, Bar1>();
+                serviceCollection.AddEnumerable<IBar>().AddTransient<Bar1>();
             }
 
             if (count > 3)
             {
-                serviceCollection.AddEnumerable<IBar, Bar2>();
+                serviceCollection.AddEnumerable<IBar>().AddTransient<Bar2>();
             }
 
             return serviceCollection.BuildServiceProvider();
