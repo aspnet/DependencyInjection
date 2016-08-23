@@ -11,9 +11,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     /// </summary>
     internal class InstanceService : IService, IServiceCallSite
     {
-        internal ServiceDescriptor Descriptor { get; }
+        internal InstanceServiceDescriptor Descriptor { get; }
 
-        public InstanceService(ServiceDescriptor descriptor)
+        public InstanceService(InstanceServiceDescriptor descriptor)
         {
             Descriptor = descriptor;
         }

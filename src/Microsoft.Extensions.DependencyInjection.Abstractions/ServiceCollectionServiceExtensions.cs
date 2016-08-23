@@ -616,7 +616,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            var serviceDescriptor = new ServiceDescriptor(serviceType, implementationInstance);
+            var serviceDescriptor = ServiceDescriptor.Singleton(serviceType, implementationInstance);
             services.Add(serviceDescriptor);
             return services;
         }
@@ -654,8 +654,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Type implementationType,
             ServiceLifetime lifetime)
         {
-            var descriptor = new ServiceDescriptor(serviceType, implementationType, lifetime);
-            collection.Add(descriptor);
+            collection.Add(new TypeServiceDescriptor(serviceType, implementationType, lifetime));
             return collection;
         }
 
@@ -665,8 +664,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Func<IServiceProvider, object> implementationFactory,
             ServiceLifetime lifetime)
         {
-            var descriptor = new ServiceDescriptor(serviceType, implementationFactory, lifetime);
-            collection.Add(descriptor);
+            collection.Add(new FactoryServiceDescriptor(serviceType, implementationFactory, lifetime));
             return collection;
         }
     }

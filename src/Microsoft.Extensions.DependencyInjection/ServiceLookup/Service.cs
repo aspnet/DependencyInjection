@@ -11,9 +11,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class Service : IService
     {
-        private readonly ServiceDescriptor _descriptor;
+        private readonly TypeServiceDescriptor _descriptor;
 
-        public Service(ServiceDescriptor descriptor)
+        public Service(TypeServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }
@@ -118,11 +118,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public Type ServiceType => _descriptor.ServiceType;
-
-        private bool IsSuperset(IEnumerable<Type> left, IEnumerable<Type> right)
-        {
-            return new HashSet<Type>(left).IsSupersetOf(right);
-        }
 
         private IServiceCallSite[] PopulateCallSites(
             ServiceProvider provider,

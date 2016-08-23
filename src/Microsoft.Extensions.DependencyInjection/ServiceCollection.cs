@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -63,6 +65,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         void ICollection<ServiceDescriptor>.Add(ServiceDescriptor item)
         {
+            var registeredServiceDescriptor = _descriptors.FirstOrDefault(s => s.ServiceType == item.ServiceType);
+            if (registeredServiceDescriptor != null)
+            {
+                throw new InvalidOperationException($"There is already descriptor with service type '{registeredServiceDescriptor.ServiceType}' registered.");
+            }
             _descriptors.Add(item);
         }
 

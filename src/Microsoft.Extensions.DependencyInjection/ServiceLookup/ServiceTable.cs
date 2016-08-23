@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
@@ -25,56 +26,104 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             foreach (var descriptor in descriptors)
             {
                 var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
-                if (serviceTypeInfo.IsGenericTypeDefinition)
-                {
-                    var implementationTypeInfo = descriptor.ImplementationType?.GetTypeInfo();
 
-                    if (implementationTypeInfo == null ||
-                        !implementationTypeInfo.IsGenericTypeDefinition)
+                var enumerableDescriptor = descriptor as EnumerableServiceDescriptor;
+                if (enumerableDescriptor != null)
+                {
+                    var services = new List<IService>();
+                    foreach (var childDescriptor in enumerableDescriptor.Descriptors)
                     {
-                        throw new ArgumentException(
-                            Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(
-                                descriptor.ServiceType),
-                            nameof(descriptors));
+                        IService service;
+                        if (TryCreateService(childDescriptor, out service))
+                        {
+                            services.Add(service);
+                        }
                     }
 
-                    if (implementationTypeInfo.IsAbstract ||
-                        implementationTypeInfo.IsInterface)
-                    {
-                        throw new ArgumentException(
-                            Resources.FormatTypeCannotBeActivated(
-                                descriptor.ImplementationType,
-                                descriptor.ServiceType));
-                    }
-
-                    Add(descriptor.ServiceType, new GenericService(descriptor));
-                }
-                else if (descriptor.ImplementationInstance != null)
-                {
-                    Add(descriptor.ServiceType, new InstanceService(descriptor));
-                }
-                else if (descriptor.ImplementationFactory != null)
-                {
-                    Add(descriptor.ServiceType, new FactoryService(descriptor));
+                    Add(typeof(IEnumerable<>).MakeGenericType(enumerableDescriptor.ServiceType),
+                        new ClosedIEnumerableService(enumerableDescriptor.ServiceType,services));
                 }
                 else
                 {
-                    Debug.Assert(descriptor.ImplementationType != null);
-                    var implementationTypeInfo = descriptor.ImplementationType.GetTypeInfo();
-
-                    if (implementationTypeInfo.IsGenericTypeDefinition ||
-                        implementationTypeInfo.IsAbstract ||
-                        implementationTypeInfo.IsInterface)
+                    if (serviceTypeInfo.IsGenericTypeDefinition)
                     {
-                        throw new ArgumentException(
-                            Resources.FormatTypeCannotBeActivated(
-                                descriptor.ImplementationType,
-                                descriptor.ServiceType));
+                        var genericService = CreateGenericService(descriptor);
+                        Add(descriptor.ServiceType, genericService);
                     }
-
-                    Add(descriptor.ServiceType, new Service(descriptor));
+                    else
+                    {
+                        IService service;
+                        if (TryCreateService(descriptor, out service))
+                        {
+                            Add(descriptor.ServiceType, service);
+                        }
+                    }
                 }
             }
+        }
+
+        private static GenericService CreateGenericService(ServiceDescriptor descriptor)
+        {
+            var typeServiceDescriptor = (descriptor as TypeServiceDescriptor);
+            var implementationTypeInfo = typeServiceDescriptor?.ImplementationType?.GetTypeInfo();
+
+            if (typeServiceDescriptor == null ||
+                implementationTypeInfo == null ||
+                !implementationTypeInfo.IsGenericTypeDefinition)
+            {
+                throw new ArgumentException(
+                    Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(
+                        descriptor.ServiceType),
+                    "descriptors");
+            }
+
+            if (implementationTypeInfo.IsAbstract ||
+                implementationTypeInfo.IsInterface)
+            {
+                throw new ArgumentException(
+                    Resources.FormatTypeCannotBeActivated(
+                        typeServiceDescriptor.ImplementationType,
+                        typeServiceDescriptor.ServiceType));
+            }
+
+            return new GenericService(typeServiceDescriptor);
+        }
+
+        private bool TryCreateService(ServiceDescriptor descriptor, out IService service)
+        {
+            service = null;
+
+            var instanceServiceDescriptor = descriptor as InstanceServiceDescriptor;
+            if (instanceServiceDescriptor != null)
+            {
+                service = new InstanceService(instanceServiceDescriptor);
+            }
+
+            var factoryServiceDescriptor = descriptor as FactoryServiceDescriptor;
+            if (factoryServiceDescriptor != null)
+            {
+                service = new FactoryService(factoryServiceDescriptor);
+            }
+
+            var typeServiceDescriptor = descriptor as TypeServiceDescriptor;
+            if (typeServiceDescriptor != null)
+            {
+                var implementationTypeInfo = typeServiceDescriptor.ImplementationType.GetTypeInfo();
+
+                if (implementationTypeInfo.IsGenericTypeDefinition ||
+                    implementationTypeInfo.IsAbstract ||
+                    implementationTypeInfo.IsInterface)
+                {
+                    throw new ArgumentException(
+                        Resources.FormatTypeCannotBeActivated(
+                            typeServiceDescriptor.ImplementationType,
+                            typeServiceDescriptor.ServiceType));
+                }
+
+                service = new Service(typeServiceDescriptor);
+            }
+
+            return service != null;
         }
 
         public ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices
@@ -90,7 +139,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     return true;
                 }
-                else if (serviceType.GetTypeInfo().IsGenericType)
+                if (serviceType.GetTypeInfo().IsGenericType)
                 {
                     var openServiceType = serviceType.GetGenericTypeDefinition();
 

@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class GenericService : IGenericService
     {
-        private readonly ServiceDescriptor _descriptor;
+        private readonly TypeServiceDescriptor _descriptor;
 
-        public GenericService(ServiceDescriptor descriptor)
+        public GenericService(TypeServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Type closedImplementationType =
                 _descriptor.ImplementationType.MakeGenericType(genericArguments);
 
-            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifetime);
+            var closedServiceDescriptor = new TypeServiceDescriptor(closedServiceType, closedImplementationType, Lifetime);
             return new Service(closedServiceDescriptor);
         }
     }

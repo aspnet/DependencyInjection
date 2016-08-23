@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection.Ordered;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
@@ -44,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetServices<ClassDependsOnPrivateConstructorClass>());
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService<ClassDependsOnPrivateConstructorClass>());
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -67,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddTransient<DependOnNonexistentService>();
+            collection.AddEnumerable<DependOnNonexistentService>().AddTransient<DependOnNonexistentService>();
             var provider = CreateServiceProvider(collection);
 
             // Act and Assert
@@ -99,6 +101,36 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(
                 $"Cannot instantiate implementation type '{implementationType}' for service type '{serviceType}'.",
                 exception.Message);
+        }
+
+        [Fact]
+        public void NonEnumerableServiceCannotBeIEnumerableResolved()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddTransient(typeof(IFakeService), typeof(FakeService));
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            var services = provider.GetService<IEnumerable<IFakeService>>();
+
+            // Assert
+            Assert.Null(services);
+        }
+
+        [Fact]
+        public void IOrderedDoesNotResolveAsIEnumerable()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddOrdered<IFakeService>().AddTransient<FakeService>();
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            var ordered = provider.GetService<IEnumerable<IFakeService>>();
+
+            // Assert
+            Assert.Null(ordered);
         }
 
         private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>
