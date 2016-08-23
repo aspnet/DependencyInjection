@@ -1,0 +1,33 @@
+{
+  "version": "1.1.0-*",
+  "description": "Suite of xUnit.net tests to check for container compatibility with Microsoft.Extensions.DependencyInjection.",
+  "packOptions": {
+    "tags": [
+      "dependencyinjection",
+      "di"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.Extensions.DependencyInjection.Ordered": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
+    "xunit.assert": "2.2.0-*",
+    "xunit.extensibility.core": "2.2.0-*",
+    "Unity": "4.0.1",
+    "Ninject": "3.2.2"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Runtime": {}
+      }
+    }
+  }
+}
