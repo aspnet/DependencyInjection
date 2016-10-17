@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ServicesRegisteredWithImplementationTypeCanBeResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
             var provider = CreateServiceProvider(collection);
 
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ServicesRegisteredWithImplementationType_ReturnDifferentInstancesPerResolution_ForTransientServices()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
             var provider = CreateServiceProvider(collection);
 
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ServicesRegisteredWithImplementationType_ReturnSameInstancesPerResolution_ForSingletons()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddSingleton(typeof(IFakeService), typeof(FakeService));
             var provider = CreateServiceProvider(collection);
 
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ServiceInstanceCanBeResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             var instance = new FakeService();
             collection.AddSingleton(typeof(IFakeServiceInstance), instance);
             var provider = CreateServiceProvider(collection);
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TransientServiceCanBeResolvedFromProvider()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
             var provider = CreateServiceProvider(collection);
 
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TransientServiceCanBeResolvedFromScope()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
             var provider = CreateServiceProvider(collection);
 
@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void SingleServiceCanBeIEnumerableResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeService), typeof(FakeService));
             var provider = CreateServiceProvider(collection);
 
@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void MultipleServiceCanBeIEnumerableResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
             collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
             var provider = CreateServiceProvider(collection);
@@ -161,7 +161,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void RegistrationOrderIsPreservedWhenServicesAreIEnumerableResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
             collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
 
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void OuterServiceCanHaveOtherServicesInjected()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             var fakeService = new FakeService();
             collection.AddTransient<IFakeOuterService, FakeOuterService>();
             collection.AddSingleton<IFakeService>(fakeService);
@@ -210,7 +210,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void FactoryServicesCanBeCreatedByGetService()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient<IFakeService, FakeService>();
             collection.AddTransient<IFactoryService>(p =>
             {
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void FactoryServicesAreCreatedAsPartOfCreatingObjectGraph()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient<IFakeService, FakeService>();
             collection.AddTransient<IFactoryService>(p =>
             {
@@ -281,7 +281,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void LastServiceReplacesPreviousServices()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient<IFakeMultipleService, FakeOneMultipleService>();
             collection.AddTransient<IFakeMultipleService, FakeTwoMultipleService>();
             var provider = CreateServiceProvider(collection);
@@ -297,7 +297,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void SingletonServiceCanBeResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddSingleton<IFakeSingletonService, FakeService>();
             var provider = CreateServiceProvider(collection);
 
@@ -314,7 +314,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ServiceProviderRegistersServiceScopeFactory()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -328,7 +328,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ScopedServiceCanBeResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
             var provider = CreateServiceProvider(collection);
 
@@ -350,7 +350,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void NestedScopedServiceCanBeResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
             var provider = CreateServiceProvider(collection);
 
@@ -376,7 +376,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ScopedServices_FromCachedScopeFactory_CanBeResolvedAndDisposed()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
             var provider = CreateServiceProvider(collection);
             var cachedScopeFactory = provider.GetService<IServiceScopeFactory>();
@@ -413,7 +413,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void DisposingScopeDisposesService()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddSingleton<IFakeSingletonService, FakeService>();
             collection.AddScoped<IFakeScopedService, FakeService>();
             collection.AddTransient<IFakeService, FakeService>();
@@ -458,7 +458,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void SelfResolveThenDispose()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -473,7 +473,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void SafelyDisposeNestedProviderReferences()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient<ClassWithNestedReferencesToProvider>();
             var provider = CreateServiceProvider(collection);
 
@@ -489,7 +489,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void SingletonServicesComeFromRootProvider()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddSingleton<IFakeSingletonService, FakeService>();
             var provider = CreateServiceProvider(collection);
             FakeService disposableService1;
@@ -521,7 +521,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void NestedScopedServiceCanBeResolvedWithNoFallbackProvider()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddScoped<IFakeScopedService, FakeService>();
             var provider = CreateServiceProvider(collection);
 
@@ -545,7 +545,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void OpenGenericServicesCanBeResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
             collection.AddSingleton<IFakeSingletonService, FakeService>();
             var provider = CreateServiceProvider(collection);
@@ -562,7 +562,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void ClosedServicesPreferredOverOpenGenericServices()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService));
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
             collection.AddSingleton<PocoClass>();
@@ -579,7 +579,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void AttemptingToResolveNonexistentServiceReturnsNull()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -593,7 +593,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void NonexistentServiceCanBeIEnumerableResolved()
         {
             // Arrange
-            var collection = new ServiceCollection();
+            var collection = new TestServiceCollection();
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -615,30 +615,30 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 return new TheoryData<IServiceCollection, TypeWithSupersetConstructors>
                 {
                     {
-                        new ServiceCollection()
+                        new TestServiceCollection()
                             .AddSingleton<IFakeService>(fakeService),
                         new TypeWithSupersetConstructors(fakeService)
                     },
                     {
-                        new ServiceCollection()
+                        new TestServiceCollection()
                             .AddSingleton<IFactoryService>(factoryService),
                         new TypeWithSupersetConstructors(factoryService)
                     },
                     {
-                        new ServiceCollection()
+                        new TestServiceCollection()
                             .AddSingleton<IFakeService>(fakeService)
                             .AddSingleton<IFactoryService>(factoryService),
                        new TypeWithSupersetConstructors(fakeService, factoryService)
                     },
                     {
-                        new ServiceCollection()
+                        new TestServiceCollection()
                             .AddSingleton<IFakeService>(fakeService)
                             .AddSingleton<IFakeMultipleService>(multipleService)
                             .AddSingleton<IFactoryService>(factoryService),
                        new TypeWithSupersetConstructors(fakeService, multipleService, factoryService)
                     },
                     {
-                        new ServiceCollection()
+                        new TestServiceCollection()
                             .AddSingleton<IFakeService>(fakeService)
                             .AddSingleton<IFakeMultipleService>(multipleService)
                             .AddSingleton<IFakeScopedService>(scopedService)
