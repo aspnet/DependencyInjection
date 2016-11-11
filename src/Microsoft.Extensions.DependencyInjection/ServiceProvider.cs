@@ -169,20 +169,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 _disposeCalled = true;
                 if (_transientDisposables != null)
                 {
-                    foreach (var disposable in _transientDisposables)
+                    for (int i = _transientDisposables.Count - 1; i >= 0; i--)
                     {
+                        var disposable = _transientDisposables[i];
                         disposable.Dispose();
                     }
 
                     _transientDisposables.Clear();
-                }
-
-                // PERF: We've enumerating the dictionary so that we don't allocate to enumerate.
-                // .Values allocates a ValueCollection on the heap, enumerating the dictionary allocates
-                // a struct enumerator
-                foreach (var entry in ResolvedServices)
-                {
-                    (entry.Value as IDisposable)?.Dispose();
                 }
 
                 ResolvedServices.Clear();

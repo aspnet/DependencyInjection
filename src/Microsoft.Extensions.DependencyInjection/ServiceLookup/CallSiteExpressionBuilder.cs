@@ -184,7 +184,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 callSite.Key,
                 typeof(object));
 
-            var resolvedExpression = Expression.Variable(typeof(object), "resolved");
+            var resolvedVariable = Expression.Variable(typeof(object), "resolved");
 
             var resolvedServices = GetResolvedServices(provider);
 
@@ -192,26 +192,34 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 resolvedServices,
                 TryGetValueMethodInfo,
                 keyExpression,
-                resolvedExpression);
+                resolvedVariable);
 
             var assignExpression = Expression.Assign(
-                resolvedExpression, VisitCallSite(callSite.ServiceCallSite, provider));
+                resolvedVariable, VisitCallSite(callSite.ServiceCallSite, provider));
 
             var addValueExpression = Expression.Call(
                 resolvedServices,
                 AddMethodInfo,
                 keyExpression,
-                resolvedExpression);
+                resolvedVariable);
+
+            Expression captureDisposableExpression = Expression.Invoke(
+                GetCaptureDisposable(provider),
+                resolvedVariable
+                );
 
             var blockExpression = Expression.Block(
                 typeof(object),
                 new[] {
-                    resolvedExpression
+                    resolvedVariable
                 },
                 Expression.IfThen(
                     Expression.Not(tryGetValueExpression),
-                    Expression.Block(assignExpression, addValueExpression)),
-                resolvedExpression);
+                    Expression.Block(
+                        assignExpression,
+                        addValueExpression,
+                        captureDisposableExpression)),
+                resolvedVariable);
 
             return blockExpression;
         }
