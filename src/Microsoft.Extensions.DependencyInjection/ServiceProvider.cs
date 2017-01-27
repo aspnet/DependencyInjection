@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="serviceType"></param>
         /// <returns></returns>
-        public object GetService(Type serviceType)
+        public virtual object GetService(Type serviceType)
         {
             var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
 
