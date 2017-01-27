@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    internal class ServiceProvider : IServiceProvider, IDisposable
+    public class ServiceProvider : IServiceProvider, IDisposable
     {
         private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
