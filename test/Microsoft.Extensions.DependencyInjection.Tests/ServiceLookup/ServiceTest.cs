@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
-            var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
+            var serviceProvider = new DefaultServiceProvider(new[] { descriptor }, validateScopes: true);
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
-            var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
+            var serviceProvider = new DefaultServiceProvider(new[] { descriptor }, validateScopes: true);
 
             // Act
             var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var type = typeof(TypeWithParameterizedAndNullaryConstructor);
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
-            var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
+            var serviceProvider = new DefaultServiceProvider(new[] { descriptor }, validateScopes: true);
 
             // Act
             var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public static TheoryData CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParametersData =>
-            new TheoryData<Type, ServiceProvider, Type[]>
+            new TheoryData<Type, DefaultServiceProvider, Type[]>
             {
                 {
                     typeof(TypeWithSupersetConstructors),
@@ -194,7 +194,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
 
             // Act
-            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite((DefaultServiceProvider)serviceProvider, new HashSet<Type>());
 
             // Assert
             var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public static TheoryData CreateCallSite_ConsidersConstructorsWithDefaultValuesData =>
-            new TheoryData<ServiceProvider, Type[]>
+            new TheoryData<DefaultServiceProvider, Type[]>
             {
                 {
                     GetServiceProvider(
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var service = new Service(descriptor);
 
             // Act
-            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>());
+            var callSite = service.CreateCallSite((DefaultServiceProvider)serviceProvider, new HashSet<Type>());
 
             // Assert
             var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
@@ -282,7 +282,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public static TheoryData CreateCallSite_ThrowsIfMultipleNonOverlappingConstructorsCanBeResolvedData =>
-            new TheoryData<Type, ServiceProvider, Type[][]>
+            new TheoryData<Type, DefaultServiceProvider, Type[][]>
             {
                 {
                     typeof(TypeWithDefaultConstructorParameters),
@@ -365,7 +365,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>()));
+                () => service.CreateCallSite((DefaultServiceProvider)serviceProvider, new HashSet<Type>()));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -389,7 +389,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Assert.StartsWith(expectedMessage, ex.Message);
         }
 
-        private static ServiceProvider GetServiceProvider(params ServiceDescriptor[] descriptors)
+        private static DefaultServiceProvider GetServiceProvider(params ServiceDescriptor[] descriptors)
         {
             var collection = new ServiceCollection();
             foreach (var descriptor in descriptors)
@@ -397,7 +397,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 collection.Add(descriptor);
             }
 
-            return (ServiceProvider)collection.BuildServiceProvider();
+            return (DefaultServiceProvider)collection.BuildServiceProvider();
         }
 
         private static IEnumerable<Type> GetParameters(ConstructorCallSite constructorCallSite) =>

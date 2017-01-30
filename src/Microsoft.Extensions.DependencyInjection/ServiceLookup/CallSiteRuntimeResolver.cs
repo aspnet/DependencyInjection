@@ -3,20 +3,20 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProvider, object>
+    internal class CallSiteRuntimeResolver : CallSiteVisitor<DefaultServiceProvider, object>
     {
-        public object Resolve(IServiceCallSite callSite, ServiceProvider provider)
+        public object Resolve(IServiceCallSite callSite, DefaultServiceProvider provider)
         {
             return VisitCallSite(callSite, provider);
         }
 
-        protected override object VisitTransient(TransientCallSite transientCallSite, ServiceProvider provider)
+        protected override object VisitTransient(TransientCallSite transientCallSite, DefaultServiceProvider provider)
         {
             return provider.CaptureDisposable(
                 VisitCallSite(transientCallSite.Service, provider));
         }
 
-        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProvider provider)
+        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, DefaultServiceProvider provider)
         {
             object[] parameterValues = new object[constructorCallSite.ParameterCallSites.Length];
             for (var index = 0; index < parameterValues.Length; index++)
@@ -36,12 +36,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProvider provider)
+        protected override object VisitSingleton(SingletonCallSite singletonCallSite, DefaultServiceProvider provider)
         {
             return VisitScoped(singletonCallSite, provider.Root);
         }
 
-        protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProvider provider)
+        protected override object VisitScoped(ScopedCallSite scopedCallSite, DefaultServiceProvider provider)
         {
             object resolved;
             lock (provider.ResolvedServices)
@@ -55,12 +55,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return resolved;
         }
 
-        protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProvider provider)
+        protected override object VisitConstant(ConstantCallSite constantCallSite, DefaultServiceProvider provider)
         {
             return constantCallSite.DefaultValue;
         }
 
-        protected override object VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ServiceProvider provider)
+        protected override object VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, DefaultServiceProvider provider)
         {
             try
             {
@@ -74,27 +74,27 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitInstanceService(InstanceService instanceCallSite, ServiceProvider provider)
+        protected override object VisitInstanceService(InstanceService instanceCallSite, DefaultServiceProvider provider)
         {
             return instanceCallSite.Descriptor.ImplementationInstance;
         }
 
-        protected override object VisitServiceProviderService(ServiceProviderService serviceProviderService, ServiceProvider provider)
+        protected override object VisitServiceProviderService(ServiceProviderService serviceProviderService, DefaultServiceProvider provider)
         {
             return provider;
         }
 
-        protected override object VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, ServiceProvider provider)
+        protected override object VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, DefaultServiceProvider provider)
         {
             return emptyIEnumerableCallSite.ServiceInstance;
         }
 
-        protected override object VisitServiceScopeService(ServiceScopeService serviceScopeService, ServiceProvider provider)
+        protected override object VisitServiceScopeService(ServiceScopeService serviceScopeService, DefaultServiceProvider provider)
         {
             return new ServiceScopeFactory(provider);
         }
 
-        protected override object VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite, ServiceProvider provider)
+        protected override object VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite, DefaultServiceProvider provider)
         {
             var array = Array.CreateInstance(
                 closedIEnumerableCallSite.ItemType,
@@ -108,7 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return array;
         }
 
-        protected override object VisitFactoryService(FactoryService factoryService, ServiceProvider provider)
+        protected override object VisitFactoryService(FactoryService factoryService, DefaultServiceProvider provider)
         {
             return factoryService.Descriptor.ImplementationFactory(provider);
         }

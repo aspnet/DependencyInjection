@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        public void ValidateResolution(Type serviceType, ServiceProvider serviceProvider)
+        public void ValidateResolution(Type serviceType, DefaultServiceProvider serviceProvider)
         {
             Type scopedService;
             if (ReferenceEquals(serviceProvider, serviceProvider.Root)

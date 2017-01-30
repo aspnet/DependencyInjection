@@ -5,16 +5,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ServiceScopeFactory : IServiceScopeFactory
     {
-        private readonly ServiceProvider _provider;
+        private readonly DefaultServiceProvider _provider;
 
-        public ServiceScopeFactory(ServiceProvider provider)
+        public ServiceScopeFactory(DefaultServiceProvider provider)
         {
             _provider = provider;
         }
 
         public IServiceScope CreateScope()
         {
-            return new ServiceScope(new ServiceProvider(_provider));
+            return new ServiceScope(new DefaultServiceProvider(_provider));
         }
     }
 }

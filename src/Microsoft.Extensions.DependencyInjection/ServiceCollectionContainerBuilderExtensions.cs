@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The<see cref="IServiceProvider"/>.</returns>
         public static IServiceProvider BuildServiceProvider(this IServiceCollection services, bool validateScopes)
         {
-            return new ServiceProvider(services, validateScopes);
+            return new DefaultServiceProvider(services, validateScopes);
         }
     }
 }
