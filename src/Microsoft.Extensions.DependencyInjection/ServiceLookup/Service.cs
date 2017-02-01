@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             get { return _descriptor.Lifetime; }
         }
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
+        public IServiceCallSite CreateCallSite(DefaultServiceProvider provider, ISet<Type> callSiteChain)
         {
             var constructors = _descriptor.ImplementationType.GetTypeInfo()
                 .DeclaredConstructors
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         private IServiceCallSite[] PopulateCallSites(
-            ServiceProvider provider,
+            DefaultServiceProvider provider,
             ISet<Type> callSiteChain,
             ParameterInfo[] parameters,
             bool throwIfCallSiteNotFound)

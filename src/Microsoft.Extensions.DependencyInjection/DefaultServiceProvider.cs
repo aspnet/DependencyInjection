@@ -15,22 +15,22 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    internal class ServiceProvider : IServiceProvider, IDisposable
+    public class DefaultServiceProvider : IServiceProvider, IDisposable
     {
         private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
         private List<IDisposable> _transientDisposables;
 
-        internal ServiceProvider Root { get; }
+        internal DefaultServiceProvider Root { get; }
         internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
 
-        private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
+        private static readonly Func<Type, DefaultServiceProvider, Func<DefaultServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
 
         // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
-        public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, bool validateScopes)
+        public DefaultServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, bool validateScopes)
         {
             Root = this;
 
@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         // This constructor is called exclusively to create a child scope from the parent
-        internal ServiceProvider(ServiceProvider parent)
+        internal DefaultServiceProvider(DefaultServiceProvider parent)
         {
             Root = parent.Root;
             _table = parent._table;
@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="serviceType"></param>
         /// <returns></returns>
-        public object GetService(Type serviceType)
+        public virtual object GetService(Type serviceType)
         {
             var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
 
@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return realizedService.Invoke(this);
         }
 
-        private static Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType, ServiceProvider serviceProvider)
+        private static Func<DefaultServiceProvider, object> CreateServiceAccessor(Type serviceType, DefaultServiceProvider serviceProvider)
         {
             var callSite = serviceProvider.GetServiceCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return _ => null;
         }
 
-        internal static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
+        internal static Func<DefaultServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
         {
             var callCount = 0;
             return provider =>

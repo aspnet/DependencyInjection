@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly Dictionary<Type, ServiceEntry> _services;
         private readonly Dictionary<Type, List<IGenericService>> _genericServices;
-        private readonly ConcurrentDictionary<Type, Func<ServiceProvider, object>> _realizedServices = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
+        private readonly ConcurrentDictionary<Type, Func<DefaultServiceProvider, object>> _realizedServices = new ConcurrentDictionary<Type, Func<DefaultServiceProvider, object>>();
 
         public ServiceTable(IEnumerable<ServiceDescriptor> descriptors)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        public ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices
+        public ConcurrentDictionary<Type, Func<DefaultServiceProvider, object>> RealizedServices
         {
             get { return _realizedServices; }
         }
