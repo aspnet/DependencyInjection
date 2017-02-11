@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class CircularDependencyTests
     {
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void SelfCircularDependency()
         {
             var serviceProvider = new ServiceCollection()
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void SelfCircularDependencyGenericDirect()
         {
             var serviceProvider = new ServiceCollection()
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void SelfCircularDependencyGenericIndirect()
         {
             var serviceProvider = new ServiceCollection()
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void NoCircularDependencyGeneric()
         {
             var serviceProvider = new ServiceCollection()
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.NotNull(resolvedService);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void SelfCircularDependencyWithInterface()
         {
             var serviceProvider = new ServiceCollection()
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void DirectCircularDependency()
         {
             var serviceProvider = new ServiceCollection()
@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void IndirectCircularDependency()
         {
             var serviceProvider = new ServiceCollection()
@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "Testing something")]
         public void NoCircularDependencySameTypeMultipleTimes()
         {
             var serviceProvider = new ServiceCollection()
