@@ -129,13 +129,18 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             descriptors.AddTransient<ServiceB>();
             descriptors.AddTransient<ServiceC>();
 
-            var provider = new CustomServiceProvider(descriptors, ServiceProviderOptions.Default);
+            var disposables = new List<object>();
+            var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
+            provider._captureDisposableCallback = obj =>
+            {
+                disposables.Add(obj);
+            };
             var callSite = provider.GetServiceCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (ServiceC)compiledCallSite(provider);
 
-            Assert.Equal(0, provider.CapturedDisposables.Count);
+            Assert.Equal(0, disposables.Count);
         }
 
         [Fact]
@@ -145,13 +150,18 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             descriptors.AddTransient<ServiceA>();
             descriptors.AddTransient<ServiceD>();
 
-            var provider = new CustomServiceProvider(descriptors, ServiceProviderOptions.Default);
+            var disposables = new List<object>();
+            var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
+            provider._captureDisposableCallback = obj =>
+            {
+                disposables.Add(obj);
+            };
             var callSite = provider.GetServiceCallSite(typeof(ServiceD), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceD = (ServiceD)compiledCallSite(provider);
 
-            Assert.Equal(0, provider.CapturedDisposables.Count);
+            Assert.Equal(0, disposables.Count);
         }
 
         [Fact]
@@ -175,25 +185,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var ex2 = Assert.Throws<Exception>(() => compiledCallSite2(provider));
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
-        }
-
-        private class CustomServiceProvider : ServiceProvider
-        {
-            public List<object> CapturedDisposables { get; } = new List<object>();
-
-            public CustomServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options) : base(serviceDescriptors, options)
-            {
-            }
-
-            internal override object CaptureDisposable(object service)
-            {
-                lock (CapturedDisposables)
-                {
-                    CapturedDisposables.Add(service);
-                }
-
-                return base.CaptureDisposable(service);
-            }
         }
 
         private class ServiceD
