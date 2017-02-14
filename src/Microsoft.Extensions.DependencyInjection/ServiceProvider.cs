@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (service.Lifetime == ServiceLifetime.Transient)
             {
-                return new TransientCallSite(serviceCallSite);
+                return new TransientCallSite(service, serviceCallSite);
             }
             else if (service.Lifetime == ServiceLifetime.Scoped)
             {
@@ -186,7 +186,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
-        internal object CaptureDisposable(object service)
+        internal virtual object CaptureDisposable(object service)
         {
             if (!object.ReferenceEquals(this, service))
             {

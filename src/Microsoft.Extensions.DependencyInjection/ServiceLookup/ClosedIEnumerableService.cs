@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             _itemType = itemType;
             _serviceEntry = entry;
+            ImplementationType = _itemType.MakeArrayType();
         }
 
         public IService Next { get; set; }
@@ -26,6 +27,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public Type ServiceType => _itemType;
+
+        public Type ImplementationType { get; }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
