@@ -4,9 +4,9 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public class DefaultServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
     {
-        private readonly ServiceProviderOptions _options = ServiceProviderOptions.Default;
+        private readonly ServiceProviderOptions _options;
 
-        public DefaultServiceProviderFactory()
+        public DefaultServiceProviderFactory() : this(ServiceProviderOptions.Default)
         {
 
         }
