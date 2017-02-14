@@ -14,9 +14,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public ClosedIEnumerableService(Type itemType, ServiceEntry entry)
         {
-            _itemType = itemType;
+            ServiceType = itemType;
             _serviceEntry = entry;
-            ImplementationType = _itemType.MakeArrayType();
+            ImplementationType = itemType.MakeArrayType();
         }
 
         public IService Next { get; set; }
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             get { return ServiceLifetime.Transient; }
         }
 
-        public Type ServiceType => _itemType;
+        public Type ServiceType { get; }
 
         public Type ImplementationType { get; }
 
