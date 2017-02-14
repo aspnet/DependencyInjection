@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ClosedIEnumerableService : IService
     {
-        private readonly Type _itemType;
         private readonly ServiceEntry _serviceEntry;
 
         public ClosedIEnumerableService(Type itemType, ServiceEntry entry)
@@ -39,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 list.Add(provider.GetResolveCallSite(service, callSiteChain));
                 service = service.Next;
             }
-            return new ClosedIEnumerableCallSite(_itemType, list.ToArray());
+            return new ClosedIEnumerableCallSite(ServiceType, list.ToArray());
         }
     }
 }
