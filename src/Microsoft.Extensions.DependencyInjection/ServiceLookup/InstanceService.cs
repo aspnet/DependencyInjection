@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public InstanceService(ServiceDescriptor descriptor)
         {
             Descriptor = descriptor;
-            ImplementationType = descriptor.ImplementationInstance?.GetType();
+            ImplementationType = descriptor.ImplementationInstance.GetType();
         }
 
         public IService Next { get; set; }
