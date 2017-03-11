@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 
@@ -8,6 +9,8 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
     [Config(typeof(CoreConfig))]
     public class ResolvePerformance
     {
+        private const int OperationsPerInvoke = 50000;
+
         private IServiceProvider _transientSp;
         private IServiceScope _scopedSp;
         private IServiceProvider _singletonSp;
@@ -36,33 +39,43 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             _singletonSp = services.BuildServiceProvider();
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = 5000)]
+        [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
         {
-            new A(new B(new C()));
+            var temp = new A(new B(new C()));
+            temp.Foo();
         }
 
-        [Benchmark(OperationsPerInvoke = 5000)]
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Transient()
         {
-            _transientSp.GetService<A>();
+            var temp = _transientSp.GetService<A>();
+            temp.Foo();
         }
 
-        [Benchmark(OperationsPerInvoke = 5000)]
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Scoped()
         {
-            _scopedSp.ServiceProvider.GetService<A>();
+            var temp = _scopedSp.ServiceProvider.GetService<A>();
+            temp.Foo();
         }
 
-        [Benchmark(OperationsPerInvoke = 5000)]
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Singleton()
         {
-            _singletonSp.GetService<A>();
+            var temp = _singletonSp.GetService<A>();
+            temp.Foo();
         }
 
         private class A
         {
             public A(B b)
+            {
+
+            }
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            public void Foo()
             {
 
             }
