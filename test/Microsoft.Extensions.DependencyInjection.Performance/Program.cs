@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<ResolvePerformance>();
+            BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly).Run(args);
         }
     }
 }
