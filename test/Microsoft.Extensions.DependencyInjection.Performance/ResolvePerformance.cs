@@ -42,29 +42,41 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
         {
-            var temp = new A(new B(new C()));
-            temp.Foo();
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = new A(new B(new C()));
+                temp.Foo();
+            }
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Transient()
         {
-            var temp = _transientSp.GetService<A>();
-            temp.Foo();
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _transientSp.GetService<A>();
+                temp.Foo();
+            }
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Scoped()
         {
-            var temp = _scopedSp.ServiceProvider.GetService<A>();
-            temp.Foo();
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _scopedSp.ServiceProvider.GetService<A>();
+                temp.Foo();
+            }
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Singleton()
         {
-            var temp = _singletonSp.GetService<A>();
-            temp.Foo();
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _singletonSp.GetService<A>();
+                temp.Foo();
+            }
         }
 
         private class A
