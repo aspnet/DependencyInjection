@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using BenchmarkDotNet.Running;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
