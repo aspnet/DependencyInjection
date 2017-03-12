@@ -13,8 +13,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
 
         private IServiceProvider _transientSp;
         private IServiceProvider _transientSpScopeValidation;
-        private IServiceScope _scopedSpScopeValidation;
-        private IServiceProvider _singletonSpScopeValidation;
 
         [Setup]
         public void Setup()
@@ -30,20 +28,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<B>();
             services.AddTransient<C>();
             _transientSpScopeValidation = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-
-
-            services = new ServiceCollection();
-            services.AddScoped<A>();
-            services.AddScoped<B>();
-            services.AddScoped<C>();
-            _scopedSpScopeValidation = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true }).CreateScope();
-
-
-            services = new ServiceCollection();
-            services.AddSingleton<A>();
-            services.AddSingleton<B>();
-            services.AddSingleton<C>();
-            _singletonSpScopeValidation = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
@@ -62,26 +46,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             for (int i = 0; i < OperationsPerInvoke; i++)
             {
                 var temp = _transientSpScopeValidation.GetService<A>();
-                temp.Foo();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void ScopedWithScopeValidation()
-        {
-            for (int i = 0; i < OperationsPerInvoke; i++)
-            {
-                var temp = _scopedSpScopeValidation.ServiceProvider.GetService<A>();
-                temp.Foo();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void SingletonWithScopeValidation()
-        {
-            for (int i = 0; i < OperationsPerInvoke; i++)
-            {
-                var temp = _singletonSpScopeValidation.GetService<A>();
                 temp.Foo();
             }
         }
