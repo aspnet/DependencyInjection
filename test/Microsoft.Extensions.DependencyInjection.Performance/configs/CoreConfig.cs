@@ -15,7 +15,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             Add(JitOptimizationsValidator.FailOnError);
             Add(MemoryDiagnoser.Default);
-            Add(new RpsColumn());
 
             Add(Job.Default
                 .With(BenchmarkDotNet.Environments.Runtime.Core)
