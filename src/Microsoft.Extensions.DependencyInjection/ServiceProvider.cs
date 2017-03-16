@@ -19,7 +19,6 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
-        private readonly ServiceProviderOptions _options;
         private bool _disposeCalled;
         private List<IDisposable> _transientDisposables;
 
@@ -43,7 +42,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 _callSiteValidator = new CallSiteValidator();
             }
 
-            _options = options;
             _table = new ServiceTable(serviceDescriptors);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());

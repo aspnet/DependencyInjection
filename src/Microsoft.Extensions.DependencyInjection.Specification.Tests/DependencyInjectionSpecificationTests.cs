@@ -662,10 +662,10 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var serviceCollection = new TestServiceCollection();
             serviceCollection.AddSingleton<FakeDisposeCallback>();
-            serviceCollection.AddSingleton<IFakeOuterService, FakeDisposableCallbackOuterService>();
+            serviceCollection.AddTransient<IFakeOuterService, FakeDisposableCallbackOuterService>();
             serviceCollection.AddSingleton<IFakeMultipleService, FakeDisposableCallbackInnerService>();
-            serviceCollection.AddSingleton<IFakeMultipleService, FakeDisposableCallbackInnerService>();
-            serviceCollection.AddSingleton<IFakeMultipleService, FakeDisposableCallbackInnerService>();
+            serviceCollection.AddScoped<IFakeMultipleService, FakeDisposableCallbackInnerService>();
+            serviceCollection.AddTransient<IFakeMultipleService, FakeDisposableCallbackInnerService>();
             serviceCollection.AddSingleton<IFakeService, FakeDisposableCallbackInnerService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
 

@@ -146,16 +146,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
         {
             var implType = callSite.Service.ImplementationType;
-
             // Elide calls to GetCaptureDisposable if the implemenation type isn't disposable
+            return TryCaptureDisposible(
+                implType,
+                provider,
+                VisitCallSite(callSite.ServiceCallSite, provider));
+        }
+
+        private Expression TryCaptureDisposible(Type implType, ParameterExpression provider, Expression service)
+        {
+
             if (implType != null &&
                 !typeof(IDisposable).GetTypeInfo().IsAssignableFrom(implType.GetTypeInfo()))
             {
-                return VisitCallSite(callSite.ServiceCallSite, provider);
+                return service;
             }
 
             return Expression.Invoke(GetCaptureDisposable(provider),
-                VisitCallSite(callSite.ServiceCallSite, provider));
+                service);
         }
 
         protected override Expression VisitConstructor(ConstructorCallSite callSite, ParameterExpression provider)
@@ -194,19 +202,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 keyExpression,
                 resolvedVariable);
 
+            var service = VisitCallSite(callSite.ServiceCallSite, provider);
+            var captureDisposible = TryCaptureDisposible(callSite.Key.ImplementationType, provider, service);
+
             var assignExpression = Expression.Assign(
-                resolvedVariable, VisitCallSite(callSite.ServiceCallSite, provider));
+                resolvedVariable, 
+                captureDisposible);
 
             var addValueExpression = Expression.Call(
                 resolvedServices,
                 AddMethodInfo,
                 keyExpression,
                 resolvedVariable);
-
-            Expression captureDisposableExpression = Expression.Invoke(
-                GetCaptureDisposable(provider),
-                resolvedVariable
-                );
 
             var blockExpression = Expression.Block(
                 typeof(object),
@@ -217,8 +224,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     Expression.Not(tryGetValueExpression),
                     Expression.Block(
                         assignExpression,
-                        addValueExpression,
-                        captureDisposableExpression)),
+                        addValueExpression)),
                 resolvedVariable);
 
             return blockExpression;
