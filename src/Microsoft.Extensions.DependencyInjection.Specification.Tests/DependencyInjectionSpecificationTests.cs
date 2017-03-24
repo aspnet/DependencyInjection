@@ -310,6 +310,24 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void SingletonServices_SameInstance()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddSingleton<IFakeSingletonService, FakeService>();
+            collection.AddSingleton<IFakeEveryService, FakeService>();
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            var service1 = provider.GetService<IFakeSingletonService>();
+            var service2 = provider.GetService<IFakeEveryService>();
+
+            // Assert
+            Assert.NotNull(service1);
+            Assert.Same(service1, service2);
+        }
+
+        [Fact]
         public void ServiceProviderRegistersServiceScopeFactory()
         {
             // Arrange
@@ -363,6 +381,36 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 Assert.NotNull(outerScopedService);
                 Assert.NotNull(innerScopedService);
                 Assert.NotSame(outerScopedService, innerScopedService);
+            }
+        }
+
+        [Fact]
+        public void ScopedServices_SameInstance()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddScoped<IFakeScopedService, FakeService>();
+            collection.AddScoped<IFakeEveryService, FakeService>();
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            using (var outerScope = provider.CreateScope())
+            using (var innerScope = outerScope.ServiceProvider.CreateScope())
+            {
+                var outerScopedService1 = outerScope.ServiceProvider.GetService<IFakeScopedService>();
+                var outerScopedService2 = outerScope.ServiceProvider.GetService<IFakeEveryService>();
+                var innerScopedService1 = innerScope.ServiceProvider.GetService<IFakeScopedService>();
+                var innerScopedService2 = innerScope.ServiceProvider.GetService<IFakeEveryService>();
+
+                // Assert
+                Assert.NotNull(outerScopedService1);
+                Assert.NotNull(outerScopedService2);
+                Assert.NotNull(innerScopedService1);
+                Assert.NotNull(innerScopedService2);
+                Assert.Same(outerScopedService1, outerScopedService2);
+                Assert.Same(innerScopedService1, innerScopedService2);
+                Assert.NotSame(outerScopedService1, innerScopedService1);
+                Assert.NotSame(outerScopedService2, innerScopedService2);
             }
         }
 
@@ -677,8 +725,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Assert
             Assert.Equal(outer, callback.Disposed[0]);
-            Assert.Equal(outer.MultipleServices.Reverse(), callback.Disposed.Skip(1).Take(3).OfType<IFakeMultipleService>());
-            Assert.Equal(outer.SingleService, callback.Disposed[4]);
+            Assert.Equal(outer.MultipleServices.Distinct().Reverse(), callback.Disposed.Skip(1).Take(2).OfType<IFakeMultipleService>());
+            Assert.Equal(outer.SingleService, callback.Disposed[2]);
         }
     }
 }
