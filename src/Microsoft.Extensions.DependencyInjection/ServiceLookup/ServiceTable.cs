@@ -90,8 +90,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     return true;
                 }
-                else if (serviceType.GetTypeInfo().IsGenericType)
+
+                var typeInfo = serviceType.GetTypeInfo();
+                if (typeInfo.IsGenericType)
                 {
+                    if (typeInfo.ContainsGenericParameters)
+                    {
+                        return false;
+                    }
+
                     var openServiceType = serviceType.GetGenericTypeDefinition();
 
                     List<IGenericService> genericEntry;
