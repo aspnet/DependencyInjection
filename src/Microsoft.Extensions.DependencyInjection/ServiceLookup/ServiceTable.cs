@@ -49,6 +49,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                     Add(descriptor.ServiceType, new GenericService(descriptor));
                 }
+                else if (serviceTypeInfo.ContainsGenericParameters)
+                {
+                    var serviceType = descriptor.ServiceType.GetGenericTypeDefinition();
+                    Add(serviceType, new PartiallyClosedGenericsService(descriptor));
+                }
                 else if (descriptor.ImplementationInstance != null)
                 {
                     Add(descriptor.ServiceType, new InstanceService(descriptor));
