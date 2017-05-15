@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         internal ServiceProvider Root { get; }
         internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
+        internal Dictionary<Type, object> ResolvedSingletonServices { get; } = new Dictionary<Type, object>();
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
 

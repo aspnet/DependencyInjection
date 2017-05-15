@@ -48,8 +48,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 if (!provider.ResolvedServices.TryGetValue(scopedCallSite.Key, out resolved))
                 {
-                    resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
-                    provider.CaptureDisposable(resolved);
+                    if (scopedCallSite.Key.ImplementationType == null ||
+                        !provider.ResolvedSingletonServices.TryGetValue(scopedCallSite.Key.ImplementationType, out resolved))
+                    {
+                        resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
+                        provider.CaptureDisposable(resolved);
+
+                        if (scopedCallSite.Key.ImplementationType != null)
+                        {
+                            provider.ResolvedSingletonServices.Add(scopedCallSite.Key.ImplementationType, resolved);
+                        }
+                    }
                     provider.ResolvedServices.Add(scopedCallSite.Key, resolved);
                 }
             }
