@@ -704,24 +704,5 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.NotNull(enumerable[2]);
             Assert.Equal(instance, enumerable[1]);
         }
-
-        [Fact]
-        public void DoesNotTryToResolveOpenGenericWhenClosedIsPresent()
-        {
-            // Arrange
-            var serviceCollection = new TestServiceCollection();
-            var instance = new FakeOpenGenericService<IFakeService>(null);
-
-            serviceCollection.AddSingleton(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
-            serviceCollection.AddSingleton<IFakeOpenGenericService<IFakeService>>(instance);
-
-            var serviceProvider = CreateServiceProvider(serviceCollection);
-
-            // This should not try to close IFakeOpenGenericService<> and throw exeption
-            var fakeService = serviceProvider.GetService<IFakeOpenGenericService<IFakeService>>();
-
-            // Assert
-            Assert.Equal(instance, fakeService);
-        }
     }
 }
