@@ -74,33 +74,33 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitServiceProviderService(ServiceProviderService serviceProviderService, ServiceProvider provider)
+        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProvider provider)
         {
             return provider;
         }
 
-        protected override object VisitServiceScopeService(ServiceScopeService serviceScopeService, ServiceProvider provider)
+        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ServiceProvider provider)
         {
             return new ServiceScopeFactory(provider);
         }
 
-        protected override object VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite, ServiceProvider provider)
+        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ServiceProvider provider)
         {
             var array = Array.CreateInstance(
-                closedIEnumerableCallSite.ItemType,
-                closedIEnumerableCallSite.ServiceCallSites.Length);
+                enumerableCallSite.ItemType,
+                enumerableCallSite.ServiceCallSites.Length);
 
-            for (var index = 0; index < closedIEnumerableCallSite.ServiceCallSites.Length; index++)
+            for (var index = 0; index < enumerableCallSite.ServiceCallSites.Length; index++)
             {
-                var value = VisitCallSite(closedIEnumerableCallSite.ServiceCallSites[index], provider);
+                var value = VisitCallSite(enumerableCallSite.ServiceCallSites[index], provider);
                 array.SetValue(value, index);
             }
             return array;
         }
 
-        protected override object VisitFactoryService(FactoryService factoryService, ServiceProvider provider)
+        protected override object VisitFactory(FactoryCallSite factoryCallSite, ServiceProvider provider)
         {
-            return factoryService.Factory(provider);
+            return factoryCallSite.Factory(provider);
         }
     }
 }

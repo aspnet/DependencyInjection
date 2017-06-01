@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceProviderService : IServiceCallSite
+    internal class ServiceProviderCallSite : IServiceCallSite
     {
         public Type ServiceType { get; } = typeof(IServiceProvider);
         public Type ImplementationType { get; } = typeof(ServiceProvider);

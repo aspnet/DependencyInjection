@@ -6,12 +6,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ClosedIEnumerableCallSite : IServiceCallSite
+    internal class IEnumerableCallSite : IServiceCallSite
     {
         internal Type ItemType { get; }
         internal IServiceCallSite[] ServiceCallSites { get; }
 
-        public ClosedIEnumerableCallSite(Type itemType, IServiceCallSite[] serviceCallSites)
+        public IEnumerableCallSite(Type itemType, IServiceCallSite[] serviceCallSites)
         {
             ItemType = itemType;
             ServiceCallSites = serviceCallSites;

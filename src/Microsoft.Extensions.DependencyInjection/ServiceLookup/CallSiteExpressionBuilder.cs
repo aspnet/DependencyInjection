@@ -101,12 +101,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.New(createInstanceCallSite.ImplementationType);
         }
 
-        protected override Expression VisitServiceProviderService(ServiceProviderService serviceProviderService, ParameterExpression provider)
+        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ParameterExpression provider)
         {
             return provider;
         }
 
-        protected override Expression VisitServiceScopeService(ServiceScopeService serviceScopeService, ParameterExpression provider)
+        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ParameterExpression provider)
         {
             return Expression.New(typeof(ServiceScopeFactory).GetTypeInfo()
                     .DeclaredConstructors
@@ -114,12 +114,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 provider);
         }
 
-        protected override Expression VisitFactoryService(FactoryService factoryService, ParameterExpression provider)
+        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, ParameterExpression provider)
         {
-            return Expression.Invoke(Expression.Constant(factoryService.Factory), provider);
+            return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), provider);
         }
 
-        protected override Expression VisitClosedIEnumerable(ClosedIEnumerableCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, ParameterExpression provider)
         {
             return Expression.NewArrayInit(
                 callSite.ItemType,

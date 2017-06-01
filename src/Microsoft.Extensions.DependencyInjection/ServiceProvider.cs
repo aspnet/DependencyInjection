@@ -44,8 +44,8 @@ namespace Microsoft.Extensions.DependencyInjection
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
             ResolvedServices = new Dictionary<object, object>();
 
-            CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderService());
-            CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
+            CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
+            CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());
         }
 
         // This constructor is called exclusively to create a child scope from the parent

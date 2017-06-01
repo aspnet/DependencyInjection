@@ -5,11 +5,11 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class FactoryService : IServiceCallSite
+    internal class FactoryCallSite : IServiceCallSite
     {
         public Func<IServiceProvider, object> Factory { get; }
 
-        public FactoryService(Type serviceType, Func<IServiceProvider, object> factory)
+        public FactoryCallSite(Type serviceType, Func<IServiceProvider, object> factory)
         {
             Factory = factory;
             ServiceType = serviceType;

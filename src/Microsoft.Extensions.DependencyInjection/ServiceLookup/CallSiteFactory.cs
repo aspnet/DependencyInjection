@@ -139,7 +139,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     }
                 }
 
-                return new ClosedIEnumerableCallSite(itemType, callSites.ToArray());
+                return new IEnumerableCallSite(itemType, callSites.ToArray());
             }
 
             return null;
@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 }
                 else if (descriptor.ImplementationFactory != null)
                 {
-                    callSite = new FactoryService(descriptor.ServiceType, descriptor.ImplementationFactory);
+                    callSite = new FactoryCallSite(descriptor.ServiceType, descriptor.ImplementationFactory);
                 }
                 else if (descriptor.ImplementationType != null)
                 {
