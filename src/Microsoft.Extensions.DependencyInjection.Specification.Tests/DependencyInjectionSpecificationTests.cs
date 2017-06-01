@@ -680,5 +680,48 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Equal(outer.MultipleServices.Reverse(), callback.Disposed.Skip(1).Take(3).OfType<IFakeMultipleService>());
             Assert.Equal(outer.SingleService, callback.Disposed[4]);
         }
+
+        [Fact]
+        public void ResolvesMixedOpenClosedGenericsAsEnumerable()
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            var instance = new FakeOpenGenericService<IFakeService>(null);
+
+            serviceCollection.AddTransient<IFakeService, FakeService>();
+            serviceCollection.AddSingleton(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
+            serviceCollection.AddSingleton<IFakeOpenGenericService<IFakeService>>(instance);
+            serviceCollection.AddSingleton(typeof(IFakeOpenGenericService<IFakeService>), typeof(FakeOpenGenericService<IFakeService>));
+
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            var enumerable = serviceProvider.GetService<IEnumerable<IFakeOpenGenericService<IFakeService>>>().ToArray();
+
+            // Assert
+            Assert.Equal(3, enumerable.Length);
+            Assert.NotNull(enumerable[0]);
+            Assert.NotNull(enumerable[1]);
+            Assert.NotNull(enumerable[2]);
+            Assert.Equal(instance, enumerable[1]);
+        }
+
+        [Fact]
+        public void DoesNotTryToResolveOpenGenericWhenClosedIsPresent()
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            var instance = new FakeOpenGenericService<IFakeService>(null);
+
+            serviceCollection.AddSingleton(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
+            serviceCollection.AddSingleton<IFakeOpenGenericService<IFakeService>>(instance);
+
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            // This should not try to close IFakeOpenGenericService<> and throw exeption
+            var fakeService = serviceProvider.GetService<IFakeOpenGenericService<IFakeService>>();
+
+            // Assert
+            Assert.Equal(instance, fakeService);
+        }
     }
 }

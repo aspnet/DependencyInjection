@@ -2,26 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceScopeService : IService, IServiceCallSite
+    internal class ServiceScopeService : IServiceCallSite
     {
-        public IService Next { get; set; }
+        public Type ServiceType { get; } = typeof(IServiceScopeFactory);
+        public Type ImplementationType { get; } = typeof(ServiceScopeFactory);
 
-        public ServiceLifetime Lifetime
-        {
-            get { return ServiceLifetime.Scoped; }
-        }
-
-        public Type ServiceType => typeof(IServiceScopeFactory);
-
-        public Type ImplementationType => typeof(ServiceScopeFactory);
-
-        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
-        {
-            return this;
-        }
     }
 }

@@ -43,17 +43,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProvider provider)
         {
-            object resolved;
             lock (provider.ResolvedServices)
             {
-                if (!provider.ResolvedServices.TryGetValue(scopedCallSite.Key, out resolved))
+                if (!provider.ResolvedServices.TryGetValue(scopedCallSite, out var resolved))
                 {
                     resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
                     provider.CaptureDisposable(resolved);
-                    provider.ResolvedServices.Add(scopedCallSite.Key, resolved);
+                    provider.ResolvedServices.Add(scopedCallSite, resolved);
                 }
+                return resolved;
             }
-            return resolved;
         }
 
         protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProvider provider)
@@ -65,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             try
             {
-                return Activator.CreateInstance(createInstanceCallSite.Descriptor.ImplementationType);
+                return Activator.CreateInstance(createInstanceCallSite.ImplementationType);
             }
             catch (Exception ex) when (ex.InnerException != null)
             {
@@ -75,19 +74,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitInstanceService(InstanceService instanceCallSite, ServiceProvider provider)
-        {
-            return instanceCallSite.Descriptor.ImplementationInstance;
-        }
-
         protected override object VisitServiceProviderService(ServiceProviderService serviceProviderService, ServiceProvider provider)
         {
             return provider;
-        }
-
-        protected override object VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, ServiceProvider provider)
-        {
-            return emptyIEnumerableCallSite.ServiceInstance;
         }
 
         protected override object VisitServiceScopeService(ServiceScopeService serviceScopeService, ServiceProvider provider)
@@ -111,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitFactoryService(FactoryService factoryService, ServiceProvider provider)
         {
-            return factoryService.Descriptor.ImplementationFactory(provider);
+            return factoryService.Factory(provider);
         }
     }
 }

@@ -46,20 +46,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 return VisitCreateInstance(createInstanceCallSite, argument);
             }
-            var instanceCallSite = callSite as InstanceService;
-            if (instanceCallSite != null)
-            {
-                return VisitInstanceService(instanceCallSite, argument);
-            }
             var serviceProviderService = callSite as ServiceProviderService;
             if (serviceProviderService != null)
             {
                 return VisitServiceProviderService(serviceProviderService, argument);
-            }
-            var emptyIEnumerableCallSite = callSite as EmptyIEnumerableCallSite;
-            if (emptyIEnumerableCallSite != null)
-            {
-                return VisitEmptyIEnumerable(emptyIEnumerableCallSite, argument);
             }
             var serviceScopeService = callSite as ServiceScopeService;
             if (serviceScopeService != null)
@@ -81,11 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected abstract TResult VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, TArgument argument);
 
-        protected abstract TResult VisitInstanceService(InstanceService instanceCallSite, TArgument argument);
-
         protected abstract TResult VisitServiceProviderService(ServiceProviderService serviceProviderService, TArgument argument);
-
-        protected abstract TResult VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, TArgument argument);
 
         protected abstract TResult VisitServiceScopeService(ServiceScopeService serviceScopeService, TArgument argument);
 

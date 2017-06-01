@@ -92,24 +92,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (state.Singleton != null)
             {
                 throw new InvalidOperationException(Resources.FormatScopedInSingletonException(
-                    scopedCallSite.Key.ServiceType,
-                    state.Singleton.Key.ServiceType,
+                    scopedCallSite.ServiceType,
+                    state.Singleton.ServiceType,
                     nameof(ServiceLifetime.Scoped).ToLowerInvariant(),
                     nameof(ServiceLifetime.Singleton).ToLowerInvariant()
                     ));
             }
-            return scopedCallSite.Key.ServiceType;
+            return scopedCallSite.ServiceType;
         }
 
         protected override Type VisitConstant(ConstantCallSite constantCallSite, CallSiteValidatorState state) => null;
 
         protected override Type VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, CallSiteValidatorState state) => null;
 
-        protected override Type VisitInstanceService(InstanceService instanceCallSite, CallSiteValidatorState state) => null;
-
         protected override Type VisitServiceProviderService(ServiceProviderService serviceProviderService, CallSiteValidatorState state) => null;
-
-        protected override Type VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, CallSiteValidatorState state) => null;
 
         protected override Type VisitServiceScopeService(ServiceScopeService serviceScopeService, CallSiteValidatorState state) => null;
 
