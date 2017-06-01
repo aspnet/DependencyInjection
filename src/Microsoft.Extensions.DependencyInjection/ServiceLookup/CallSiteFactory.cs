@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Validate(descriptors);
         }
 
-        private void Validate(IEnumerable<ServiceDescriptor> descriptors)
+        private static void Validate(IEnumerable<ServiceDescriptor> descriptors)
         {
             foreach (var descriptor in descriptors)
             {
@@ -167,7 +167,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     throw new InvalidOperationException("Invalid service descriptor");
                 }
 
-                return ApplyScope(callSite, descriptor.Lifetime);
+                return ApplyLifetime(callSite, descriptor.Lifetime);
             }
 
             return null;
@@ -183,13 +183,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var closedType = descriptor.ImplementationType.MakeGenericType(type.GenericTypeArguments);
                 var constructorCallSite = CreateConstructorCallSite(type, closedType, callSiteChain);
 
-                return ApplyScope(constructorCallSite, descriptor.Lifetime);
+                return ApplyLifetime(constructorCallSite, descriptor.Lifetime);
             }
 
             return null;
         }
 
-        private IServiceCallSite ApplyScope(IServiceCallSite serviceCallSite, ServiceLifetime descriptorLifetime)
+        private IServiceCallSite ApplyLifetime(IServiceCallSite serviceCallSite, ServiceLifetime descriptorLifetime)
         {
             if (serviceCallSite is ConstantCallSite)
             {
@@ -337,6 +337,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             return parameterCallSites;
         }
+
 
         public void Add(Type type, IServiceCallSite serviceCallSite)
         {
