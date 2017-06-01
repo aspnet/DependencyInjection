@@ -83,8 +83,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             var provider = new ServiceProvider(descriptors, new ServiceProviderOptions { ValidateScopes = true });
 
-            var callSite = provider.Table.GetCallSite(serviceType, new HashSet<Type>());
-            var collectionCallSite = provider.Table.GetCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType), new HashSet<Type>());
+            var callSite = provider.CallSiteFactory.GetCallSite(serviceType, new HashSet<Type>());
+            var collectionCallSite = provider.CallSiteFactory.GetCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType), new HashSet<Type>());
 
             var compiledCallSite = CompileCallSite(callSite);
             var compiledCollectionCallSite = CompileCallSite(collectionCallSite);
@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             descriptors.AddScoped<ServiceC>();
 
             var provider = new ServiceProvider(descriptors, new ServiceProviderOptions { ValidateScopes = true });
-            var callSite = provider.Table.GetCallSite(typeof(ServiceC), new HashSet<Type>());
+            var callSite = provider.CallSiteFactory.GetCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (ServiceC)compiledCallSite(provider);
@@ -141,7 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             {
                 disposables.Add(obj);
             };
-            var callSite = provider.Table.GetCallSite(typeof(ServiceC), new HashSet<Type>());
+            var callSite = provider.CallSiteFactory.GetCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (ServiceC)compiledCallSite(provider);
@@ -166,7 +166,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             {
                 disposables.Add(obj);
             };
-            var callSite = provider.Table.GetCallSite(typeof(ServiceD), new HashSet<Type>());
+            var callSite = provider.CallSiteFactory.GetCallSite(typeof(ServiceD), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceD = (ServiceD)compiledCallSite(provider);
@@ -184,10 +184,10 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var provider = new ServiceProvider(descriptors, new ServiceProviderOptions { ValidateScopes = true });
 
-            var callSite1 = provider.Table.GetCallSite(typeof(ClassWithThrowingEmptyCtor), new HashSet<Type>());
+            var callSite1 = provider.CallSiteFactory.GetCallSite(typeof(ClassWithThrowingEmptyCtor), new HashSet<Type>());
             var compiledCallSite1 = CompileCallSite(callSite1);
 
-            var callSite2 = provider.Table.GetCallSite(typeof(ClassWithThrowingCtor), new HashSet<Type>());
+            var callSite2 = provider.CallSiteFactory.GetCallSite(typeof(ClassWithThrowingCtor), new HashSet<Type>());
             var compiledCallSite2 = CompileCallSite(callSite2);
 
             var ex1 = Assert.Throws<Exception>(() => compiledCallSite1(provider));

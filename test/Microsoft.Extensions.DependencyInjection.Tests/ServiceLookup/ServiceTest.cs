@@ -406,7 +406,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 collection.Add(descriptor);
             }
 
-            var serviceTable = new ServiceTable(collection.ToArray());
+            var serviceTable = new CallSiteFactory(collection.ToArray());
 
             return type => serviceTable.GetCallSite(type, new HashSet<Type>());
         }

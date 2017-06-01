@@ -16,26 +16,21 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public sealed class ServiceProvider : IServiceProvider, IDisposable
     {
+        // CallSiteRuntimeResolver is stateless so can be shared between all instances
+        private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
+        private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
+
         private readonly CallSiteValidator _callSiteValidator;
-        internal readonly ServiceTable _table;
         private bool _disposeCalled;
         private List<IDisposable> _disposables;
-
-        internal ServiceProvider Root { get; }
-        internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
-
-        internal ServiceTable Table
-        {
-            get { return _table; }
-        }
-
-        private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
 
         // For testing only
         internal Action<object> _captureDisposableCallback;
 
-        // CallSiteRuntimeResolver is stateless so can be shared between all instances
-        private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
+        internal ServiceProvider Root { get; }
+        internal CallSiteFactory CallSiteFactory { get; }
+        internal Dictionary<object, object> ResolvedServices { get; }
+        internal ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices { get; } = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
 
         internal ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options)
         {
@@ -46,17 +41,20 @@ namespace Microsoft.Extensions.DependencyInjection
                 _callSiteValidator = new CallSiteValidator();
             }
 
-            _table = new ServiceTable(serviceDescriptors);
+            CallSiteFactory = new CallSiteFactory(serviceDescriptors);
+            ResolvedServices = new Dictionary<object, object>();
 
-            Table.Add(typeof(IServiceProvider), new ServiceProviderService());
-            Table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
+            CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderService());
+            CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
         }
 
         // This constructor is called exclusively to create a child scope from the parent
         internal ServiceProvider(ServiceProvider parent)
         {
             Root = parent.Root;
-            _table = parent.Table;
+            ResolvedServices = new Dictionary<object, object>();
+            CallSiteFactory = parent.CallSiteFactory;
+            RealizedServices = parent.RealizedServices;
             _callSiteValidator = parent._callSiteValidator;
         }
 
@@ -67,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            var realizedService = Table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
+            var realizedService = RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
 
             _callSiteValidator?.ValidateResolution(serviceType, this);
 
@@ -76,17 +74,17 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType, ServiceProvider serviceProvider)
         {
-            var callSite = serviceProvider.Table.GetCallSite(serviceType, new HashSet<Type>());
+            var callSite = serviceProvider.CallSiteFactory.GetCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
                 serviceProvider._callSiteValidator?.ValidateCallSite(serviceType, callSite);
-                return RealizeService(serviceProvider.Table, serviceType, callSite);
+                return RealizeService(serviceType, callSite);
             }
 
             return _ => null;
         }
 
-        internal static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
+        internal static Func<ServiceProvider, object> RealizeService(Type serviceType, IServiceCallSite callSite)
         {
             var callCount = 0;
             return provider =>
@@ -97,7 +95,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         var realizedService = new CallSiteExpressionBuilder(_callSiteRuntimeResolver)
                             .Build(callSite);
-                        table.RealizedServices[serviceType] = realizedService;
+                        provider.RealizedServices[serviceType] = realizedService;
                     });
                 }
 
@@ -151,20 +149,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
             }
             return service;
-        }
-
-        private object GetEmptyIEnumerableOrNull(Type serviceType)
-        {
-            var typeInfo = serviceType.GetTypeInfo();
-
-            if (typeInfo.IsGenericType &&
-                serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            {
-                var itemType = typeInfo.GenericTypeArguments[0];
-                return Array.CreateInstance(itemType, 0);
-            }
-
-            return null;
         }
     }
 }
