@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType, ServiceProvider serviceProvider)
         {
-            var callSite = serviceProvider.CallSiteFactory.GetCallSite(serviceType, new HashSet<Type>());
+            var callSite = serviceProvider.CallSiteFactory.CreateCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
                 serviceProvider._callSiteValidator?.ValidateCallSite(serviceType, callSite);

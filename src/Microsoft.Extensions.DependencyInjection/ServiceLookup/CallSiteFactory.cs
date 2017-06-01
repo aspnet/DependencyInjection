@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        internal IServiceCallSite GetCallSite(Type serviceType, ISet<Type> callSiteChain)
+        internal IServiceCallSite CreateCallSite(Type serviceType, ISet<Type> callSiteChain)
         {
             lock (_callSiteCache)
             {
@@ -313,7 +313,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var parameterCallSites = new IServiceCallSite[parameters.Length];
             for (var index = 0; index < parameters.Length; index++)
             {
-                var callSite = GetCallSite(parameters[index].ParameterType, callSiteChain);
+                var callSite = CreateCallSite(parameters[index].ParameterType, callSiteChain);
 
                 if (callSite == null && parameters[index].HasDefaultValue)
                 {
