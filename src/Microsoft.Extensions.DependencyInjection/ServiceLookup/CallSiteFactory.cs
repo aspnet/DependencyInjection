@@ -13,14 +13,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         private readonly List<ServiceDescriptor> _descriptors;
         private readonly Dictionary<Type, IServiceCallSite> _callSiteCache = new Dictionary<Type, IServiceCallSite>();
+        private readonly Dictionary<Type, ServiceDescriptor> _descriptorLookup = new Dictionary<Type, ServiceDescriptor>();
 
         public CallSiteFactory(IEnumerable<ServiceDescriptor> descriptors)
         {
             _descriptors = descriptors.ToList();
-            Validate(descriptors);
+            Populate(descriptors);
         }
 
-        private static void Validate(IEnumerable<ServiceDescriptor> descriptors)
+        private void Populate(IEnumerable<ServiceDescriptor> descriptors)
         {
             foreach (var descriptor in descriptors)
             {
@@ -55,6 +56,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                             Resources.FormatTypeCannotBeActivated(descriptor.ImplementationType, descriptor.ServiceType));
                     }
                 }
+
+                _descriptorLookup[descriptor.ServiceType] = descriptor;
             }
         }
 
@@ -93,14 +96,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private IServiceCallSite TryCreateExact(Type serviceType, ISet<Type> callSiteChain)
         {
-            for (var i = _descriptors.Count - 1; i >= 0; i--)
+            if (_descriptorLookup.TryGetValue(serviceType, out var descriptor))
             {
-                var descriptor = _descriptors[i];
-                var callSite = TryCreateExact(descriptor, serviceType, callSiteChain);
-                if (callSite != null)
-                {
-                    return callSite;
-                }
+                return TryCreateExact(descriptor, serviceType, callSiteChain);
             }
 
             return null;
@@ -108,14 +106,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private IServiceCallSite TryCreateOpenGeneric(Type serviceType, ISet<Type> callSiteChain)
         {
-            for (var i = _descriptors.Count - 1; i >= 0; i--)
+            if (serviceType.IsConstructedGenericType
+                && _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptor))
             {
-                var descriptor = _descriptors[i];
-                var callSite = TryCreateOpenGeneric(descriptor, serviceType, callSiteChain);
-                if (callSite != null)
-                {
-                    return callSite;
-                }
+                return TryCreateOpenGeneric(descriptor, serviceType, callSiteChain);
             }
 
             return null;
