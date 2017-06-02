@@ -124,7 +124,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     typeof(TypeWithSupersetConstructors),
                     GetCallSiteFactory(
                         new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService))
                     ),
                     new[] { typeof(IFactoryService) }
                 },
@@ -133,7 +133,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     GetCallSiteFactory(
                         new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService))
                     ),
                     new[] { typeof(IFakeService), typeof(IFactoryService) }
                 },
@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService))
                     ),
                     new[] { typeof(IFakeService), typeof(IFakeMultipleService), typeof(IFactoryService) }
                 },
@@ -153,7 +153,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService)),
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService)),
                         new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService))
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFactoryService), typeof(IFakeService), typeof(IFakeScopedService) }
@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService)),
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService)),
                         new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService))
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFactoryService), typeof(IFakeService), typeof(IFakeScopedService) }
