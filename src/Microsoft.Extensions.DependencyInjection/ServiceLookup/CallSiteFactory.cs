@@ -128,8 +128,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var callSites = new List<IServiceCallSite>();
 
                 // If item type is not generic we can safely use descriptor cache
-                if (itemType.IsConstructedGenericType &&
-                    _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptors))
+                if (!itemType.IsConstructedGenericType &&
+                    _descriptorLookup.TryGetValue(itemType, out var descriptors))
                 {
                     for (int i = 0; i < descriptors.Count; i++)
                     {
