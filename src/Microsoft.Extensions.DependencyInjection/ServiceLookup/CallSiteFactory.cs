@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         private readonly List<ServiceDescriptor> _descriptors;
         private readonly Dictionary<Type, IServiceCallSite> _callSiteCache = new Dictionary<Type, IServiceCallSite>();
-        private readonly Dictionary<Type, ServiceDescriptor> _descriptorLookup = new Dictionary<Type, ServiceDescriptor>();
+        private readonly Dictionary<Type, ServiceDescriptorCacheItem> _descriptorLookup = new Dictionary<Type, ServiceDescriptorCacheItem>();
 
         public CallSiteFactory(IEnumerable<ServiceDescriptor> descriptors)
         {
@@ -57,7 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     }
                 }
 
-                _descriptorLookup[descriptor.ServiceType] = descriptor;
+
+                var cacheKey = descriptor.ServiceType;
+                _descriptorLookup.TryGetValue(cacheKey, out var cacheItem);
+                _descriptorLookup[cacheKey] = cacheItem.Add(descriptor);
             }
         }
 
@@ -98,7 +101,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (_descriptorLookup.TryGetValue(serviceType, out var descriptor))
             {
-                return TryCreateExact(descriptor, serviceType, callSiteChain);
+                return TryCreateExact(descriptor.Last, serviceType, callSiteChain);
             }
 
             return null;
@@ -109,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (serviceType.IsConstructedGenericType
                 && _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptor))
             {
-                return TryCreateOpenGeneric(descriptor, serviceType, callSiteChain);
+                return TryCreateOpenGeneric(descriptor.Last, serviceType, callSiteChain);
             }
 
             return null;
@@ -121,16 +124,37 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var itemType = serviceType.GenericTypeArguments.Single();
-                var callSites = new List<IServiceCallSite>();
-                foreach (var descriptor in _descriptors)
-                {
-                    var callSite = TryCreateExact(descriptor, itemType, callSiteChain) ??
-                                   TryCreateOpenGeneric(descriptor, itemType, callSiteChain);
 
-                    if (callSite != null)
+                var callSites = new List<IServiceCallSite>();
+
+                // If item type is not generic we can safely use descriptor cache
+                if (itemType.IsConstructedGenericType &&
+                    _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptors))
+                {
+                    for (int i = 0; i < descriptors.Count; i++)
                     {
+                        var descriptor = descriptors[i];
+
+                        // There may not be any open generics here
+                        var callSite = TryCreateExact(descriptor, itemType, callSiteChain);
+                        Debug.Assert(callSite != null);
+
                         callSites.Add(callSite);
                     }
+                }
+                else
+                {
+                    foreach (var descriptor in _descriptors)
+                    {
+                        var callSite = TryCreateExact(descriptor, itemType, callSiteChain) ??
+                                       TryCreateOpenGeneric(descriptor, itemType, callSiteChain);
+
+                        if (callSite != null)
+                        {
+                            callSites.Add(callSite);
+                        }
+                    }
+
                 }
 
                 return new IEnumerableCallSite(itemType, callSites.ToArray());
@@ -336,6 +360,75 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void Add(Type type, IServiceCallSite serviceCallSite)
         {
             _callSiteCache[type] = serviceCallSite;
+        }
+
+        private struct ServiceDescriptorCacheItem
+        {
+            private ServiceDescriptor _item;
+            private List<ServiceDescriptor> _items;
+
+            public ServiceDescriptor Last
+            {
+                get
+                {
+                    if (_items != null && _items.Count > 0)
+                    {
+                        return _items[_items.Count - 1];
+                    }
+
+                    Debug.Assert(_item != null);
+                    return _item;
+                }
+            }
+
+            public int Count
+            {
+                get
+                {
+                    if (_item == null)
+                    {
+                        Debug.Assert(_items == null);
+                        return 0;
+                    }
+
+                    return 1 + (_items?.Count ?? 0);
+                }
+            }
+
+            public ServiceDescriptor this[int index]
+            {
+                get
+                {
+                    if (index >= Count)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+
+                    if (index == 0)
+                    {
+                        return _item;
+                    }
+
+                    return _items[index - 1];
+                }
+            }
+
+            public ServiceDescriptorCacheItem Add(ServiceDescriptor descriptor)
+            {
+                var newCacheItem = new ServiceDescriptorCacheItem();
+                if (_item == null)
+                {
+                    Debug.Assert(_items == null);
+                    newCacheItem._item = descriptor;
+                }
+                else
+                {
+                    newCacheItem._item = _item;
+                    newCacheItem._items = _items ?? new List<ServiceDescriptor>();
+                    newCacheItem._items.Add(descriptor);
+                }
+                return newCacheItem;
+            }
         }
     }
 }
