@@ -8,31 +8,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     internal class ScopedCallSite : IServiceCallSite
     {
         internal IServiceCallSite ServiceCallSite { get; }
+        public object CacheKey { get; }
 
-        public ScopedCallSite(IServiceCallSite serviceCallSite)
+        public ScopedCallSite(IServiceCallSite serviceCallSite, object cacheKey)
         {
             ServiceCallSite = serviceCallSite;
+            CacheKey = cacheKey;
         }
 
         public Type ServiceType => ServiceCallSite.ServiceType;
         public Type ImplementationType => ServiceCallSite.ImplementationType;
-
-        protected bool Equals(ScopedCallSite other)
-        {
-            return ServiceType == other.ServiceType;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((ScopedCallSite) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (ServiceType != null ? ServiceType.GetHashCode() : 0);
-        }
     }
 }

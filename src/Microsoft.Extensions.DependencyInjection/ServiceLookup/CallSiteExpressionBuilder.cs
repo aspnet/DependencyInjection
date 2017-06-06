@@ -175,7 +175,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitScoped(ScopedCallSite callSite, ParameterExpression provider)
         {
             var keyExpression = Expression.Constant(
-                callSite,
+                callSite.CacheKey,
                 typeof(object));
 
             var resolvedVariable = Expression.Variable(typeof(object), "resolved");

@@ -45,11 +45,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             lock (provider.ResolvedServices)
             {
-                if (!provider.ResolvedServices.TryGetValue(scopedCallSite, out var resolved))
+                if (!provider.ResolvedServices.TryGetValue(scopedCallSite.CacheKey, out var resolved))
                 {
                     resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
                     provider.CaptureDisposable(resolved);
-                    provider.ResolvedServices.Add(scopedCallSite, resolved);
+                    provider.ResolvedServices.Add(scopedCallSite.CacheKey, resolved);
                 }
                 return resolved;
             }

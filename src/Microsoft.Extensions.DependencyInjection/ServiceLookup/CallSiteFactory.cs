@@ -185,29 +185,29 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     throw new InvalidOperationException("Invalid service descriptor");
                 }
 
-                return ApplyLifetime(callSite, descriptor.Lifetime);
+                return ApplyLifetime(callSite, descriptor, descriptor.Lifetime);
             }
 
             return null;
         }
 
-        private IServiceCallSite TryCreateOpenGeneric(ServiceDescriptor descriptor, Type type, ISet<Type> callSiteChain)
+        private IServiceCallSite TryCreateOpenGeneric(ServiceDescriptor descriptor, Type serviceType, ISet<Type> callSiteChain)
         {
-            if (type.IsConstructedGenericType &&
-                type.GetGenericTypeDefinition() == descriptor.ServiceType)
+            if (serviceType.IsConstructedGenericType &&
+                serviceType.GetGenericTypeDefinition() == descriptor.ServiceType)
             {
                 Debug.Assert(descriptor.ImplementationType != null, "descriptor.ImplementationType != null");
 
-                var closedType = descriptor.ImplementationType.MakeGenericType(type.GenericTypeArguments);
-                var constructorCallSite = CreateConstructorCallSite(type, closedType, callSiteChain);
+                var closedType = descriptor.ImplementationType.MakeGenericType(serviceType.GenericTypeArguments);
+                var constructorCallSite = CreateConstructorCallSite(serviceType, closedType, callSiteChain);
 
-                return ApplyLifetime(constructorCallSite, descriptor.Lifetime);
+                return ApplyLifetime(constructorCallSite, Tuple.Create(descriptor, serviceType), descriptor.Lifetime);
             }
 
             return null;
         }
 
-        private IServiceCallSite ApplyLifetime(IServiceCallSite serviceCallSite, ServiceLifetime descriptorLifetime)
+        private IServiceCallSite ApplyLifetime(IServiceCallSite serviceCallSite, object cacheKey, ServiceLifetime descriptorLifetime)
         {
             if (serviceCallSite is ConstantCallSite)
             {
@@ -219,9 +219,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 case ServiceLifetime.Transient:
                     return new TransientCallSite(serviceCallSite);
                 case ServiceLifetime.Scoped:
-                    return new ScopedCallSite(serviceCallSite);
+                    return new ScopedCallSite(serviceCallSite, cacheKey);
                 case ServiceLifetime.Singleton:
-                    return new SingletonCallSite(serviceCallSite);
+                    return new SingletonCallSite(serviceCallSite, cacheKey);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(descriptorLifetime));
             }
