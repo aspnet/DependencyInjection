@@ -57,7 +57,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     }
                 }
 
-
                 var cacheKey = descriptor.ServiceType;
                 _descriptorLookup.TryGetValue(cacheKey, out var cacheItem);
                 _descriptorLookup[cacheKey] = cacheItem.Add(descriptor);
