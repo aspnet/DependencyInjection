@@ -5,13 +5,11 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 {
     public class ClassWithOptionalArgsCtor
     {
-        public ClassWithOptionalArgsCtor(string whatever = "BLARGH", S guid = new S())
+        public ClassWithOptionalArgsCtor(string whatever = "BLARGH")
         {
             Whatever = whatever;
         }
 
         public string Whatever { get; set; }
-
-        public struct S { }
     }
 }
