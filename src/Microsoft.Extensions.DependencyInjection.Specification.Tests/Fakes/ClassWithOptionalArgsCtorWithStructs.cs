@@ -10,6 +10,10 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public ClassWithOptionalArgsCtorWithStructs(
             DateTime dateTime = new DateTime(),
             DateTime dateTimeDefault = default(DateTime),
+            TimeSpan timeSpan = new TimeSpan(),
+            TimeSpan timeSpanDefault = default(TimeSpan),
+            DateTimeOffset dateTimeOffset = new DateTimeOffset(),
+            DateTimeOffset dateTimeOffsetDefault = default(DateTimeOffset),
             Guid guid = new Guid(),
             Guid guidDefault = default(Guid),
             S customStruct = new S(),
