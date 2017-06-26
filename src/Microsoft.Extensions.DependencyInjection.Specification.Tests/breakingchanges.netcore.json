@@ -1,0 +1,7 @@
+[
+  {
+    "TypeId": "public class Microsoft.Extensions.DependencyInjection.Specification.ClassWithOptionalArgsCtor",
+    "MemberId": "public .ctor(System.String whatever = \"BLARGH\")",
+    "Kind": "Removal"
+  }
+]
