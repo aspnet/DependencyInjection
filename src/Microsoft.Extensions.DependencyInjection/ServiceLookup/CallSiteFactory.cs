@@ -332,7 +332,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 var callSite = CreateCallSite(parameters[index].ParameterType, callSiteChain);
 
-                if (callSite == null && Internal.ActivatorUtilities.TryGetDefaultValue(parameters[index], out var defaultValue))
+                if (callSite == null && Internal.ParameterDefaultValue.TryGetDefaultValue(parameters[index], out var defaultValue))
                 {
                     callSite = new ConstantCallSite(serviceType, defaultValue);
                 }

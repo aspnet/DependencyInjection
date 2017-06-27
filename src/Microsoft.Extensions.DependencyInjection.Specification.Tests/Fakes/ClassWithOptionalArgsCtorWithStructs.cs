@@ -16,12 +16,12 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             DateTimeOffset dateTimeOffsetDefault = default(DateTimeOffset),
             Guid guid = new Guid(),
             Guid guidDefault = default(Guid),
-            S customStruct = new S(),
-            S customStructDefault = default(S)
+            CustomStruct customStruct = new CustomStruct(),
+            CustomStruct customStructDefault = default(CustomStruct)
         )
         {
         }
 
-        public struct S { }
+        public struct CustomStruct { }
     }
 }
