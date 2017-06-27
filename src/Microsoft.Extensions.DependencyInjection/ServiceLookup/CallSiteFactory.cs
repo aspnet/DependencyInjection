@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -332,7 +333,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 var callSite = CreateCallSite(parameters[index].ParameterType, callSiteChain);
 
-                if (callSite == null && Internal.ParameterDefaultValue.TryGetDefaultValue(parameters[index], out var defaultValue))
+                if (callSite == null && ParameterDefaultValue.TryGetDefaultValue(parameters[index], out var defaultValue))
                 {
                     callSite = new ConstantCallSite(serviceType, defaultValue);
                 }
