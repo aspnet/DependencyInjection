@@ -400,9 +400,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public void RemoveAll_RemovesAllServicesWithMatchingServiceType()
         {
             // Arrange
+            var descriptor = new ServiceDescriptor(typeof(IFakeServiceInstance), typeof(FakeService), ServiceLifetime.Transient);
             var collection = new ServiceCollection
             {
-                new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
+                descriptor,
                 new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient)
             };
@@ -411,7 +412,7 @@ namespace Microsoft.Extensions.DependencyInjection
             collection.RemoveAll<IFakeService>();
 
             // Assert
-            Assert.Empty(collection);
+            Assert.Equal(new[] { descriptor }, collection);
         }
     }
 }
