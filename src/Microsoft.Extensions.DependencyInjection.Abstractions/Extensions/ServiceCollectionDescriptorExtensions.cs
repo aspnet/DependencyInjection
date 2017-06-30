@@ -542,7 +542,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
         }
 
         /// <summary>
-        /// Removes all services of type <see cref="T"/> in <see cref="IServiceCollection"/>.
+        /// Removes all services of type <typeparamef name="T"/> in <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
         /// <returns></returns>
@@ -552,7 +552,7 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
         }
 
         /// <summary>
-        /// Removes all services of type <see cref="serviceType"/> in <see cref="IServiceCollection"/>.
+        /// Removes all services of type <paramef name="serviceType"/> in <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
         /// <param name="serviceType">The service type to remove.</param>
