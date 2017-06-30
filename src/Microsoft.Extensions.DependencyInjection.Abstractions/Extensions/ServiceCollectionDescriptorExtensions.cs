@@ -564,11 +564,13 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
                 throw new ArgumentNullException(nameof(serviceType));
             }
 
-            foreach (var serviceDescriptor in collection
-                .Where(descriptor => descriptor.ServiceType == serviceType)
-                .ToList())
+            for (var i = collection.Count - 1; i >= 0; i--)
             {
-                collection.Remove(serviceDescriptor);
+                var descriptor = collection[i];
+                if (descriptor.ServiceType == serviceType)
+                {
+                    collection.RemoveAt(i);
+                }
             }
 
             return collection;
