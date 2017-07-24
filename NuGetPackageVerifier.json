@@ -2,6 +2,15 @@
     "Default": {
         "rules": [
             "DefaultCompositeRule"
-        ]
+        ],
+        "packages": {
+            "Microsoft.Extensions.DependencyInjection.Specification.Tests": {
+                "Exclusions": {
+                    "WRONG_THIRDPARTY_DEPENDENCY_VERSION": {
+                        "Microsoft.Extensions.DependencyInjection.Specification.Tests; .NETStandard,Version=v2.0": "Enter justification"
+                    }
+                }
+            }
+        }
     }
 }
