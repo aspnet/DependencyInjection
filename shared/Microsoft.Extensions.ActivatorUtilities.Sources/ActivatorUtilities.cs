@@ -7,18 +7,51 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
-namespace Microsoft.Extensions.Internal
-{
-    internal delegate object ObjectFactory(IServiceProvider serviceProvider, object[] arguments);
+#if ActivatorUtilities_In_DependencyInjection
+using Microsoft.Extensions.Internal;
 
+namespace Microsoft.Extensions.DependencyInjection
+#else
+namespace Microsoft.Extensions.Internal
+#endif
+{
+    /// <summary>
+    /// The result of <see cref="ActivatorUtilities.CreateFactory(Type, Type[])"/>.
+    /// </summary>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to get service arguments from.</param>
+    /// <param name="arguments">Additional constructor arguments.</param>
+    /// <returns>The instantiated type.</returns>
+#if ActivatorUtilities_In_DependencyInjection
+    public
+#else
+    internal
+#endif
+    delegate object ObjectFactory(IServiceProvider serviceProvider, object[] arguments);
+
+    /// <summary>
+    /// Helper code for the various activator services.
+    /// </summary>
+
+#if ActivatorUtilities_In_DependencyInjection
+    public
+#else
     // Do not take a dependency on this class unless you are explicitly trying to avoid taking a
     // dependency on Microsoft.AspNetCore.DependencyInjection.Abstractions.
-    internal static class ActivatorUtilities
+    internal
+#endif
+    static class ActivatorUtilities
     {
         private static readonly MethodInfo GetServiceInfo =
             GetMethodInfo<Func<IServiceProvider, Type, Type, bool, object>>((sp, t, r, c) => GetService(sp, t, r, c));
 
-        internal static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
+        /// <summary>
+        /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <param name="provider">The service provider used to resolve dependencies</param>
+        /// <param name="instanceType">The type to activate</param>
+        /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/>.</param>
+        /// <returns>An activated object of type instanceType</returns>
+        public static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
         {
             int bestLength = -1;
             ConstructorMatcher bestMatcher = null;
@@ -53,7 +86,19 @@ namespace Microsoft.Extensions.Internal
             return bestMatcher.CreateInstance(provider);
         }
 
-        internal static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
+        /// <summary>
+        /// Create a delegate that will instantiate a type with constructor arguments provided directly
+        /// and/or from an <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <param name="instanceType">The type to activate</param>
+        /// <param name="argumentTypes">
+        /// The types of objects, in order, that will be passed to the returned function as its second parameter
+        /// </param>
+        /// <returns>
+        /// A factory that will instantiate instanceType using an <see cref="IServiceProvider"/>
+        /// and an argument array containing objects matching the types defined in argumentTypes
+        /// </returns>
+        public static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
         {
             FindApplicableConstructor(instanceType, argumentTypes, out ConstructorInfo constructor, out int?[] parameterMap);
 
@@ -68,16 +113,36 @@ namespace Microsoft.Extensions.Internal
             return result.Invoke;
         }
 
+        /// <summary>
+        /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <typeparam name="T">The type to activate</typeparam>
+        /// <param name="provider">The service provider used to resolve dependencies</param>
+        /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/>.</param>
+        /// <returns>An activated object of type T</returns>
         public static T CreateInstance<T>(IServiceProvider provider, params object[] parameters)
         {
             return (T)CreateInstance(provider, typeof(T), parameters);
         }
 
+
+        /// <summary>
+        /// Retrieve an instance of the given type from the service provider. If one is not found then instantiate it directly.
+        /// </summary>
+        /// <typeparam name="T">The type of the service</typeparam>
+        /// <param name="provider">The service provider used to resolve dependencies</param>
+        /// <returns>The resolved service or created instance</returns>
         public static T GetServiceOrCreateInstance<T>(IServiceProvider provider)
         {
             return (T)GetServiceOrCreateInstance(provider, typeof(T));
         }
 
+        /// <summary>
+        /// Retrieve an instance of the given type from the service provider. If one is not found then instantiate it directly.
+        /// </summary>
+        /// <param name="provider">The service provider</param>
+        /// <param name="type">The type of the service</param>
+        /// <returns>The resolved service or created instance</returns>
         public static object GetServiceOrCreateInstance(IServiceProvider provider, Type type)
         {
             return provider.GetService(type) ?? CreateInstance(provider, type);
