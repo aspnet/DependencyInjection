@@ -21,10 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             Add(Job.Default
                 .With(BenchmarkDotNet.Environments.Runtime.Core)
                 .WithRemoveOutliers(false)
-                .With(RunStrategy.Throughput)
-                .WithLaunchCount(3)
-                .WithWarmupCount(5)
-                .WithTargetCount(10));
+                .With(RunStrategy.Throughput));
         }
     }
 }

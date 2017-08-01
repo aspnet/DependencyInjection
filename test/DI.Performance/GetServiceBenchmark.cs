@@ -17,31 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _transientSp;
         private IServiceScope _scopedSp;
         private IServiceProvider _singletonSp;
-
-        [Setup]
-        public void Setup()
-        {
-            var services = new ServiceCollection();
-            services.AddTransient<A>();
-            services.AddTransient<B>();
-            services.AddTransient<C>();
-            _transientSp = services.BuildServiceProvider();
-
-
-            services = new ServiceCollection();
-            services.AddScoped<A>();
-            services.AddScoped<B>();
-            services.AddScoped<C>();
-            _scopedSp = services.BuildServiceProvider().CreateScope();
-
-
-            services = new ServiceCollection();
-            services.AddSingleton<A>();
-            services.AddSingleton<B>();
-            services.AddSingleton<C>();
-            _singletonSp = services.BuildServiceProvider();
-        }
-
+        
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
         {
@@ -50,6 +26,16 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
                 var temp = new A(new B(new C()));
                 temp.Foo();
             }
+        }
+
+        [GlobalSetup(Target = nameof(Transient))]
+        public void SetupTransient()
+        {
+            var services = new ServiceCollection();
+            services.AddTransient<A>();
+            services.AddTransient<B>();
+            services.AddTransient<C>();
+            _transientSp = services.BuildServiceProvider();
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
@@ -62,6 +48,16 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
+        [GlobalSetup(Target = nameof(Scoped))]
+        public void SetupScoped()
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<A>();
+            services.AddScoped<B>();
+            services.AddScoped<C>();
+            _scopedSp = services.BuildServiceProvider().CreateScope();
+        }
+
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Scoped()
         {
@@ -70,6 +66,16 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
                 var temp = _scopedSp.ServiceProvider.GetService<A>();
                 temp.Foo();
             }
+        }
+
+        [GlobalSetup(Target = nameof(Singleton))]
+        public void SetupScopedSingleton()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<A>();
+            services.AddSingleton<B>();
+            services.AddSingleton<C>();
+            _singletonSp = services.BuildServiceProvider();
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
