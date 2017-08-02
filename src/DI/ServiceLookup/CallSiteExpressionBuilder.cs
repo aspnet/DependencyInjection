@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using FastExpressionCompiler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,29 +54,26 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 // _runtimeResolver.Resolve directly and avoid Expression generation
                 return (provider) => _runtimeResolver.Resolve(callSite, provider);
             }
-            return BuildExpression(callSite).Compile();
+            return ExpressionCompiler.Compile<Func<ServiceProvider, object>>(BuildExpression(callSite));
         }
 
         private Expression<Func<ServiceProvider, object>> BuildExpression(IServiceCallSite callSite)
         {
             var serviceExpression = VisitCallSite(callSite, ProviderParameter);
 
-            var body = new List<Expression>();
             if (_requiresResolvedServices)
             {
+                var body = new List<Expression>();
                 body.Add(ResolvedServicesVariableAssignment);
                 serviceExpression = Lock(serviceExpression, ResolvedServices);
+                var variables = new[] { ResolvedServices };
+                body.Add(serviceExpression);
+                return Expression.Lambda<Func<ServiceProvider, object>>(
+                    Expression.Block(variables, body),
+                    ProviderParameter);
             }
 
-            body.Add(serviceExpression);
-
-            var variables = _requiresResolvedServices
-                ? new[] { ResolvedServices }
-                : Enumerable.Empty<ParameterExpression>();
-
-            return Expression.Lambda<Func<ServiceProvider, object>>(
-                Expression.Block(variables, body),
-                ProviderParameter);
+            return Expression.Lambda<Func<ServiceProvider, object>>(serviceExpression, ProviderParameter);
         }
 
         protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, ParameterExpression provider)
