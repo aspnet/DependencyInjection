@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
@@ -28,6 +27,9 @@ namespace Microsoft.Extensions.DependencyInjection
         internal Action<object> _captureDisposableCallback;
 
         internal ServiceProvider Root { get; }
+
+        private ServiceProviderMode _mode;
+
         internal CallSiteFactory CallSiteFactory { get; }
         internal Dictionary<object, object> ResolvedServices { get; }
         internal ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices { get; } = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
@@ -40,6 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 _callSiteValidator = new CallSiteValidator();
             }
+
+            _mode = options.Mode;
 
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
             ResolvedServices = new Dictionary<object, object>();
@@ -89,17 +93,32 @@ namespace Microsoft.Extensions.DependencyInjection
             var callCount = 0;
             return provider =>
             {
-                if (Interlocked.Increment(ref callCount) == 2)
+                Func<ServiceProvider, object> CompileResolver()
                 {
-                    Task.Run(() =>
-                    {
-                        var realizedService = new CallSiteExpressionBuilder(_callSiteRuntimeResolver)
-                            .Build(callSite);
-                        provider.RealizedServices[serviceType] = realizedService;
-                    });
+                    var realizedService = new CallSiteExpressionBuilder(_callSiteRuntimeResolver)
+                        .Build(callSite);
+                    provider.RealizedServices[serviceType] = realizedService;
+                    return realizedService;
                 }
 
-                return _callSiteRuntimeResolver.Resolve(callSite, provider);
+                switch (provider._mode)
+                {
+                    case ServiceProviderMode.Mixed:
+                        if (Interlocked.Increment(ref callCount) == 2)
+                        {
+                            Task.Run(() =>
+                            {
+                                CompileResolver();
+                            });
+                        }
+                        return _callSiteRuntimeResolver.Resolve(callSite, provider);
+                    case ServiceProviderMode.Compiled:
+                        return CompileResolver()(provider);
+                    case ServiceProviderMode.Runtime:
+                        return (provider.RealizedServices[serviceType] = p => _callSiteRuntimeResolver.Resolve(callSite, p))(provider);
+                        default:
+                            throw new ArgumentException();
+                }
             };
         }
 

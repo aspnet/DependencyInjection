@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
@@ -17,7 +15,10 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _transientSp;
         private IServiceScope _scopedSp;
         private IServiceProvider _singletonSp;
-        
+
+        [Params(ServiceProviderMode.Compiled, ServiceProviderMode.Mixed, ServiceProviderMode.Runtime)]
+        public ServiceProviderMode Mode { get; set; }
+
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
         {
@@ -35,7 +36,10 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<A>();
             services.AddTransient<B>();
             services.AddTransient<C>();
-            _transientSp = services.BuildServiceProvider();
+            _transientSp = services.BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
@@ -55,7 +59,10 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddScoped<A>();
             services.AddScoped<B>();
             services.AddScoped<C>();
-            _scopedSp = services.BuildServiceProvider().CreateScope();
+            _scopedSp = services.BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            }).CreateScope();
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
@@ -75,7 +82,10 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddSingleton<A>();
             services.AddSingleton<B>();
             services.AddSingleton<C>();
-            _singletonSp = services.BuildServiceProvider();
+            _singletonSp = services.BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]

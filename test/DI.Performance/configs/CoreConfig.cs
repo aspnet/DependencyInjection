@@ -17,11 +17,11 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             Add(JitOptimizationsValidator.FailOnError);
             Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
-
-            Add(Job.Default
-                .With(BenchmarkDotNet.Environments.Runtime.Core)
-                .WithRemoveOutliers(false)
-                .With(RunStrategy.Throughput));
+            Add(Job.ShortRun);
+            //Add(Job.Default
+            //    .With(BenchmarkDotNet.Environments.Runtime.Core)
+            //    .WithRemoveOutliers(false)
+            //    .With(RunStrategy.Throughput));
         }
     }
 }
