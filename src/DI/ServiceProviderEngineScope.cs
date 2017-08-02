@@ -1,0 +1,87 @@
+using System;
+using System.Collections.Generic;
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+    internal class ServiceProviderEngineScope : IServiceScope, IServiceProvider
+    {
+        // For testing only
+        internal Action<object> _captureDisposableCallback;
+
+        private List<IDisposable> _disposables = new List<IDisposable>();
+
+        private bool _disposeCalled;
+
+        public ServiceProviderEngineScope(ServiceProviderEngine engine)
+        {
+            Engine = engine;
+            Root = this;
+        }
+
+        public ServiceProviderEngineScope(ServiceProviderEngineScope root)
+        {
+            Root = root;
+            Engine = root.Engine;
+        }
+
+        internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
+
+        public ServiceProviderEngine Engine { get; }
+        public ServiceProviderEngineScope Root { get; }
+
+        public object GetService(Type serviceType)
+        {
+            return Engine.GetService(serviceType, this);
+        }
+
+        public IServiceProvider ServiceProvider => this;
+
+        public void Dispose()
+        {
+            lock (ResolvedServices)
+            {
+                if (_disposeCalled)
+                {
+                    return;
+                }
+
+                _disposeCalled = true;
+                if (_disposables != null)
+                {
+                    for (var i = _disposables.Count - 1; i >= 0; i--)
+                    {
+                        var disposable = _disposables[i];
+                        disposable.Dispose();
+                    }
+
+                    _disposables.Clear();
+                }
+
+                ResolvedServices.Clear();
+            }
+        }
+
+        internal object CaptureDisposable(object service)
+        {
+            _captureDisposableCallback?.Invoke(service);
+
+            if (!ReferenceEquals(this, service))
+            {
+                var disposable = service as IDisposable;
+                if (disposable != null)
+                {
+                    lock (ResolvedServices)
+                    {
+                        if (_disposables == null)
+                        {
+                            _disposables = new List<IDisposable>();
+                        }
+
+                        _disposables.Add(disposable);
+                    }
+                }
+            }
+            return service;
+        }
+    }
+}

@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         }
 
         [GlobalSetup(Target = nameof(Singleton))]
-        public void SetupScopedSingleton()
+        public void SetupSingleton()
         {
             _singletonServices = new ServiceCollection();
             _singletonServices.AddSingleton<A>();
