@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 
@@ -15,11 +16,12 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _transientSp;
         private IServiceScope _scopedSp;
         private IServiceProvider _singletonSp;
+        private IServiceProvider _serviceScopeFactoryProvider;
+        private IServiceProvider _serviceScope;
+        private IServiceProvider _emptyEnumerable;
 
-        [Params(nameof(ServiceProviderMode.Compiled), nameof(ServiceProviderMode.Dynamic), nameof(ServiceProviderMode.Runtime))]
-        public string Mode { get; set; }
-
-        internal ServiceProviderMode ServiceProviderMode => Enum.Parse<ServiceProviderMode>(Mode);
+        [Params(ServiceProviderMode.Compiled, ServiceProviderMode.Dynamic, ServiceProviderMode.Runtime)]
+        internal ServiceProviderMode Mode { get; set; }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
@@ -40,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<C>();
             _transientSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = ServiceProviderMode
+                Mode = Mode
             });
         }
 
@@ -63,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddScoped<C>();
             _scopedSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = ServiceProviderMode
+                Mode = Mode
             }).CreateScope();
         }
 
@@ -86,7 +88,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddSingleton<C>();
             _singletonSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = ServiceProviderMode
+                Mode = Mode
             });
         }
 
@@ -97,6 +99,60 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             {
                 var temp = _singletonSp.GetService<A>();
                 temp.Foo();
+            }
+        }
+
+        [GlobalSetup(Target = nameof(ServiceScope))]
+        public void ServiceScopeSetup()
+        {
+            _serviceScope = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void ServiceScope()
+        {
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _serviceScope.CreateScope();
+            }
+        }
+
+        [GlobalSetup(Target = nameof(ServiceScopeProvider))]
+        public void ServiceScopeProviderSetup()
+        {
+            _serviceScopeFactoryProvider = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void ServiceScopeProvider()
+        {
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _serviceScopeFactoryProvider.GetService<IServiceScopeFactory>();
+            }
+        }
+
+        [GlobalSetup(Target = nameof(EmptyEnumerable))]
+        public void EmptyEnumerableSetup()
+        {
+            _emptyEnumerable = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void EmptyEnumerable()
+        {
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                _emptyEnumerable.GetService<IEnumerable<A>>();
             }
         }
 

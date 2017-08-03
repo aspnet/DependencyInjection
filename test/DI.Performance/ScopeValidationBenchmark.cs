@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
 
         private IServiceProvider _transientSp;
         private IServiceProvider _transientSpScopeValidation;
-        
+
         [GlobalSetup]
         public void Setup()
         {
