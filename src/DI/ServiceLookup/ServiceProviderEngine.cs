@@ -11,6 +11,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ServiceProviderEngine : IServiceProviderEngine, IServiceScopeFactory
     {
+        private readonly IServiceProviderEngineCallback _callback;
+
         // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
@@ -20,8 +22,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ServiceProviderMode _mode;
 
-        public ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options)
+        public ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options, IServiceProviderEngineCallback callback)
         {
+            _callback = callback;
             _createServiceAccessor = CreateServiceAccessor;
             _mode = options.Mode;
 
@@ -42,9 +45,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public object GetService(Type serviceType) => GetService(serviceType, Root);
 
-        public event Action<Type, IServiceCallSite> OnCreate;
-        public event Action<Type, IServiceScope> OnResolve;
-
         public void Dispose() => Root.Dispose();
 
         private Func<ServiceProviderEngineScope, object> CreateServiceAccessor(Type serviceType)
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSite = CallSiteFactory.CreateCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
-                OnCreate?.Invoke(serviceType, callSite);
+                _callback?.OnCreate(serviceType, callSite);
                 return RealizeService(serviceType, callSite);
             }
 
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal object GetService(Type serviceType, ServiceProviderEngineScope serviceProviderEngineScope)
         {
             var realizedService = RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
-            OnResolve?.Invoke(serviceType, serviceProviderEngineScope);
+            _callback?.OnResolve(serviceType, serviceProviderEngineScope);
             return realizedService.Invoke(serviceProviderEngineScope);
         }
 

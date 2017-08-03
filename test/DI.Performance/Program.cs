@@ -11,14 +11,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
     {
         static void Main(string[] args)
         {
-            //var getServiceBenchmark = new TimeToFirstServiceBenchmark();
-            //getServiceBenchmark.Mode = ServiceProviderMode.Compiled;
-            //getServiceBenchmark.SetupTransient();
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    getServiceBenchmark.SetupTransientIteration();
-            //    getServiceBenchmark.Transient();
-            //}
             BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly).Run(args);
         }
     }

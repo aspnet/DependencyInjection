@@ -10,20 +10,21 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    public sealed class ServiceProvider : IServiceProvider, IDisposable
+    public sealed class ServiceProvider : IServiceProvider, IDisposable, IServiceProviderEngineCallback
     {
-        private IServiceProviderEngine _engine;
+        private readonly IServiceProviderEngine _engine;
+
+        private readonly CallSiteValidator _callSiteValidator;
 
         internal ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options)
         {
-            _engine = new ServiceProviderEngine(serviceDescriptors, options);
-
+            IServiceProviderEngineCallback callback = null;
             if (options.ValidateScopes)
             {
-                var callSiteValidator = new CallSiteValidator();
-                _engine.OnCreate += (serviceType, callSite) => callSiteValidator.ValidateCallSite(serviceType, callSite);
-                _engine.OnResolve += (serviceType, scope) => callSiteValidator.ValidateResolution(serviceType, scope, _engine.RootScope);
+                callback = this;
+                _callSiteValidator = new CallSiteValidator();
             }
+            _engine = new ServiceProviderEngine(serviceDescriptors, options, callback);
         }
 
         /// <summary>
@@ -35,5 +36,15 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <inheritdoc />
         public void Dispose() => _engine.Dispose();
+
+        void IServiceProviderEngineCallback.OnCreate(Type serviceType, IServiceCallSite callSite)
+        {
+            _callSiteValidator.ValidateCallSite(serviceType, callSite);
+        }
+
+        void IServiceProviderEngineCallback.OnResolve(Type serviceType, IServiceScope scope)
+        {
+            _callSiteValidator.ValidateResolution(serviceType, scope, _engine.RootScope);
+        }
     }
 }
