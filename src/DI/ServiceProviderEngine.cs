@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 switch (_mode)
                 {
-                    case ServiceProviderMode.Mixed:
+                    case ServiceProviderMode.Dynamic:
                         if (Interlocked.Increment(ref callCount) == 2)
                         {
                             Task.Run(() => CompileResolver());

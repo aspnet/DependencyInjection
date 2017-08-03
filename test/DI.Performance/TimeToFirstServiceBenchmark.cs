@@ -17,8 +17,10 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private ServiceCollection _scopedServices;
         private ServiceCollection _singletonServices;
 
-        [Params(ServiceProviderMode.Compiled, ServiceProviderMode.Runtime)]
-        public ServiceProviderMode Mode { get; set; }
+        [Params(nameof(ServiceProviderMode.Compiled), nameof(ServiceProviderMode.Dynamic), nameof(ServiceProviderMode.Runtime))]
+        public string Mode { get; set; }
+
+        internal ServiceProviderMode ServiceProviderMode => Enum.Parse<ServiceProviderMode>(Mode);
 
         [Benchmark(Baseline = true)]
         public void NoDI()
@@ -41,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _transientSp = _transientServices.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -59,7 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _transientSp = _transientServices.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             });
             var temp = _transientSp.GetService<A>();
             temp.Foo();
@@ -79,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _scopedSp = _scopedServices.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             }).CreateScope();
             var temp = _scopedSp.ServiceProvider.GetService<A>();
             temp.Foo();
@@ -99,7 +101,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _singletonSp = _singletonServices.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             });
             var temp = _singletonSp.GetService<A>();
             temp.Foo();

@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public enum ServiceProviderMode
+    internal enum ServiceProviderMode
     {
-        Mixed,
+        Dynamic,
         Runtime,
         Compiled
     }

@@ -16,8 +16,10 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceScope _scopedSp;
         private IServiceProvider _singletonSp;
 
-        [Params(ServiceProviderMode.Compiled, ServiceProviderMode.Mixed, ServiceProviderMode.Runtime)]
-        public ServiceProviderMode Mode { get; set; }
+        [Params(nameof(ServiceProviderMode.Compiled), nameof(ServiceProviderMode.Dynamic), nameof(ServiceProviderMode.Runtime))]
+        public string Mode { get; set; }
+
+        internal ServiceProviderMode ServiceProviderMode => Enum.Parse<ServiceProviderMode>(Mode);
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
@@ -38,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<C>();
             _transientSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -61,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddScoped<C>();
             _scopedSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             }).CreateScope();
         }
 
@@ -84,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddSingleton<C>();
             _singletonSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = ServiceProviderMode
             });
         }
 

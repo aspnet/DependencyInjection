@@ -18,6 +18,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         public bool ValidateScopes { get; set; }
 
-        public ServiceProviderMode Mode { get; set; } = ServiceProviderMode.Mixed;
+        internal ServiceProviderMode Mode { get; set; } = ServiceProviderMode.Dynamic;
     }
 }
