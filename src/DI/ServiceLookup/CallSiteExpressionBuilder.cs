@@ -59,10 +59,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 // _runtimeResolver.Resolve directly and avoid Expression generation
                 if (TryResolveSingletonValue(singletonCallSite, out var value))
                 {
-                    return provider => value;
+                    return scope => value;
                 }
 
-                return provider => _runtimeResolver.Resolve(callSite, provider);
+                return scope => _runtimeResolver.Resolve(callSite, scope);
             }
 
             return BuildExpression(callSite).Compile();
@@ -70,12 +70,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private bool TryResolveSingletonValue(SingletonCallSite singletonCallSite, out object value)
         {
-            bool tryGetResolvedValue;
             lock (_rootScope.ResolvedServices)
             {
-                tryGetResolvedValue = _rootScope.ResolvedServices.TryGetValue(singletonCallSite.CacheKey, out value);
+                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.CacheKey, out value);
             }
-            return tryGetResolvedValue;
         }
 
         private Expression<Func<ServiceProviderEngineScope, object>> BuildExpression(IServiceCallSite callSite)
@@ -164,7 +162,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 VisitCallSite(callSite.ServiceCallSite, context));
         }
 
-        private Expression TryCaptureDisposible(Type implType, ParameterExpression provider, Expression service)
+        private Expression TryCaptureDisposible(Type implType, ParameterExpression scope, Expression service)
         {
 
             if (implType != null &&
@@ -173,7 +171,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 return service;
             }
 
-            return Expression.Invoke(GetCaptureDisposable(provider),
+            return Expression.Invoke(GetCaptureDisposable(scope),
                 service);
         }
 
@@ -247,11 +245,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return mc.Method;
         }
 
-        public Expression GetCaptureDisposable(ParameterExpression provider)
+        public Expression GetCaptureDisposable(ParameterExpression scope)
         {
-            if (provider != ScopeParameter)
+            if (scope != ScopeParameter)
             {
-                throw new NotSupportedException("GetCaptureDisposable call is supported only for main provider");
+                throw new NotSupportedException("GetCaptureDisposable call is supported only for main scope");
             }
             return CaptureDisposable;
         }
@@ -260,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (context.ScopeParameter != ScopeParameter)
             {
-                throw new NotSupportedException("GetResolvedServices call is supported only for main provider");
+                throw new NotSupportedException("GetResolvedServices call is supported only for main scope");
             }
             context.RequiresResolvedServices = true;
             return ResolvedServices;

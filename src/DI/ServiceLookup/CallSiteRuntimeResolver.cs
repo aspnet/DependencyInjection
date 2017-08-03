@@ -5,23 +5,23 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope, object>
     {
-        public object Resolve(IServiceCallSite callSite, ServiceProviderEngineScope provider)
+        public object Resolve(IServiceCallSite callSite, ServiceProviderEngineScope scope)
         {
-            return VisitCallSite(callSite, provider);
+            return VisitCallSite(callSite, scope);
         }
 
-        protected override object VisitTransient(TransientCallSite transientCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitTransient(TransientCallSite transientCallSite, ServiceProviderEngineScope scope)
         {
-            return provider.CaptureDisposable(
-                VisitCallSite(transientCallSite.ServiceCallSite, provider));
+            return scope.CaptureDisposable(
+                VisitCallSite(transientCallSite.ServiceCallSite, scope));
         }
 
-        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
         {
             object[] parameterValues = new object[constructorCallSite.ParameterCallSites.Length];
             for (var index = 0; index < parameterValues.Length; index++)
             {
-                parameterValues[index] = VisitCallSite(constructorCallSite.ParameterCallSites[index], provider);
+                parameterValues[index] = VisitCallSite(constructorCallSite.ParameterCallSites[index], scope);
             }
 
             try
@@ -36,31 +36,31 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProviderEngineScope scope)
         {
-            return VisitScoped(singletonCallSite, provider.Engine.Root);
+            return VisitScoped(singletonCallSite, scope.Engine.Root);
         }
 
-        protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProviderEngineScope scope)
         {
-            lock (provider.ResolvedServices)
+            lock (scope.ResolvedServices)
             {
-                if (!provider.ResolvedServices.TryGetValue(scopedCallSite.CacheKey, out var resolved))
+                if (!scope.ResolvedServices.TryGetValue(scopedCallSite.CacheKey, out var resolved))
                 {
-                    resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
-                    provider.CaptureDisposable(resolved);
-                    provider.ResolvedServices.Add(scopedCallSite.CacheKey, resolved);
+                    resolved = VisitCallSite(scopedCallSite.ServiceCallSite, scope);
+                    scope.CaptureDisposable(resolved);
+                    scope.ResolvedServices.Add(scopedCallSite.CacheKey, resolved);
                 }
                 return resolved;
             }
         }
 
-        protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProviderEngineScope scope)
         {
             return constantCallSite.DefaultValue;
         }
 
-        protected override object VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ServiceProviderEngineScope scope)
         {
             try
             {
@@ -74,17 +74,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProviderEngineScope scope)
         {
-            return provider;
+            return scope;
         }
 
-        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ServiceProviderEngineScope scope)
         {
-            return provider.Engine;
+            return scope.Engine;
         }
 
-        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ServiceProviderEngineScope scope)
         {
             var array = Array.CreateInstance(
                 enumerableCallSite.ItemType,
@@ -92,15 +92,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             for (var index = 0; index < enumerableCallSite.ServiceCallSites.Length; index++)
             {
-                var value = VisitCallSite(enumerableCallSite.ServiceCallSites[index], provider);
+                var value = VisitCallSite(enumerableCallSite.ServiceCallSites[index], scope);
                 array.SetValue(value, index);
             }
             return array;
         }
 
-        protected override object VisitFactory(FactoryCallSite factoryCallSite, ServiceProviderEngineScope provider)
+        protected override object VisitFactory(FactoryCallSite factoryCallSite, ServiceProviderEngineScope scope)
         {
-            return factoryCallSite.Factory(provider);
+            return factoryCallSite.Factory(scope);
         }
     }
 }
