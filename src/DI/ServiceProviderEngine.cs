@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    internal class ServiceProviderEngine : IServiceProviderEngine
+    internal class ServiceProviderEngine : IServiceProviderEngine, IServiceScopeFactory
     {
         // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             Root = new ServiceProviderEngineScope(this);
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
-            ExpressionBuilder = new CallSiteExpressionBuilder(_callSiteRuntimeResolver);
+            ExpressionBuilder = new CallSiteExpressionBuilder(_callSiteRuntimeResolver, this, Root);
             CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
             CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());
         }
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 Func<ServiceProviderEngineScope, object> CompileResolver()
                 {
-                    var realizedService = ExpressionBuilder.Build(callSite, Root);
+                    var realizedService = ExpressionBuilder.Build(callSite);
                     RealizedServices[serviceType] = realizedService;
                     return realizedService;
                 }
@@ -92,6 +92,11 @@ namespace Microsoft.Extensions.DependencyInjection
             var realizedService = RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
             OnResolve?.Invoke(serviceType, serviceProviderEngineScope);
             return realizedService.Invoke(serviceProviderEngineScope);
+        }
+
+        public IServiceScope CreateScope()
+        {
+            return new ServiceProviderEngineScope(this);
         }
     }
 }

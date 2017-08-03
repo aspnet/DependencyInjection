@@ -15,19 +15,11 @@ namespace Microsoft.Extensions.DependencyInjection
         public ServiceProviderEngineScope(ServiceProviderEngine engine)
         {
             Engine = engine;
-            Root = this;
-        }
-
-        public ServiceProviderEngineScope(ServiceProviderEngineScope root)
-        {
-            Root = root;
-            Engine = root.Engine;
         }
 
         internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
 
         public ServiceProviderEngine Engine { get; }
-        public ServiceProviderEngineScope Root { get; }
 
         public object GetService(Type serviceType)
         {

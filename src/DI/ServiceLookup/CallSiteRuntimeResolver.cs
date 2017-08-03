@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProviderEngineScope provider)
         {
-            return VisitScoped(singletonCallSite, provider.Root);
+            return VisitScoped(singletonCallSite, provider.Engine.Root);
         }
 
         protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProviderEngineScope provider)
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ServiceProviderEngineScope provider)
         {
-            return new ServiceScopeFactory(provider);
+            return provider.Engine;
         }
 
         protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ServiceProviderEngineScope provider)
