@@ -141,7 +141,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (callSite.ServiceCallSites.Length == 0)
             {
-                return Expression.Constant(ArrayEmptyMethodInfo.MakeGenericMethod(callSite.ItemType).Invoke(null, Array.Empty<object>()));
+                return Expression.Constant(ArrayEmptyMethodInfo
+                    .MakeGenericMethod(callSite.ItemType)
+                    .Invoke(obj: null, parameters: Array.Empty<object>()));
             }
 
             return Expression.NewArrayInit(

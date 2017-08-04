@@ -24,7 +24,20 @@ namespace Microsoft.Extensions.DependencyInjection
                 callback = this;
                 _callSiteValidator = new CallSiteValidator();
             }
-            _engine = new ServiceProviderEngine(serviceDescriptors, options, callback);
+            switch (options.Mode)
+            {
+                case ServiceProviderMode.Dynamic:
+                    _engine = new DynamicServiceProviderEngine(serviceDescriptors, callback);
+                    break;
+                case ServiceProviderMode.Runtime:
+                    _engine = new RuntimeServiceProviderEngine(serviceDescriptors, callback);
+                    break;
+                case ServiceProviderMode.Compiled:
+                    _engine = new CompiledServiceProviderEngine(serviceDescriptors, callback);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(options.Mode));
+            }
         }
 
         /// <summary>
@@ -37,9 +50,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <inheritdoc />
         public void Dispose() => _engine.Dispose();
 
-        void IServiceProviderEngineCallback.OnCreate(Type serviceType, IServiceCallSite callSite)
+        void IServiceProviderEngineCallback.OnCreate(IServiceCallSite callSite)
         {
-            _callSiteValidator.ValidateCallSite(serviceType, callSite);
+            _callSiteValidator.ValidateCallSite(callSite);
         }
 
         void IServiceProviderEngineCallback.OnResolve(Type serviceType, IServiceScope scope)

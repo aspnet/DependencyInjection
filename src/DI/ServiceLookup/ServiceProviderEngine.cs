@@ -4,33 +4,24 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceProviderEngine : IServiceProviderEngine, IServiceScopeFactory
+    internal abstract class ServiceProviderEngine : IServiceProviderEngine, IServiceScopeFactory
     {
         private readonly IServiceProviderEngineCallback _callback;
 
-        // CallSiteRuntimeResolver is stateless so can be shared between all instances
-        private readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
-
-        private readonly CallSiteExpressionBuilder ExpressionBuilder;
-
         private readonly Func<Type, Func<ServiceProviderEngineScope, object>> _createServiceAccessor;
 
-        private readonly ServiceProviderMode _mode;
-
-        public ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options, IServiceProviderEngineCallback callback)
+        protected ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback)
         {
-            _callback = callback;
             _createServiceAccessor = CreateServiceAccessor;
-            _mode = options.Mode;
+            _callback = callback;
 
             Root = new ServiceProviderEngineScope(this);
+            RuntimeResolver = new CallSiteRuntimeResolver();
+            ExpressionBuilder = new CallSiteExpressionBuilder(RuntimeResolver, this, Root);
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
-            ExpressionBuilder = new CallSiteExpressionBuilder(_callSiteRuntimeResolver, this, Root);
             CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
             CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());
         }
@@ -40,10 +31,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         internal CallSiteFactory CallSiteFactory { get; }
 
+        protected CallSiteRuntimeResolver RuntimeResolver { get; }
+
+        protected CallSiteExpressionBuilder ExpressionBuilder { get; }
+
         public ServiceProviderEngineScope Root { get; }
+
         public IServiceScope RootScope => Root;
 
         public object GetService(Type serviceType) => GetService(serviceType, Root);
+
+        protected abstract Func<ServiceProviderEngineScope, object> RealizeService(IServiceCallSite callSite);
 
         public void Dispose() => Root.Dispose();
 
@@ -52,41 +50,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSite = CallSiteFactory.CreateCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
-                _callback?.OnCreate(serviceType, callSite);
-                return RealizeService(serviceType, callSite);
+                _callback?.OnCreate(callSite);
+                return RealizeService(callSite);
             }
 
             return _ => null;
-        }
-
-        internal Func<ServiceProviderEngineScope, object> RealizeService(Type serviceType, IServiceCallSite callSite)
-        {
-            var callCount = 0;
-            return scope =>
-            {
-                Func<ServiceProviderEngineScope, object> CompileResolver()
-                {
-                    var realizedService = ExpressionBuilder.Build(callSite);
-                    RealizedServices[serviceType] = realizedService;
-                    return realizedService;
-                }
-
-                switch (_mode)
-                {
-                    case ServiceProviderMode.Dynamic:
-                        if (Interlocked.Increment(ref callCount) == 2)
-                        {
-                            Task.Run(() => CompileResolver());
-                        }
-                        return _callSiteRuntimeResolver.Resolve(callSite, scope);
-                    case ServiceProviderMode.Compiled:
-                        return CompileResolver()(scope);
-                    case ServiceProviderMode.Runtime:
-                        return (RealizedServices[serviceType] = p => _callSiteRuntimeResolver.Resolve(callSite, p))(scope);
-                    default:
-                        throw new ArgumentException();
-                }
-            };
         }
 
         internal object GetService(Type serviceType, ServiceProviderEngineScope serviceProviderEngineScope)
