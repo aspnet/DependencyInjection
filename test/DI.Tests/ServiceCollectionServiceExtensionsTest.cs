@@ -207,6 +207,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void TryAdd_WithType_DoesNotAddDuplicate(
             Action<IServiceCollection> addAction,
             Type expectedServiceType,
+            // Test verifies that descriptor is not added so we don't need to assert it's properties
 #pragma warning disable xUnit1026
             Type expectedImplementationType,
             ServiceLifetime expectedLifetime
