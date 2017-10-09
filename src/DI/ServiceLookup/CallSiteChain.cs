@@ -10,16 +10,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CallSiteChain
     {
-        private readonly Dictionary<Type,ChainItemInfo> callSiteChain;
-        
+        private readonly Dictionary<Type,ChainItemInfo> _callSiteChain;
+
         public CallSiteChain()
         {
-            callSiteChain = new Dictionary<Type, ChainItemInfo>();
+            _callSiteChain = new Dictionary<Type, ChainItemInfo>();
         }
 
-        public void CheckForCircularDependency(Type serviceType)
+        public void CheckCircularDependency(Type serviceType)
         {
-            if (callSiteChain.ContainsKey(serviceType))
+            if (_callSiteChain.ContainsKey(serviceType))
             {
                 throw new InvalidOperationException(CreateCircularDependencyExceptionMessage(serviceType));
             }
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public void Remove(Type serviceType)
         {
-            callSiteChain.Remove(serviceType);
+            _callSiteChain.Remove(serviceType);
         }
 
         public void AddInstanceUse(Type serviceType, object instance)
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private void Add(Type serviceType, Type implementationType, ChainItemType chainItemType)
         {
-            callSiteChain[serviceType] = new ChainItemInfo(callSiteChain.Count, chainItemType, implementationType);
+            _callSiteChain[serviceType] = new ChainItemInfo(_callSiteChain.Count, chainItemType, implementationType);
         }
 
         private string CreateCircularDependencyExceptionMessage(Type type)
@@ -61,12 +61,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             messageBuilder.AppendFormat(Resources.CircularDependencyException, type);
             messageBuilder.AppendLine();
 
-            WriteResolutiuonPath(messageBuilder, type);
-            
+            AppendResolutionPath(messageBuilder, type);
+
             return messageBuilder.ToString();
         }
-        
-        private void WriteResolutiuonPath(StringBuilder builder, Type currentlyResolving = null)
+
+        private void AppendResolutionPath(StringBuilder builder, Type currentlyResolving = null)
         {
             builder.AppendLine(Resources.ResolutionPathHeader);
 
@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 stringBuilder.AppendLine();
             }
 
-            foreach (var pair in callSiteChain.OrderBy(p => p.Value.Order))
+            foreach (var pair in _callSiteChain.OrderBy(p => p.Value.Order))
             {
                 var chainItemInfo = pair.Value;
 

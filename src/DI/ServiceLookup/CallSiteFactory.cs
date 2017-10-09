@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 IServiceCallSite callSite;
                 try
                 {
-                    callSiteChain.CheckForCircularDependency(serviceType);
+                    callSiteChain.CheckCircularDependency(serviceType);
 
                     callSite = TryCreateExact(serviceType, callSiteChain) ??
                                TryCreateOpenGeneric(serviceType, callSiteChain) ??
@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 {
                     throw new InvalidOperationException("Invalid service descriptor");
                 }
-                
+
                 return ApplyLifetime(callSite, descriptor, descriptor.Lifetime);
             }
 

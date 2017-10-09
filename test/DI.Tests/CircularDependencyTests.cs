@@ -14,19 +14,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void SelfCircularDependency()
         {
             var type = typeof(SelfCircularDependency);
-            var expectedMessage = string.Join(Environment.NewLine, 
-                Resources.FormatCircularDependencyException(type),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemConstructorCall(type, type),
-                Resources.FormatResolutionPathItemCurrent(type));
-            
+            var expectedMessage = string.Join(Environment.NewLine,
+                $"A circular dependency was detected for the service of type '{type}'.",
+                "Resolution path:",
+                $"Resolving '{type}' by activating '{type}'.",
+                $"Resolving '{type}'.");
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
                 .BuildServiceProvider();
 
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependency>());
-            
+
             Assert.Equal(expectedMessage, exception.Message);
         }
 
@@ -36,11 +36,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var type = typeof(SelfCircularDependency);
             var enumerableType = typeof(IEnumerable<SelfCircularDependency>);
             var expectedMessage = string.Join(Environment.NewLine,
-                Resources.FormatCircularDependencyException(type),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemEnumerableCreate(enumerableType),
-                Resources.FormatResolutionPathItemConstructorCall(type, type),
-                Resources.FormatResolutionPathItemCurrent(type));
+                $"A circular dependency was detected for the service of type '{type}'.",
+                "Resolution path:",
+                $"Resolving '{enumerableType}' by creating collection.",
+                $"Resolving '{type}' by activating '{type}'.",
+                $"Resolving '{type}'.");
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
@@ -57,10 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         {
             var type = typeof(SelfCircularDependencyGeneric<string>);
             var expectedMessage = string.Join(Environment.NewLine,
-                Resources.FormatCircularDependencyException(type),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemConstructorCall(type, type),
-                Resources.FormatResolutionPathItemCurrent(type));
+                $"A circular dependency was detected for the service of type '{type}'.",
+                "Resolution path:",
+                $"Resolving '{type}' by activating '{type}'.",
+                $"Resolving '{type}'.");
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<string>>()
@@ -78,11 +78,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var typeString = typeof(SelfCircularDependencyGeneric<string>);
             var typeInt = typeof(SelfCircularDependencyGeneric<int>);
             var expectedMessage = string.Join(Environment.NewLine,
-                Resources.FormatCircularDependencyException(typeString),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemConstructorCall(typeInt, typeInt),
-                Resources.FormatResolutionPathItemConstructorCall(typeString, typeString),
-                Resources.FormatResolutionPathItemCurrent(typeString));
+                $"A circular dependency was detected for the service of type '{typeString}'.",
+                "Resolution path:",
+                $"Resolving '{typeInt}' by activating '{typeInt}'.",
+                $"Resolving '{typeString}' by activating '{typeString}'.",
+                $"Resolving '{typeString}'.");
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
@@ -115,11 +115,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var typeInterface = typeof(ISelfCircularDependencyWithInterface);
             var type = typeof(SelfCircularDependencyWithInterface);
             var expectedMessage = string.Join(Environment.NewLine,
-                Resources.FormatCircularDependencyException(typeInterface),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemConstructorCall(type, type),
-                Resources.FormatResolutionPathItemConstructorCall(typeInterface, type),
-                Resources.FormatResolutionPathItemCurrent(typeInterface));
+                $"A circular dependency was detected for the service of type '{typeInterface}'.",
+                "Resolution path:",
+                $"Resolving '{type}' by activating '{type}'.",
+                $"Resolving '{typeInterface}' by activating '{type}'.",
+                $"Resolving '{typeInterface}'.");
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<ISelfCircularDependencyWithInterface, SelfCircularDependencyWithInterface>()
@@ -138,11 +138,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var typeA = typeof(DirectCircularDependencyA);
             var typeB = typeof(DirectCircularDependencyB);
             var expectedMessage = string.Join(Environment.NewLine,
-                Resources.FormatCircularDependencyException(typeA),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemConstructorCall(typeA, typeA),
-                Resources.FormatResolutionPathItemConstructorCall(typeB, typeB),
-                Resources.FormatResolutionPathItemCurrent(typeA));
+                $"A circular dependency was detected for the service of type '{typeA}'.",
+                "Resolution path:",
+                $"Resolving '{typeA}' by activating '{typeA}'.",
+                $"Resolving '{typeB}' by activating '{typeB}'.",
+                $"Resolving '{typeA}'.");
 
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<DirectCircularDependencyA>()
@@ -162,12 +162,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var typeB = typeof(IndirectCircularDependencyB);
             var typeC = typeof(IndirectCircularDependencyC);
             var expectedMessage = string.Join(Environment.NewLine,
-                Resources.FormatCircularDependencyException(typeA),
-                Resources.ResolutionPathHeader,
-                Resources.FormatResolutionPathItemConstructorCall(typeA, typeA),
-                Resources.FormatResolutionPathItemConstructorCall(typeB, typeB),
-                Resources.FormatResolutionPathItemConstructorCall(typeC, typeC),
-                Resources.FormatResolutionPathItemCurrent(typeA));
+                $"A circular dependency was detected for the service of type '{typeA}'.",
+                "Resolution path:",
+                $"Resolving '{typeA}' by activating '{typeA}'.",
+                $"Resolving '{typeB}' by activating '{typeB}'.",
+                $"Resolving '{typeC}' by activating '{typeC}'.",
+                $"Resolving '{typeA}'.");
 
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IndirectCircularDependencyA>()
