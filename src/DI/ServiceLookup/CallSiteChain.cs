@@ -30,32 +30,32 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             callSiteChain.Remove(serviceType);
         }
 
-        private void SetImplementationType(Type serviceType, Type implementationType, ChainItemType chainItemType)
+        public void AddInstanceUse(Type serviceType, object instance)
+        {
+            Add(serviceType, instance.GetType(), ChainItemType.InstanceUse);
+        }
+
+        public void AddEnumerableCreation(Type serviceType)
+        {
+            Add(serviceType, null, ChainItemType.EnumerableCreation);
+        }
+
+        public void AddConstructorCall(Type serviceType, Type implementationType)
+        {
+            Add(serviceType, implementationType, ChainItemType.ConstructorCall);
+        }
+
+        public void AddFactoryCall(Type serviceType)
+        {
+            Add(serviceType, null, ChainItemType.FactoryCall);
+        }
+
+        private void Add(Type serviceType, Type implementationType, ChainItemType chainItemType)
         {
             callSiteChain[serviceType] = new ChainItemInfo(callSiteChain.Count, chainItemType, implementationType);
         }
 
-        public void SetInstanceImplementationType(Type serviceType, object instance)
-        {
-            SetImplementationType(serviceType, instance.GetType(), ChainItemType.InstanceUse);
-        }
-
-        public void SetEnumerableImplementationType(Type serviceType)
-        {
-            SetImplementationType(serviceType, null, ChainItemType.EnumerableCreate);
-        }
-
-        public void SetConstructorCallImplementationType(Type serviceType, Type implementationType)
-        {
-            SetImplementationType(serviceType, implementationType, ChainItemType.ConstructorCall);
-        }
-
-        public void SetFactoryImplementationType(Type serviceType)
-        {
-            SetImplementationType(serviceType, null, ChainItemType.FactoryCall);
-        }
-
-        internal string CreateCircularDependencyExceptionMessage(Type type)
+        private string CreateCircularDependencyExceptionMessage(Type type)
         {
             var messageBuilder = new StringBuilder();
             messageBuilder.AppendFormat(Resources.CircularDependencyException, type);
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             
             return messageBuilder.ToString();
         }
-
+        
         private void WriteResolutiuonPath(StringBuilder builder, Type currentlyResolving = null)
         {
             builder.AppendLine(Resources.ResolutionPathHeader);
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     case ChainItemType.FactoryCall:
                         AppendFormatLine(builder, Resources.ResolutionPathItemFactoryCall, pair);
                         break;
-                    case ChainItemType.EnumerableCreate:
+                    case ChainItemType.EnumerableCreation:
                         AppendFormatLine(builder, Resources.ResolutionPathItemEnumerableCreate, pair);
                         break;
                 }
@@ -108,7 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             InstanceUse,
             ConstructorCall,
             FactoryCall,
-            EnumerableCreate
+            EnumerableCreation
         }
 
         private struct ChainItemInfo

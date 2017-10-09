@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
-using Microsoft.Extensions.DependencyInjection.Utils;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -15,23 +13,35 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependency()
         {
+            var type = typeof(SelfCircularDependency);
+            var expectedMessage = string.Join(Environment.NewLine, 
+                Resources.FormatCircularDependencyException(type),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemConstructorCall(type, type),
+                Resources.FormatResolutionPathItemCurrent(type));
+            
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
                 .BuildServiceProvider();
 
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependency>());
-
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetConstructorCallImplementationType<SelfCircularDependency>()
-                .CreateCircularDependencyExceptionMessage(typeof(SelfCircularDependency));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void SelfCircularDependencyInEnumerable()
         {
+            var type = typeof(SelfCircularDependency);
+            var enumerableType = typeof(IEnumerable<SelfCircularDependency>);
+            var expectedMessage = string.Join(Environment.NewLine,
+                Resources.FormatCircularDependencyException(type),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemEnumerableCreate(enumerableType),
+                Resources.FormatResolutionPathItemConstructorCall(type, type),
+                Resources.FormatResolutionPathItemCurrent(type));
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
                 .BuildServiceProvider();
@@ -39,17 +49,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<IEnumerable<SelfCircularDependency>>());
 
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetEnumerableImplementationType<SelfCircularDependency>()
-                .AddAndSetConstructorCallImplementationType<SelfCircularDependency>()
-                .CreateCircularDependencyExceptionMessage(typeof(SelfCircularDependency));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void SelfCircularDependencyGenericDirect()
         {
+            var type = typeof(SelfCircularDependencyGeneric<string>);
+            var expectedMessage = string.Join(Environment.NewLine,
+                Resources.FormatCircularDependencyException(type),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemConstructorCall(type, type),
+                Resources.FormatResolutionPathItemCurrent(type));
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<string>>()
                 .BuildServiceProvider();
@@ -57,16 +69,21 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<string>>());
 
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetConstructorCallImplementationType<SelfCircularDependencyGeneric<string>>()
-                .CreateCircularDependencyExceptionMessage(typeof(SelfCircularDependencyGeneric<string>));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void SelfCircularDependencyGenericIndirect()
         {
+            var typeString = typeof(SelfCircularDependencyGeneric<string>);
+            var typeInt = typeof(SelfCircularDependencyGeneric<int>);
+            var expectedMessage = string.Join(Environment.NewLine,
+                Resources.FormatCircularDependencyException(typeString),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemConstructorCall(typeInt, typeInt),
+                Resources.FormatResolutionPathItemConstructorCall(typeString, typeString),
+                Resources.FormatResolutionPathItemCurrent(typeString));
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
                 .AddTransient<SelfCircularDependencyGeneric<string>>()
@@ -75,12 +92,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<int>>());
 
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetConstructorCallImplementationType<SelfCircularDependencyGeneric<int>>()
-                .AddAndSetConstructorCallImplementationType<SelfCircularDependencyGeneric<string>>()
-                .CreateCircularDependencyExceptionMessage(typeof(SelfCircularDependencyGeneric<string>));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -100,6 +112,15 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyWithInterface()
         {
+            var typeInterface = typeof(ISelfCircularDependencyWithInterface);
+            var type = typeof(SelfCircularDependencyWithInterface);
+            var expectedMessage = string.Join(Environment.NewLine,
+                Resources.FormatCircularDependencyException(typeInterface),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemConstructorCall(type, type),
+                Resources.FormatResolutionPathItemConstructorCall(typeInterface, type),
+                Resources.FormatResolutionPathItemCurrent(typeInterface));
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<ISelfCircularDependencyWithInterface, SelfCircularDependencyWithInterface>()
                 .AddTransient<SelfCircularDependencyWithInterface>()
@@ -108,17 +129,21 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependencyWithInterface>());
 
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetConstructorCallImplementationType<SelfCircularDependencyWithInterface>()
-                .AddAndSetConstructorCallImplementationType<ISelfCircularDependencyWithInterface, SelfCircularDependencyWithInterface >()
-                .CreateCircularDependencyExceptionMessage(typeof(ISelfCircularDependencyWithInterface));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void DirectCircularDependency()
         {
+            var typeA = typeof(DirectCircularDependencyA);
+            var typeB = typeof(DirectCircularDependencyB);
+            var expectedMessage = string.Join(Environment.NewLine,
+                Resources.FormatCircularDependencyException(typeA),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemConstructorCall(typeA, typeA),
+                Resources.FormatResolutionPathItemConstructorCall(typeB, typeB),
+                Resources.FormatResolutionPathItemCurrent(typeA));
+
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<DirectCircularDependencyA>()
                 .AddSingleton<DirectCircularDependencyB>()
@@ -127,17 +152,23 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<DirectCircularDependencyA>());
 
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetConstructorCallImplementationType<DirectCircularDependencyA>()
-                .AddAndSetConstructorCallImplementationType<DirectCircularDependencyB>()
-                .CreateCircularDependencyExceptionMessage(typeof(DirectCircularDependencyA));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void IndirectCircularDependency()
         {
+            var typeA = typeof(IndirectCircularDependencyA);
+            var typeB = typeof(IndirectCircularDependencyB);
+            var typeC = typeof(IndirectCircularDependencyC);
+            var expectedMessage = string.Join(Environment.NewLine,
+                Resources.FormatCircularDependencyException(typeA),
+                Resources.ResolutionPathHeader,
+                Resources.FormatResolutionPathItemConstructorCall(typeA, typeA),
+                Resources.FormatResolutionPathItemConstructorCall(typeB, typeB),
+                Resources.FormatResolutionPathItemConstructorCall(typeC, typeC),
+                Resources.FormatResolutionPathItemCurrent(typeA));
+
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IndirectCircularDependencyA>()
                 .AddTransient<IndirectCircularDependencyB>()
@@ -147,13 +178,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<IndirectCircularDependencyA>());
 
-            var expectedErrorMessage = new CallSiteChain()
-                .AddAndSetConstructorCallImplementationType<IndirectCircularDependencyA>()
-                .AddAndSetConstructorCallImplementationType<IndirectCircularDependencyB>()
-                .AddAndSetConstructorCallImplementationType<IndirectCircularDependencyC>()
-                .CreateCircularDependencyExceptionMessage(typeof(IndirectCircularDependencyA));
-
-            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]

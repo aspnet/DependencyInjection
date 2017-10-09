@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var itemType = serviceType.GenericTypeArguments.Single();
-                callSiteChain.SetEnumerableImplementationType(serviceType);
+                callSiteChain.AddEnumerableCreation(serviceType);
 
                 var callSites = new List<IServiceCallSite>();
 
@@ -167,12 +167,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 IServiceCallSite callSite;
                 if (descriptor.ImplementationInstance != null)
                 {
-                    callSiteChain.SetInstanceImplementationType(serviceType, descriptor.ImplementationInstance);
+                    callSiteChain.AddInstanceUse(serviceType, descriptor.ImplementationInstance);
                     callSite = new ConstantCallSite(descriptor.ServiceType, descriptor.ImplementationInstance);
                 }
                 else if (descriptor.ImplementationFactory != null)
                 {
-                    callSiteChain.SetFactoryImplementationType(serviceType);
+                    callSiteChain.AddFactoryCall(serviceType);
                     callSite = new FactoryCallSite(descriptor.ServiceType, descriptor.ImplementationFactory);
                 }
                 else if (descriptor.ImplementationType != null)
@@ -228,7 +228,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private IServiceCallSite CreateConstructorCallSite(Type serviceType, Type implementationType, CallSiteChain callSiteChain)
         {
-            callSiteChain.SetConstructorCallImplementationType(serviceType, implementationType);
+            callSiteChain.AddConstructorCall(serviceType, implementationType);
 
             var constructors = implementationType.GetTypeInfo()
                 .DeclaredConstructors
