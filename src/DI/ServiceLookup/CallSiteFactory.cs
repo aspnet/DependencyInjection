@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 IServiceCallSite callSite;
                 try
                 {
-                    callSiteChain.Add(serviceType);
+                    callSiteChain.CheckForCircularDependency(serviceType);
 
                     callSite = TryCreateExact(serviceType, callSiteChain) ??
                                TryCreateOpenGeneric(serviceType, callSiteChain) ??
@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var itemType = serviceType.GenericTypeArguments.Single();
-                callSiteChain.SetEnumerableImplementationType(serviceType, itemType);
+                callSiteChain.SetEnumerableImplementationType(serviceType);
 
                 var callSites = new List<IServiceCallSite>();
 

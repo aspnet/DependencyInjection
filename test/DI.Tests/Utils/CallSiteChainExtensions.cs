@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
@@ -20,7 +23,6 @@ namespace Microsoft.Extensions.DependencyInjection.Utils
 
         public static CallSiteChain AddAndSetConstructorCallImplementationType(this CallSiteChain callSiteChain, Type serviceType, Type implementationType)
         {
-            callSiteChain.Add(serviceType);
             callSiteChain.SetConstructorCallImplementationType(serviceType, implementationType);
             return callSiteChain;
         }
@@ -32,13 +34,8 @@ namespace Microsoft.Extensions.DependencyInjection.Utils
 
         public static CallSiteChain AddAndSetEnumerableImplementationType(this CallSiteChain callSiteChain, Type type)
         {
-            return callSiteChain.AddAndSetEnumerableImplementationType(typeof(IEnumerable<>).MakeGenericType(type), type);
-        }
-
-        public static CallSiteChain AddAndSetEnumerableImplementationType(this CallSiteChain callSiteChain, Type serviceType, Type implementationType)
-        {
-            callSiteChain.Add(serviceType);
-            callSiteChain.SetEnumerableImplementationType(serviceType, implementationType);
+            type = typeof(IEnumerable<>).MakeGenericType(type);
+            callSiteChain.SetEnumerableImplementationType(type);
             return callSiteChain;
         }
     }

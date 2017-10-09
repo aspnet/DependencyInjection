@@ -1,42 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteChain// : HashSet<Type>
+    internal class CallSiteChain
     {
-        private enum ChainItemType
-        {
-            Unknown,
-            InstanceUse,
-            ConstructorCall,
-            FactoryCall,
-            EnumerableCreate
-        }
-
-        private struct ChainItemInfo
-        {
-            public int Order { get; }
-            public Type ImplementationType { get; }
-            public ChainItemType Type { get; }
-
-            public ChainItemInfo(int order) : this(order, ChainItemType.Unknown, null)
-            {
-            }
-
-            public ChainItemInfo(int order, ChainItemType type, Type implementationType) 
-            {
-                Order = order;
-                ImplementationType = implementationType;
-                Type = type;
-            }
-        }
-        
-        //private readonly HashSet<Type> chain = new HashSet<Type>();
-        //private readonly System.Collections.Specialized.OrderedDictionary dictionary = new OrderedDictionary();
         private readonly Dictionary<Type,ChainItemInfo> callSiteChain;
         
         public CallSiteChain()
@@ -44,16 +17,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             callSiteChain = new Dictionary<Type, ChainItemInfo>();
         }
 
-        public void Add(Type serviceType)
+        public void CheckForCircularDependency(Type serviceType)
         {
-            // If serviceType already present in call Site Chain throw CircularDependencyException
             if (callSiteChain.ContainsKey(serviceType))
             {
-                //throw new InvalidOperationException(Resources.FormatCircularDependencyException(serviceType));
                 throw new InvalidOperationException(CreateCircularDependencyExceptionMessage(serviceType));
             }
-
-            callSiteChain.Add(serviceType, new ChainItemInfo(callSiteChain.Count));
         }
 
         public void Remove(Type serviceType)
@@ -63,10 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private void SetImplementationType(Type serviceType, Type implementationType, ChainItemType chainItemType)
         {
-            if (!callSiteChain.TryGetValue(serviceType, out var info))
-                return;
-
-            callSiteChain[serviceType] = new ChainItemInfo(info.Order, chainItemType, implementationType);
+            callSiteChain[serviceType] = new ChainItemInfo(callSiteChain.Count, chainItemType, implementationType);
         }
 
         public void SetInstanceImplementationType(Type serviceType, object instance)
@@ -74,9 +40,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             SetImplementationType(serviceType, instance.GetType(), ChainItemType.InstanceUse);
         }
 
-        public void SetEnumerableImplementationType(Type serviceType, Type implementationType)
+        public void SetEnumerableImplementationType(Type serviceType)
         {
-            SetImplementationType(serviceType, implementationType.MakeArrayType(), ChainItemType.EnumerableCreate);
+            SetImplementationType(serviceType, null, ChainItemType.EnumerableCreate);
         }
 
         public void SetConstructorCallImplementationType(Type serviceType, Type implementationType)
@@ -92,41 +58,71 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal string CreateCircularDependencyExceptionMessage(Type type)
         {
             var messageBuilder = new StringBuilder();
-            messageBuilder.Append(Resources.FormatCircularDependencyException(type));
+            messageBuilder.AppendFormat(Resources.CircularDependencyException, type);
+            messageBuilder.AppendLine();
 
-            void AppendResolveLine(StringBuilder builder, Type resolveType)
+            WriteResolutiuonPath(messageBuilder, type);
+            
+            return messageBuilder.ToString();
+        }
+
+        private void WriteResolutiuonPath(StringBuilder builder, Type currentlyResolving = null)
+        {
+            builder.AppendLine(Resources.ResolutionPathHeader);
+
+            void AppendFormatLine(StringBuilder stringBuilder, string format, KeyValuePair<Type, ChainItemInfo> pair)
             {
-                builder.AppendLine();
-                builder.AppendFormat("Resolving '{0}'", resolveType);
+                stringBuilder.AppendFormat(format, pair.Key, pair.Value.ImplementationType);
+                stringBuilder.AppendLine();
             }
 
             foreach (var pair in callSiteChain.OrderBy(p => p.Value.Order))
             {
-                var serviceType = pair.Key;
                 var chainItemInfo = pair.Value;
 
-                AppendResolveLine(messageBuilder, serviceType);
                 switch (chainItemInfo.Type)
                 {
                     case ChainItemType.InstanceUse:
-                        messageBuilder.AppendFormat(" by using instance of type '{0}'.", chainItemInfo.ImplementationType);
+                        AppendFormatLine(builder, Resources.ResolutionPathItemInstanceUse, pair);
                         break;
                     case ChainItemType.ConstructorCall:
-                        messageBuilder.AppendFormat(" by activating '{0}'.", chainItemInfo.ImplementationType);
+                        AppendFormatLine(builder, Resources.ResolutionPathItemConstructorCall, pair);
                         break;
                     case ChainItemType.FactoryCall:
-                        messageBuilder.AppendFormat(" by running factory.");
+                        AppendFormatLine(builder, Resources.ResolutionPathItemFactoryCall, pair);
                         break;
                     case ChainItemType.EnumerableCreate:
-                        messageBuilder.AppendFormat(" by creating collection '{0}'.", chainItemInfo.ImplementationType);
+                        AppendFormatLine(builder, Resources.ResolutionPathItemEnumerableCreate, pair);
                         break;
                 }
             }
 
-            AppendResolveLine(messageBuilder, type);
-            messageBuilder.Append(" cause circular reference.");
+            if (currentlyResolving != null)
+            {
+                builder.AppendFormat(Resources.ResolutionPathItemCurrent, currentlyResolving);
+            }
+        }
 
-            return messageBuilder.ToString();
+        private enum ChainItemType
+        {
+            InstanceUse,
+            ConstructorCall,
+            FactoryCall,
+            EnumerableCreate
+        }
+
+        private struct ChainItemInfo
+        {
+            public int Order { get; }
+            public Type ImplementationType { get; }
+            public ChainItemType Type { get; }
+
+            public ChainItemInfo(int order, ChainItemType type, Type implementationType)
+            {
+                Order = order;
+                ImplementationType = implementationType;
+                Type = type;
+            }
         }
     }
 }
