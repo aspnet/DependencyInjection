@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.assert" Version="$(XunitVersionInSpecProjects)" />
-    <PackageReference Include="xunit.extensibility.core" Version="$(XunitVersionInSpecProjects)" />
+    <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
+    <PackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
   </ItemGroup>
 
 </Project>
