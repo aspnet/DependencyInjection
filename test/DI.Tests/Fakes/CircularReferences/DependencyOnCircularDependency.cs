@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.DependencyInjection.Tests.Fakes
 {
-    public class DepecndencyOnCircularDependency
+    public class DependencyOnCircularDependency
     {
-        public DepecndencyOnCircularDependency(DirectCircularDependencyA a)
+        public DependencyOnCircularDependency(DirectCircularDependencyA a)
         {
 
         }

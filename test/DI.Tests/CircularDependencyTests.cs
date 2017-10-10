@@ -103,7 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
                 .BuildServiceProvider();
 
-            // This will not throw because we are creating an instace of the first time
+            // This will not throw because we are creating an instance of the first time
             // using the parameterless constructor which has no circular dependency
             var resolvedService = serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<int>>();
             Assert.NotNull(resolvedService);
@@ -195,9 +195,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         }
 
         [Fact]
-        public void DepecndencyOnCircularDependency()
+        public void DependencyOnCircularDependency()
         {
-            var type = typeof(DepecndencyOnCircularDependency);
+            var type = typeof(DependencyOnCircularDependency);
             var typeA = typeof(DirectCircularDependencyA);
             var typeB = typeof(DirectCircularDependencyB);
             var expectedMessage = string.Join(Environment.NewLine,
@@ -209,13 +209,13 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 $"Resolving '{typeA}'.");
 
             var serviceProvider = new ServiceCollection()
-                .AddTransient<DepecndencyOnCircularDependency>()
+                .AddTransient<DependencyOnCircularDependency>()
                 .AddTransient<DirectCircularDependencyA>()
                 .AddTransient<DirectCircularDependencyB>()
                 .BuildServiceProvider();
 
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                serviceProvider.GetRequiredService<DepecndencyOnCircularDependency>());
+                serviceProvider.GetRequiredService<DependencyOnCircularDependency>());
 
             Assert.Equal(expectedMessage, exception.Message);
         }
