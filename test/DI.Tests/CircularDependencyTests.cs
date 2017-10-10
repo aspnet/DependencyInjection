@@ -193,5 +193,31 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var resolvedService = serviceProvider.GetRequiredService<NoCircularDependencySameTypeMultipleTimesA>();
             Assert.NotNull(resolvedService);
         }
+
+        [Fact]
+        public void DepecndencyOnCircularDependency()
+        {
+            var type = typeof(DepecndencyOnCircularDependency);
+            var typeA = typeof(DirectCircularDependencyA);
+            var typeB = typeof(DirectCircularDependencyB);
+            var expectedMessage = string.Join(Environment.NewLine,
+                $"A circular dependency was detected for the service of type '{typeA}'.",
+                "Resolution path:",
+                $"Resolving '{type}' by activating '{type}'.",
+                $"Resolving '{typeA}' by activating '{typeA}'.",
+                $"Resolving '{typeB}' by activating '{typeB}'.",
+                $"Resolving '{typeA}'.");
+
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<DepecndencyOnCircularDependency>()
+                .AddTransient<DirectCircularDependencyA>()
+                .AddTransient<DirectCircularDependencyB>()
+                .BuildServiceProvider();
+
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                serviceProvider.GetRequiredService<DepecndencyOnCircularDependency>());
+
+            Assert.Equal(expectedMessage, exception.Message);
+        }
     }
 }
