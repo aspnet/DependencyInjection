@@ -158,14 +158,6 @@
     <value>Resolving '{0}' by creating collection.</value>
     <comment>{0} = service type, {1} = implementation type</comment>
   </data>
-  <data name="ResolutionPathItemFactoryCall" xml:space="preserve">
-    <value>Resolving '{0}' by running factory.</value>
-    <comment>{0} = service type, {1} = implementation type</comment>
-  </data>
-  <data name="ResolutionPathItemInstanceUse" xml:space="preserve">
-    <value>Resolving '{0}' by using instance of type '{1}'.</value>
-    <comment>{0} = service type, {1} = implementation type</comment>
-  </data>
   <data name="ResolutionPathHeader" xml:space="preserve">
     <value>Resolution path:</value>
   </data>

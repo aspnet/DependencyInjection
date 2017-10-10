@@ -30,11 +30,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _callSiteChain.Remove(serviceType);
         }
 
-        public void AddInstanceUse(Type serviceType, object instance)
-        {
-            Add(serviceType, instance.GetType(), ChainItemType.InstanceUse);
-        }
-
         public void AddEnumerableCreation(Type serviceType)
         {
             Add(serviceType, null, ChainItemType.EnumerableCreation);
@@ -43,11 +38,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void AddConstructorCall(Type serviceType, Type implementationType)
         {
             Add(serviceType, implementationType, ChainItemType.ConstructorCall);
-        }
-
-        public void AddFactoryCall(Type serviceType)
-        {
-            Add(serviceType, null, ChainItemType.FactoryCall);
         }
 
         private void Add(Type serviceType, Type implementationType, ChainItemType chainItemType)
@@ -82,14 +72,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                 switch (chainItemInfo.Type)
                 {
-                    case ChainItemType.InstanceUse:
-                        AppendFormatLine(builder, Resources.ResolutionPathItemInstanceUse, pair);
-                        break;
                     case ChainItemType.ConstructorCall:
                         AppendFormatLine(builder, Resources.ResolutionPathItemConstructorCall, pair);
-                        break;
-                    case ChainItemType.FactoryCall:
-                        AppendFormatLine(builder, Resources.ResolutionPathItemFactoryCall, pair);
                         break;
                     case ChainItemType.EnumerableCreation:
                         AppendFormatLine(builder, Resources.ResolutionPathItemEnumerableCreate, pair);
@@ -105,9 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private enum ChainItemType
         {
-            InstanceUse,
             ConstructorCall,
-            FactoryCall,
             EnumerableCreation
         }
 

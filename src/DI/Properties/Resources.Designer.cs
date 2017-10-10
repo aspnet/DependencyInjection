@@ -179,34 +179,6 @@ namespace Microsoft.Extensions.DependencyInjection
             => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathItemEnumerableCreate"), p0);
 
         /// <summary>
-        /// Resolving '{0}' by running factory.
-        /// </summary>
-        internal static string ResolutionPathItemFactoryCall
-        {
-            get => GetString("ResolutionPathItemFactoryCall");
-        }
-
-        /// <summary>
-        /// Resolving '{0}' by running factory.
-        /// </summary>
-        internal static string FormatResolutionPathItemFactoryCall(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathItemFactoryCall"), p0);
-
-        /// <summary>
-        /// Resolving '{0}' by using instance of type '{1}'.
-        /// </summary>
-        internal static string ResolutionPathItemInstanceUse
-        {
-            get => GetString("ResolutionPathItemInstanceUse");
-        }
-
-        /// <summary>
-        /// Resolving '{0}' by using instance of type '{1}'.
-        /// </summary>
-        internal static string FormatResolutionPathItemInstanceUse(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathItemInstanceUse"), p0, p1);
-
-        /// <summary>
         /// Resolution path:
         /// </summary>
         internal static string ResolutionPathHeader

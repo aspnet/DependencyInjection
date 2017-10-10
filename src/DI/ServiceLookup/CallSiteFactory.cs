@@ -167,12 +167,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 IServiceCallSite callSite;
                 if (descriptor.ImplementationInstance != null)
                 {
-                    callSiteChain.AddInstanceUse(serviceType, descriptor.ImplementationInstance);
                     callSite = new ConstantCallSite(descriptor.ServiceType, descriptor.ImplementationInstance);
                 }
                 else if (descriptor.ImplementationFactory != null)
                 {
-                    callSiteChain.AddFactoryCall(serviceType);
                     callSite = new FactoryCallSite(descriptor.ServiceType, descriptor.ImplementationFactory);
                 }
                 else if (descriptor.ImplementationType != null)
