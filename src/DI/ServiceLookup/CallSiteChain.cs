@@ -55,19 +55,19 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var implementationType = pair.Value.ImplementationType;
                 if (implementationType == null || serviceType == implementationType)
                 {
-                    builder.AppendFormat(Resources.ResolutionPathServiceType, TypeNameHelper.GetTypeDisplayName(serviceType));
+                    builder.Append(TypeNameHelper.GetTypeDisplayName(serviceType));
                 }
                 else
                 {
-                    builder.AppendFormat(Resources.ResolutionPathServiceAndImplementationType,
+                    builder.AppendFormat("{0}({1})",
                         TypeNameHelper.GetTypeDisplayName(serviceType),
                         TypeNameHelper.GetTypeDisplayName(implementationType));
                 }
 
-                builder.Append(Resources.ResolutionPathSeparator);
+                builder.Append(" -> ");
             }
 
-            builder.AppendFormat(Resources.ResolutionPathServiceType, TypeNameHelper.GetTypeDisplayName(currentlyResolving));
+            builder.Append(TypeNameHelper.GetTypeDisplayName(currentlyResolving));
         }
 
         private struct ChainItemInfo

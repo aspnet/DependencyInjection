@@ -150,15 +150,4 @@
   <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
     <value>Cannot resolve {1} service '{0}' from root provider.</value>
   </data>
-  <data name="ResolutionPathSeparator" xml:space="preserve">
-    <value> -&gt; </value>
-  </data>
-  <data name="ResolutionPathServiceAndImplementationType" xml:space="preserve">
-    <value>{0}({1})</value>
-    <comment>{0} = service type, {1} = implementation type</comment>
-  </data>
-  <data name="ResolutionPathServiceType" xml:space="preserve">
-    <value>{0}</value>
-    <comment>{0} = service type</comment>
-  </data>
 </root>

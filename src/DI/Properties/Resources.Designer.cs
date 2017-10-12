@@ -150,48 +150,6 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static string FormatDirectScopedResolvedFromRootException(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectScopedResolvedFromRootException"), p0, p1);
 
-        /// <summary>
-        ///  -&gt; 
-        /// </summary>
-        internal static string ResolutionPathSeparator
-        {
-            get => GetString("ResolutionPathSeparator");
-        }
-
-        /// <summary>
-        ///  -&gt; 
-        /// </summary>
-        internal static string FormatResolutionPathSeparator()
-            => GetString("ResolutionPathSeparator");
-
-        /// <summary>
-        /// {0}({1})
-        /// </summary>
-        internal static string ResolutionPathServiceAndImplementationType
-        {
-            get => GetString("ResolutionPathServiceAndImplementationType");
-        }
-
-        /// <summary>
-        /// {0}({1})
-        /// </summary>
-        internal static string FormatResolutionPathServiceAndImplementationType(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathServiceAndImplementationType"), p0, p1);
-
-        /// <summary>
-        /// {0}
-        /// </summary>
-        internal static string ResolutionPathServiceType
-        {
-            get => GetString("ResolutionPathServiceType");
-        }
-
-        /// <summary>
-        /// {0}
-        /// </summary>
-        internal static string FormatResolutionPathServiceType(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathServiceType"), p0);
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
