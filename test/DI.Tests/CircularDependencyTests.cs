@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
+using static Microsoft.Extensions.Internal.TypeNameHelper;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
@@ -14,8 +15,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependency()
         {
-            var type = GetTypeName<SelfCircularDependency>();
-            var expectedMessage = GetCircularDependencyErrorMessage(type, type);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(SelfCircularDependency))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependency))} -> " +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependency))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
@@ -30,9 +34,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyInEnumerable()
         {
-            var type = GetTypeName<SelfCircularDependency>();
-            var enumerableType = GetTypeName<IEnumerable<SelfCircularDependency>>(type);
-            var expectedMessage = GetCircularDependencyErrorMessage(enumerableType, type, type);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(SelfCircularDependency))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(IEnumerable<SelfCircularDependency>))} -> " +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependency))} -> " +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependency))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
@@ -47,8 +54,11 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyGenericDirect()
         {
-            var type = GetTypeName<SelfCircularDependencyGeneric<string>>("string");
-            var expectedMessage = GetCircularDependencyErrorMessage(type, type);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<string>))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<string>))} -> " +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<string>))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<string>>()
@@ -63,9 +73,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyGenericIndirect()
         {
-            var typeString = GetTypeName<SelfCircularDependencyGeneric<string>>("string");
-            var typeInt = GetTypeName<SelfCircularDependencyGeneric<int>>("int");
-            var expectedMessage = GetCircularDependencyErrorMessage(typeInt, typeString, typeString);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<string>))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<int>))} -> " +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<string>))} -> " +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependencyGeneric<string>))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
@@ -95,9 +108,13 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyWithInterface()
         {
-            var typeInterface = GetTypeName<ISelfCircularDependencyWithInterface>();
-            var type = GetTypeName<SelfCircularDependencyWithInterface>();
-            var expectedMessage = GetCircularDependencyErrorMessage(type, $"{typeInterface}({type})", typeInterface);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(ISelfCircularDependencyWithInterface))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(SelfCircularDependencyWithInterface))} -> " +
+                                  $"{GetTypeDisplayName(typeof(ISelfCircularDependencyWithInterface))}" +
+                                  $"({GetTypeDisplayName(typeof(SelfCircularDependencyWithInterface))}) -> " +
+                                  $"{GetTypeDisplayName(typeof(ISelfCircularDependencyWithInterface))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<ISelfCircularDependencyWithInterface, SelfCircularDependencyWithInterface>()
@@ -113,9 +130,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void DirectCircularDependency()
         {
-            var typeA = GetTypeName<DirectCircularDependencyA>();
-            var typeB = GetTypeName<DirectCircularDependencyB>();
-            var expectedMessage = GetCircularDependencyErrorMessage(typeA, typeB, typeA);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(DirectCircularDependencyA))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(DirectCircularDependencyA))} -> " +
+                                  $"{GetTypeDisplayName(typeof(DirectCircularDependencyB))} -> " +
+                                  $"{GetTypeDisplayName(typeof(DirectCircularDependencyA))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<DirectCircularDependencyA>()
@@ -131,10 +151,13 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void IndirectCircularDependency()
         {
-            var typeA = GetTypeName<IndirectCircularDependencyA>();
-            var typeB = GetTypeName<IndirectCircularDependencyB>();
-            var typeC = GetTypeName<IndirectCircularDependencyC>();
-            var expectedMessage = GetCircularDependencyErrorMessage(typeA, typeB, typeC, typeA);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{GetTypeDisplayName(typeof(IndirectCircularDependencyA))}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(IndirectCircularDependencyA))} -> " +
+                                  $"{GetTypeDisplayName(typeof(IndirectCircularDependencyB))} -> " +
+                                  $"{GetTypeDisplayName(typeof(IndirectCircularDependencyC))} -> " +
+                                  $"{GetTypeDisplayName(typeof(IndirectCircularDependencyA))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IndirectCircularDependencyA>()
@@ -164,10 +187,13 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void DependencyOnCircularDependency()
         {
-            var type = GetTypeName<DependencyOnCircularDependency>();
-            var typeA = GetTypeName<DirectCircularDependencyA>();
-            var typeB = GetTypeName<DirectCircularDependencyB>();
-            var expectedMessage = GetCircularDependencyErrorMessage(type, typeA, typeB, typeA);
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  $"'{typeof(DirectCircularDependencyA)}'." +
+                                  Environment.NewLine +
+                                  $"{GetTypeDisplayName(typeof(DependencyOnCircularDependency))} -> " +
+                                  $"{GetTypeDisplayName(typeof(DirectCircularDependencyA))} -> " +
+                                  $"{GetTypeDisplayName(typeof(DirectCircularDependencyB))} -> " +
+                                  $"{GetTypeDisplayName(typeof(DirectCircularDependencyA))}";
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<DependencyOnCircularDependency>()
@@ -179,27 +205,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<DependencyOnCircularDependency>());
 
             Assert.Equal(expectedMessage, exception.Message);
-        }
-
-        private static string GetCircularDependencyErrorMessage(params string[] types)
-        {
-            return string.Concat($"A circular dependency was detected for the service of type '{types.Last()}'.",
-                Environment.NewLine,
-                string.Join(" -> ", types));
-        }
-
-        private static string GetTypeName<T>(string suffix = null)
-        {
-            var type = typeof(T);
-            var name = type.FullName;
-
-            if (type.IsGenericType)
-            {
-                name = name.Substring(0, name.IndexOf('`'));
-                name = $"{name}<{suffix}>";
-            }
-
-            return name;
         }
     }
 }
