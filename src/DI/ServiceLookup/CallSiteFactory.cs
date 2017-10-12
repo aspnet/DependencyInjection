@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var itemType = serviceType.GenericTypeArguments.Single();
-                callSiteChain.AddEnumerableCreation(serviceType);
+                callSiteChain.Add(serviceType);
 
                 var callSites = new List<IServiceCallSite>();
 
@@ -226,7 +226,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private IServiceCallSite CreateConstructorCallSite(Type serviceType, Type implementationType, CallSiteChain callSiteChain)
         {
-            callSiteChain.AddConstructorCall(serviceType, implementationType);
+            callSiteChain.Add(serviceType, implementationType);
 
             var constructors = implementationType.GetTypeInfo()
                 .DeclaredConstructors

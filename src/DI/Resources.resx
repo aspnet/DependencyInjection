@@ -150,19 +150,15 @@
   <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
     <value>Cannot resolve {1} service '{0}' from root provider.</value>
   </data>
-  <data name="ResolutionPathItemConstructorCall" xml:space="preserve">
-    <value>Resolving '{0}' by activating '{1}'.</value>
+  <data name="ResolutionPathSeparator" xml:space="preserve">
+    <value> -&gt; </value>
+  </data>
+  <data name="ResolutionPathServiceAndImplementationType" xml:space="preserve">
+    <value>{0}({1})</value>
     <comment>{0} = service type, {1} = implementation type</comment>
   </data>
-  <data name="ResolutionPathItemEnumerableCreate" xml:space="preserve">
-    <value>Resolving '{0}' by creating collection.</value>
-    <comment>{0} = service type, {1} = implementation type</comment>
-  </data>
-  <data name="ResolutionPathHeader" xml:space="preserve">
-    <value>Resolution path:</value>
-  </data>
-  <data name="ResolutionPathItemCurrent" xml:space="preserve">
-    <value>Resolving '{0}'.</value>
+  <data name="ResolutionPathServiceType" xml:space="preserve">
+    <value>{0}</value>
     <comment>{0} = service type</comment>
   </data>
 </root>

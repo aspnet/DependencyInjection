@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -30,25 +31,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _callSiteChain.Remove(serviceType);
         }
 
-        public void AddEnumerableCreation(Type serviceType)
+        public void Add(Type serviceType, Type implementationType = null)
         {
-            Add(serviceType, null, ChainItemType.EnumerableCreation);
-        }
-
-        public void AddConstructorCall(Type serviceType, Type implementationType)
-        {
-            Add(serviceType, implementationType, ChainItemType.ConstructorCall);
-        }
-
-        private void Add(Type serviceType, Type implementationType, ChainItemType chainItemType)
-        {
-            _callSiteChain[serviceType] = new ChainItemInfo(_callSiteChain.Count, chainItemType, implementationType);
+            _callSiteChain[serviceType] = new ChainItemInfo(_callSiteChain.Count, implementationType);
         }
 
         private string CreateCircularDependencyExceptionMessage(Type type)
         {
             var messageBuilder = new StringBuilder();
-            messageBuilder.AppendFormat(Resources.CircularDependencyException, type);
+            messageBuilder.AppendFormat(Resources.CircularDependencyException, TypeNameHelper.GetTypeDisplayName(type));
             messageBuilder.AppendLine();
 
             AppendResolutionPath(messageBuilder, type);
@@ -58,52 +49,36 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private void AppendResolutionPath(StringBuilder builder, Type currentlyResolving = null)
         {
-            builder.AppendLine(Resources.ResolutionPathHeader);
-
-            void AppendFormatLine(StringBuilder stringBuilder, string format, KeyValuePair<Type, ChainItemInfo> pair)
-            {
-                stringBuilder.AppendFormat(format, pair.Key, pair.Value.ImplementationType);
-                stringBuilder.AppendLine();
-            }
-
             foreach (var pair in _callSiteChain.OrderBy(p => p.Value.Order))
             {
-                var chainItemInfo = pair.Value;
-
-                switch (chainItemInfo.Type)
+                var serviceType = pair.Key;
+                var implementationType = pair.Value.ImplementationType;
+                if (implementationType == null || serviceType == implementationType)
                 {
-                    case ChainItemType.ConstructorCall:
-                        AppendFormatLine(builder, Resources.ResolutionPathItemConstructorCall, pair);
-                        break;
-                    case ChainItemType.EnumerableCreation:
-                        AppendFormatLine(builder, Resources.ResolutionPathItemEnumerableCreate, pair);
-                        break;
+                    builder.AppendFormat(Resources.ResolutionPathServiceType, TypeNameHelper.GetTypeDisplayName(serviceType));
                 }
+                else
+                {
+                    builder.AppendFormat(Resources.ResolutionPathServiceAndImplementationType,
+                        TypeNameHelper.GetTypeDisplayName(serviceType),
+                        TypeNameHelper.GetTypeDisplayName(implementationType));
+                }
+
+                builder.Append(Resources.ResolutionPathSeparator);
             }
 
-            if (currentlyResolving != null)
-            {
-                builder.AppendFormat(Resources.ResolutionPathItemCurrent, currentlyResolving);
-            }
-        }
-
-        private enum ChainItemType
-        {
-            ConstructorCall,
-            EnumerableCreation
+            builder.AppendFormat(Resources.ResolutionPathServiceType, TypeNameHelper.GetTypeDisplayName(currentlyResolving));
         }
 
         private struct ChainItemInfo
         {
             public int Order { get; }
             public Type ImplementationType { get; }
-            public ChainItemType Type { get; }
 
-            public ChainItemInfo(int order, ChainItemType type, Type implementationType)
+            public ChainItemInfo(int order, Type implementationType)
             {
                 Order = order;
                 ImplementationType = implementationType;
-                Type = type;
             }
         }
     }

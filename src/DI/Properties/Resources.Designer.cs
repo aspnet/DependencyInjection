@@ -151,60 +151,46 @@ namespace Microsoft.Extensions.DependencyInjection
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectScopedResolvedFromRootException"), p0, p1);
 
         /// <summary>
-        /// Resolving '{0}' by activating '{1}'.
+        ///  -&gt; 
         /// </summary>
-        internal static string ResolutionPathItemConstructorCall
+        internal static string ResolutionPathSeparator
         {
-            get => GetString("ResolutionPathItemConstructorCall");
+            get => GetString("ResolutionPathSeparator");
         }
 
         /// <summary>
-        /// Resolving '{0}' by activating '{1}'.
+        ///  -&gt; 
         /// </summary>
-        internal static string FormatResolutionPathItemConstructorCall(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathItemConstructorCall"), p0, p1);
+        internal static string FormatResolutionPathSeparator()
+            => GetString("ResolutionPathSeparator");
 
         /// <summary>
-        /// Resolving '{0}' by creating collection.
+        /// {0}({1})
         /// </summary>
-        internal static string ResolutionPathItemEnumerableCreate
+        internal static string ResolutionPathServiceAndImplementationType
         {
-            get => GetString("ResolutionPathItemEnumerableCreate");
+            get => GetString("ResolutionPathServiceAndImplementationType");
         }
 
         /// <summary>
-        /// Resolving '{0}' by creating collection.
+        /// {0}({1})
         /// </summary>
-        internal static string FormatResolutionPathItemEnumerableCreate(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathItemEnumerableCreate"), p0);
+        internal static string FormatResolutionPathServiceAndImplementationType(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathServiceAndImplementationType"), p0, p1);
 
         /// <summary>
-        /// Resolution path:
+        /// {0}
         /// </summary>
-        internal static string ResolutionPathHeader
+        internal static string ResolutionPathServiceType
         {
-            get => GetString("ResolutionPathHeader");
+            get => GetString("ResolutionPathServiceType");
         }
 
         /// <summary>
-        /// Resolution path:
+        /// {0}
         /// </summary>
-        internal static string FormatResolutionPathHeader()
-            => GetString("ResolutionPathHeader");
-
-        /// <summary>
-        /// Resolving '{0}'.
-        /// </summary>
-        internal static string ResolutionPathItemCurrent
-        {
-            get => GetString("ResolutionPathItemCurrent");
-        }
-
-        /// <summary>
-        /// Resolving '{0}'.
-        /// </summary>
-        internal static string FormatResolutionPathItemCurrent(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathItemCurrent"), p0);
+        internal static string FormatResolutionPathServiceType(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ResolutionPathServiceType"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {
