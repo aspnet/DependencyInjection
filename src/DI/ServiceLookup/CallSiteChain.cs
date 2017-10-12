@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using static Microsoft.Extensions.Internal.TypeNameHelper;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private string CreateCircularDependencyExceptionMessage(Type type)
         {
             var messageBuilder = new StringBuilder();
-            messageBuilder.AppendFormat(Resources.CircularDependencyException, GetTypeDisplayName(type));
+            messageBuilder.AppendFormat(Resources.CircularDependencyException, TypeNameHelper.GetTypeDisplayName(type));
             messageBuilder.AppendLine();
 
             AppendResolutionPath(messageBuilder, type);
@@ -55,19 +55,19 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var implementationType = pair.Value.ImplementationType;
                 if (implementationType == null || serviceType == implementationType)
                 {
-                    builder.AppendFormat(Resources.ResolutionPathServiceType, GetTypeDisplayName(serviceType));
+                    builder.AppendFormat(Resources.ResolutionPathServiceType, TypeNameHelper.GetTypeDisplayName(serviceType));
                 }
                 else
                 {
                     builder.AppendFormat(Resources.ResolutionPathServiceAndImplementationType,
-                        GetTypeDisplayName(serviceType),
-                        GetTypeDisplayName(implementationType));
+                        TypeNameHelper.GetTypeDisplayName(serviceType),
+                        TypeNameHelper.GetTypeDisplayName(implementationType));
                 }
 
                 builder.Append(Resources.ResolutionPathSeparator);
             }
 
-            builder.AppendFormat(Resources.ResolutionPathServiceType, GetTypeDisplayName(currentlyResolving));
+            builder.AppendFormat(Resources.ResolutionPathServiceType, TypeNameHelper.GetTypeDisplayName(currentlyResolving));
         }
 
         private struct ChainItemInfo

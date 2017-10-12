@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
-using static Microsoft.Extensions.DependencyInjection.Tests.TypeNameHelper;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
@@ -34,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void DependencyWithPrivateConstructorIsIdentifiedAsPartOfException()
         {
             // Arrange
-            var expectedMessage = $"A suitable constructor for type '{GetTypeName<ClassWithPrivateCtor>()}' could not be located. "
+            var expectedMessage = $"A suitable constructor for type '{typeof(ClassWithPrivateCtor).FullName}' could not be located. "
                 + "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<ClassWithPrivateCtor>();
@@ -56,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => provider.GetService<DependOnNonexistentService>());
-            Assert.Equal($"Unable to resolve service for type '{GetTypeName<IFakeService>()}' while attempting to activate " +
+            Assert.Equal($"Unable to resolve service for type '{typeof(IFakeService)}' while attempting to activate " +
                 $"'{typeof(DependOnNonexistentService)}'.", ex.Message);
         }
 
@@ -71,7 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 provider.GetService<IEnumerable<DependOnNonexistentService>>());
-            Assert.Equal($"Unable to resolve service for type '{GetTypeName<IFakeService>()}' while attempting to activate " +
+            Assert.Equal($"Unable to resolve service for type '{typeof(IFakeService)}' while attempting to activate " +
                 $"'{typeof(DependOnNonexistentService)}'.", ex.Message);
         }
 
@@ -95,7 +94,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Act and Assert
             var exception = Assert.Throws<ArgumentException>(() => serviceCollection.BuildServiceProvider());
             Assert.Equal(
-                $"Cannot instantiate implementation type '{GetTypeName(implementationType)}' for service type '{GetTypeName(serviceType)}'.",
+                $"Cannot instantiate implementation type '{implementationType}' for service type '{serviceType}'.",
                 exception.Message);
         }
 
