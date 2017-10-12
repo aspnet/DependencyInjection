@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
-    <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="2.1.0-preview1-t000" NoWarn="KRB4002"/>
+    <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
   </ItemGroup>
 
 </Project>
