@@ -3,8 +3,7 @@
         "rules": [],
         "packages": {
             "Microsoft.Extensions.ActivatorUtilities.Sources": {},
-            "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
-            "Microsoft.Extensions.TypeNameHelper.Sources": {}
+            "Microsoft.Extensions.ParameterDefaultValue.Sources": {}
         }
     },
     "Default": {
