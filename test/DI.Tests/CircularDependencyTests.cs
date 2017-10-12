@@ -6,11 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
+using static Microsoft.Extensions.DependencyInjection.Tests.TypeNameHelper;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class CircularDependencyTests
     {
+        private static string GetCircularDependencyErrorMessage(params string[] types)
+        {
+            return string.Concat($"A circular dependency was detected for the service of type '{types.Last()}'.",
+                Environment.NewLine,
+                string.Join(" -> ", types));
+        }
+
         [Fact]
         public void SelfCircularDependency()
         {
@@ -179,27 +187,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 serviceProvider.GetRequiredService<DependencyOnCircularDependency>());
 
             Assert.Equal(expectedMessage, exception.Message);
-        }
-
-        private static string GetCircularDependencyErrorMessage(params string[] types)
-        {
-            return string.Concat($"A circular dependency was detected for the service of type '{types.Last()}'.",
-                Environment.NewLine,
-                string.Join(" -> ", types));
-        }
-
-        private static string GetTypeName<T>(string suffix = null)
-        {
-            var type = typeof(T);
-            var name = type.FullName;
-
-            if (type.IsGenericType)
-            {
-                name = name.Substring(0, name.IndexOf('`'));
-                name = $"{name}<{suffix}>";
-            }
-
-            return name;
         }
     }
 }
