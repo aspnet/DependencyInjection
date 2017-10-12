@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -29,13 +30,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 if (serviceType == scopedService)
                 {
                     throw new InvalidOperationException(
-                        Resources.FormatDirectScopedResolvedFromRootException(serviceType,
+                        Resources.FormatDirectScopedResolvedFromRootException(
+                            TypeNameHelper.GetTypeDisplayName(serviceType),
                             nameof(ServiceLifetime.Scoped).ToLowerInvariant()));
                 }
 
                 throw new InvalidOperationException(
                     Resources.FormatScopedResolvedFromRootException(
-                        serviceType,
+                        TypeNameHelper.GetTypeDisplayName(serviceType),
                         scopedService,
                         nameof(ServiceLifetime.Scoped).ToLowerInvariant()));
             }
@@ -91,8 +93,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (state.Singleton != null)
             {
                 throw new InvalidOperationException(Resources.FormatScopedInSingletonException(
-                    scopedCallSite.ServiceType,
-                    state.Singleton.ServiceType,
+                    TypeNameHelper.GetTypeDisplayName(scopedCallSite.ServiceType),
+                    TypeNameHelper.GetTypeDisplayName(state.Singleton.ServiceType),
                     nameof(ServiceLifetime.Scoped).ToLowerInvariant(),
                     nameof(ServiceLifetime.Singleton).ToLowerInvariant()
                     ));

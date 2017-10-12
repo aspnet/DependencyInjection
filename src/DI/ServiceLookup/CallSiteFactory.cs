@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
+using static Microsoft.Extensions.Internal.TypeNameHelper;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -34,14 +35,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     if (implementationTypeInfo == null || !implementationTypeInfo.IsGenericTypeDefinition)
                     {
                         throw new ArgumentException(
-                            Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(descriptor.ServiceType),
+                            Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(GetTypeDisplayName(descriptor.ServiceType)),
                             nameof(descriptors));
                     }
 
                     if (implementationTypeInfo.IsAbstract || implementationTypeInfo.IsInterface)
                     {
                         throw new ArgumentException(
-                            Resources.FormatTypeCannotBeActivated(descriptor.ImplementationType, descriptor.ServiceType));
+                            Resources.FormatTypeCannotBeActivated(
+                                GetTypeDisplayName(descriptor.ImplementationType),
+                                GetTypeDisplayName(descriptor.ServiceType)));
                     }
                 }
                 else if (descriptor.ImplementationInstance == null && descriptor.ImplementationFactory == null)
@@ -54,7 +57,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         implementationTypeInfo.IsInterface)
                     {
                         throw new ArgumentException(
-                            Resources.FormatTypeCannotBeActivated(descriptor.ImplementationType, descriptor.ServiceType));
+                            Resources.FormatTypeCannotBeActivated(
+                                GetTypeDisplayName(descriptor.ImplementationType),
+                                GetTypeDisplayName(descriptor.ServiceType)));
                     }
                 }
 
@@ -237,7 +242,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             if (constructors.Length == 0)
             {
-                throw new InvalidOperationException(Resources.FormatNoConstructorMatch(implementationType));
+                throw new InvalidOperationException(Resources.FormatNoConstructorMatch(GetTypeDisplayName(implementationType)));
             }
             else if (constructors.Length == 1)
             {
@@ -297,7 +302,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                             // Ambigious match exception
                             var message = string.Join(
                                 Environment.NewLine,
-                                Resources.FormatAmbigiousConstructorException(implementationType),
+                                Resources.FormatAmbigiousConstructorException(GetTypeDisplayName(implementationType)),
                                 bestConstructor,
                                 constructors[i]);
                             throw new InvalidOperationException(message);
@@ -309,7 +314,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (bestConstructor == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatUnableToActivateTypeException(implementationType));
+                    Resources.FormatUnableToActivateTypeException(GetTypeDisplayName(implementationType)));
             }
             else
             {
@@ -342,8 +347,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     if (throwIfCallSiteNotFound)
                     {
                         throw new InvalidOperationException(Resources.FormatCannotResolveService(
-                            parameters[index].ParameterType,
-                            implementationType));
+                            GetTypeDisplayName(parameters[index].ParameterType),
+                            GetTypeDisplayName(implementationType)));
                     }
 
                     return null;
