@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection.Tests;
 using Xunit;
+using static Microsoft.Extensions.DependencyInjection.Tests.TypeNameHelper;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             ExceptionAssert.ThrowsArgument(
                 () => new CallSiteFactory(serviceDescriptors),
                 "descriptors",
-                $"Open generic service type '{TypeNameHelper.GetTypeName(typeof(IList<>))}' requires registering an open generic implementation type.");
+                $"Open generic service type '{GetTypeName(typeof(IList<>))}' requires registering an open generic implementation type.");
         }
 
         public static TheoryData Constructor_WithInstance_ThrowsIfServiceTypeIsOpenGenericData =>
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var ex = ExceptionAssert.ThrowsArgument(
                 () => new CallSiteFactory(serviceDescriptors),
                 "descriptors",
-                $"Open generic service type '{TypeNameHelper.GetTypeName(typeof(IEnumerable<>))}' requires registering an open generic implementation type.");
+                $"Open generic service type '{GetTypeName(typeof(IEnumerable<>))}' requires registering an open generic implementation type.");
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var ex = ExceptionAssert.ThrowsArgument(
                 () => new CallSiteFactory(serviceDescriptors),
                 "descriptors",
-                $"Open generic service type '{TypeNameHelper.GetTypeName(typeof(Tuple<>))}' requires registering an open generic implementation type.");
+                $"Open generic service type '{GetTypeName(typeof(Tuple<>))}' requires registering an open generic implementation type.");
         }
     }
 }

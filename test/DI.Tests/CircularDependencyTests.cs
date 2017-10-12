@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void SelfCircularDependencyInEnumerable()
         {
             var type = GetTypeName<SelfCircularDependency>();
-            var enumerableType = GetTypeName<IEnumerable<SelfCircularDependency>>(type);
+            var enumerableType = GetTypeName<IEnumerable<SelfCircularDependency>>();
             var expectedMessage = GetCircularDependencyErrorMessage(enumerableType, type, type);
 
             var serviceProvider = new ServiceCollection()
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyGenericDirect()
         {
-            var type = GetTypeName<SelfCircularDependencyGeneric<string>>("string");
+            var type = GetTypeName<SelfCircularDependencyGeneric<string>>();
             var expectedMessage = GetCircularDependencyErrorMessage(type, type);
 
             var serviceProvider = new ServiceCollection()
@@ -71,8 +71,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyGenericIndirect()
         {
-            var typeString = GetTypeName<SelfCircularDependencyGeneric<string>>("string");
-            var typeInt = GetTypeName<SelfCircularDependencyGeneric<int>>("int");
+            var typeString = GetTypeName<SelfCircularDependencyGeneric<string>>();
+            var typeInt = GetTypeName<SelfCircularDependencyGeneric<int>>();
             var expectedMessage = GetCircularDependencyErrorMessage(typeInt, typeString, typeString);
 
             var serviceProvider = new ServiceCollection()
