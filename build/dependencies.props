@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <BenchmarkDotNetPackageVersion>0.10.3</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.0.2-beta-15522</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-15526</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.0.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.0.0</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.0.0</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
