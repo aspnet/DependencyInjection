@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -90,6 +91,52 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Act + Assert
             var result = serviceProvider.GetService(typeof(IBoo));
             Assert.NotNull(result);
+        }
+
+        public static IEnumerable<object[]> InvalidImplementationTypes()
+        {
+            var addActions = new Action<IServiceCollection, Type, Type>[]
+            {
+                (collection, serviceType, implemetationType) => collection.AddSingleton(serviceType, implemetationType),
+                (collection, serviceType, implemetationType) => collection.AddScoped(serviceType, implemetationType),
+                (collection, serviceType, implemetationType) => collection.AddTransient(serviceType, implemetationType)
+            };
+
+            foreach (var action in addActions)
+            {
+                yield return new object[] { typeof(IFoo), typeof(Bar), action };
+                yield return new object[] { typeof(IFoo), typeof(IBar), action };
+                yield return new object[] { typeof(Foo), typeof(object), action };
+                yield return new object[] { typeof(Foo), typeof(IFoo), action };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidImplementationTypes))]
+        public void AddWrongImplementationType(Type serviceType, Type implmentationType, Action<IServiceCollection, Type, Type> action)
+        {
+            var expectedMessage = $"Implementation type '{implmentationType}' cann't be assigned to service type '{serviceType}'.";
+            var serviceCollection = new ServiceCollection();
+            var exception = Assert.Throws<ArgumentException>(() => action(serviceCollection, serviceType, implmentationType));
+            Assert.EndsWith(expectedMessage, exception.Message);
+        }
+
+        public static IEnumerable<object[]> InvalidImplementationInstances()
+        {
+            yield return new object[] { typeof(IFoo), new Bar() };
+            yield return new object[] { typeof(IFoo), new object() };
+            yield return new object[] { typeof(Foo), new object() };
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidImplementationInstances))]
+        public void AddWrongImplementationInstance(Type serviceType, Type implmentationInstance)
+        {
+            var implmentationType = implmentationInstance.GetType();
+            var expectedMessage = $"Implementation type '{implmentationType}' cann't be assigned to service type '{serviceType}'.";
+            var serviceCollection = new ServiceCollection();
+            var exception = Assert.Throws<ArgumentException>(() => serviceCollection.AddSingleton(serviceType, implmentationInstance));
+            Assert.EndsWith(expectedMessage, exception.Message);
         }
 
         private interface IFoo

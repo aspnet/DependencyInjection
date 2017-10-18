@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -34,6 +35,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
+            ValidateImplementationType(serviceType, implementationType);
+
             ImplementationType = implementationType;
         }
 
@@ -57,6 +60,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(instance));
             }
+
+            ValidateImplementationType(serviceType, instance.GetType());
 
             ImplementationInstance = instance;
         }
@@ -126,8 +131,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 return typeArguments[1];
             }
 
-            Debug.Assert(false, "ImplementationType, ImplementationInstance or ImplementationFactory must be non null");
+            Debug.Fail("ImplementationType, ImplementationInstance or ImplementationFactory must be non null");
             return null;
+        }
+
+        private static void ValidateImplementationType(Type serviceType, Type implementationType)
+        {
+            // Debug.Assert(serviceType.IsAssignableFrom(implementationType), Resources.FormatWrongImplemetationType(implementationType, serviceType));
+
+            if (!serviceType.IsAssignableFrom(implementationType))
+            {
+                throw new ArgumentException(Resources.FormatWrongImplemetationType(implementationType, serviceType));
+            }
         }
 
         /// <summary>

@@ -141,4 +141,8 @@
     <value>Implementation type cannot be '{0}' because it is indistinguishable from other services registered for '{1}'.</value>
     <comment>{0} = implementation type, {1} = service type</comment>
   </data>
+  <data name="WrongImplemetationType" xml:space="preserve">
+    <value>Implementation type '{0}' cann't be assigned to service type '{1}'.</value>
+    <comment>{0} = implementation type, {1} = service type</comment>
+  </data>
 </root>
