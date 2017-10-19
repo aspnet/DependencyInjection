@@ -137,8 +137,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void ValidateImplementationType(Type serviceType, Type implementationType)
         {
-            // Debug.Assert(serviceType.IsAssignableFrom(implementationType), Resources.FormatWrongImplemetationType(implementationType, serviceType));
-
             if (!serviceType.IsAssignableFrom(implementationType))
             {
                 throw new ArgumentException(Resources.FormatWrongImplemetationType(implementationType, serviceType));
