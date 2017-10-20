@@ -22,6 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             yield return new object[] { typeof(IFoo), typeof(IBar) };
             yield return new object[] { typeof(Foo), typeof(object) };
             yield return new object[] { typeof(Foo), typeof(IFoo) };
+            yield return new object[] { typeof(IFooGeneric<int>), typeof(IFooGeneric<string>) };
+            yield return new object[] { typeof(FooGeneric1<int>), typeof(FooGeneric1<string>) };
         }
 
         public static IEnumerable<object[]> InvalidImplementationInstances()
@@ -29,6 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             yield return new object[] { typeof(IFoo), new Bar() };
             yield return new object[] { typeof(IFoo), new object() };
             yield return new object[] { typeof(Foo), new object() };
+            yield return new object[] { typeof(IFooGeneric<int>), new object() };
+            yield return new object[] { typeof(FooGeneric1<int>), new object() };
         }
 
         [Theory]
@@ -45,6 +49,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var implmentationType = implmentationInstance.GetType();
             AssertImplemntationTypeException(serviceType, implmentationType, () => new ServiceDescriptor(serviceType, implmentationInstance));
         }
+
+        private interface IFooGeneric<TValInterface> { }
+
+        private class FooGeneric1<TValClass1> : IFooGeneric<TValClass1> { }
+
+        private class FooGeneric2<TValClass2> : FooGeneric1<int> { }
 
         private interface IFoo { }
 
