@@ -54,8 +54,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private class FooGeneric1<TValClass1> : IFooGeneric<TValClass1> { }
 
-        private class FooGeneric2<TValClass2> : FooGeneric1<int> { }
-
         private interface IFoo { }
 
         private class Foo : IFoo { }
