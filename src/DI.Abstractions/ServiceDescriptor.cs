@@ -149,61 +149,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 return true;
             }
 
-            // check open generics
-            //if (serviceType.IsGenericTypeDefinition && implementationType.IsGenericTypeDefinition)
-            //{
-            //    bool IsEqualOpenGeneric(Type expected, Type current)
-            //    {
-            //        if (current == null || !current.IsGenericTypeDefinition || expected != current.GetGenericTypeDefinition())
-            //        {
-            //            return false;
-            //        }
-
-            //        var arguments = current.GetGenericArguments();
-            //        for (int i = 0; i < arguments.Length; i++)
-            //        {
-            //            var argument = arguments[i];
-            //            if (!argument.IsGenericParameter)
-            //            {
-            //                return false;
-            //            }
-            //        }
-
-            //        return true;
-            //    }
-
-            //    if (serviceType.IsInterface)
-            //    {
-            //        var interfaces = implementationType.GetInterfaces();
-            //        if (interfaces == null)
-            //        {
-            //            return false;
-            //        }
-
-            //        for (int i = 0; i < interfaces.Length; i++)
-            //        {
-            //            var inteface = interfaces[i];
-            //            if (IsEqualOpenGeneric(serviceType, inteface))
-            //            {
-            //                return true;
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        var type = implementationType;
-            //        while (type != null)
-            //        {
-            //            if (IsEqualOpenGeneric(serviceType, type))
-            //            {
-            //                return true;
-            //            }
-
-            //            type = type.BaseType;
-            //        }
-            //    }
-            //}
-
             return false;
         }
 
