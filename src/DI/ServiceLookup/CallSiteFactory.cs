@@ -299,7 +299,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                         if (!bestConstructorParameterTypes.IsSupersetOf(parameters.Select(p => p.ParameterType)))
                         {
-                            // Ambiguous match exception
+                            // Ambigious match exception
                             var message = string.Join(
                                 Environment.NewLine,
                                 Resources.FormatAmbigiousConstructorException(TypeNameHelper.GetTypeDisplayName(implementationType)),
