@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Abstractions;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.Extensions
 {
@@ -603,8 +604,8 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             {
                 throw new ArgumentException(
                     Resources.FormatTryAddIndistinguishableTypeToEnumerable(
-                        implementationType,
-                        descriptor.ServiceType),
+                        TypeNameHelper.GetTypeDisplayName(implementationType),
+                        TypeNameHelper.GetTypeDisplayName(descriptor.ServiceType)),
                     nameof(descriptor));
             }
 

@@ -7,8 +7,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
 
-using AbstractionResources = Microsoft.Extensions.DependencyInjection.Abstractions.Resources;
-
 namespace Microsoft.Extensions.DependencyInjection
 {
     public class ServiceCollectionServiceExtensionsTest
@@ -318,19 +316,19 @@ namespace Microsoft.Extensions.DependencyInjection
             get
             {
                 var serviceType = typeof(IFakeService);
-                var implementationType = typeof(FakeService);
-                var objectType = typeof(object);
+                var serviceTypeName = "Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeService";
+                var objectTypeName = "object";
 
-                return new TheoryData<ServiceDescriptor, Type, Type>
+                return new TheoryData<ServiceDescriptor, string, string>
                 {
-                    { ServiceDescriptor.Transient<IFakeService>(s => new FakeService()), serviceType, serviceType },
-                    { ServiceDescriptor.Transient(serviceType, s => new FakeService()), serviceType, objectType },
+                    { ServiceDescriptor.Transient<IFakeService>(s => new FakeService()), serviceTypeName, serviceTypeName },
+                    { ServiceDescriptor.Transient(serviceType, s => new FakeService()), serviceTypeName, objectTypeName },
 
-                    { ServiceDescriptor.Scoped<IFakeService>(s => new FakeService()), serviceType, serviceType },
-                    { ServiceDescriptor.Scoped(serviceType, s => new FakeService()), serviceType, objectType },
+                    { ServiceDescriptor.Scoped<IFakeService>(s => new FakeService()), serviceTypeName, serviceTypeName },
+                    { ServiceDescriptor.Scoped(serviceType, s => new FakeService()), serviceTypeName, objectTypeName },
 
-                    { ServiceDescriptor.Singleton<IFakeService>(s => new FakeService()), serviceType, serviceType },
-                    { ServiceDescriptor.Singleton(serviceType, s => new FakeService()), serviceType, objectType },
+                    { ServiceDescriptor.Singleton<IFakeService>(s => new FakeService()), serviceTypeName, serviceTypeName },
+                    { ServiceDescriptor.Singleton(serviceType, s => new FakeService()), serviceTypeName, objectTypeName },
                 };
             }
         }
@@ -339,8 +337,8 @@ namespace Microsoft.Extensions.DependencyInjection
         [MemberData(nameof(TryAddEnumerableInvalidImplementationTypeData))]
         public void TryAddEnumerable_ThrowsWhenAddingIndistinguishableImplementationType(
             ServiceDescriptor descriptor,
-            Type serviceType,
-            Type implementationType)
+            string serviceTypeName,
+            string implementationTypeName)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -349,7 +347,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ExceptionAssert.ThrowsArgument(
                 () => collection.TryAddEnumerable(descriptor),
                 "descriptor",
-                AbstractionResources.FormatTryAddIndistinguishableTypeToEnumerable(implementationType, serviceType));
+                $"Implementation type cannot be '{implementationTypeName}' because it is indistinguishable from other services registered for '{serviceTypeName}'.");
         }
 
         [Fact]
