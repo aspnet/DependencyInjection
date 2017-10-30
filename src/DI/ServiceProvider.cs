@@ -45,7 +45,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="serviceType"></param>
         /// <returns></returns>
-        public object GetService(Type serviceType) => _engine.GetService(serviceType);
+        public object GetService(Type serviceType)
+        {
+            DependencyInjectionEventSource.Log.ResolvingService(serviceType);
+            var instance = _engine.GetService(serviceType);
+            DependencyInjectionEventSource.Log.ResolvedService(serviceType, instance, TimeSpan.Zero);
+            return instance;
+        }
 
         /// <inheritdoc />
         public void Dispose() => _engine.Dispose();

@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public ServiceProviderEngineScope(ServiceProviderEngine engine)
         {
             Engine = engine;
+            DependencyInjectionEventSource.Log.ScopeStarted();
         }
 
         internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
@@ -47,12 +48,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     {
                         var disposable = _disposables[i];
                         disposable.Dispose();
+                        DependencyInjectionEventSource.Log.DisposedService(disposable);
                     }
 
                     _disposables.Clear();
                 }
 
                 ResolvedServices.Clear();
+                DependencyInjectionEventSource.Log.ScopeEnded();
             }
         }
 

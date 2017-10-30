@@ -83,10 +83,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (IsEnabled(EventLevel.Verbose, EventKeywords.None))
                 {
-                    var instanceType = instance.GetType();
                     ResolvedService(
                         serviceType.AssemblyQualifiedName,
-                        instanceType.AssemblyQualifiedName,
+                        instance?.GetType()?.AssemblyQualifiedName ?? "<null>",
                         duration.TotalMilliseconds);
                 }
             }
@@ -109,7 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
-                WriteEvent(3);
+                WriteEvent(5);
             }
         }
 
@@ -118,7 +117,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
-                WriteEvent(4);
+                WriteEvent(6);
             }
         }
 
