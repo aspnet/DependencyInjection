@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [NonEvent]
         internal void DisposedService(IDisposable disposable)
         {
-            if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            if (IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
                 DisposedService(disposable.GetType().AssemblyQualifiedName);
             }
@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [Event(eventId: 3, Level = EventLevel.Verbose, Message = "Service Provider Scope started")]
         internal void ScopeStarted()
         {
-            if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            if (IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
                 WriteEvent(4);
             }
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [Event(eventId: 5, Level = EventLevel.Verbose, Message = "Service Provider Scope ended")]
         internal void ScopeEnded()
         {
-            if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            if (IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
                 WriteEvent(5);
             }
