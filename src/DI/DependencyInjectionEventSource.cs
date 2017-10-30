@@ -65,46 +65,23 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
-        [NonEvent]
-        public void ResolvingService(Type serviceType)
-        {
-            if (IsEnabled(EventLevel.Verbose, EventKeywords.None))
-            {
-                ResolvingService(serviceType.AssemblyQualifiedName);
-            }
-        }
-
-        [NonEvent]
-        public void ResolvedService(Type serviceType, object instance, TimeSpan duration)
-        {
-            if (IsEnabled())
-            {
-                _servicesResolved.WriteMetric(1.0f);
-
-                if (IsEnabled(EventLevel.Verbose, EventKeywords.None))
-                {
-                    ResolvedService(
-                        serviceType.AssemblyQualifiedName,
-                        instance?.GetType()?.AssemblyQualifiedName ?? "<null>",
-                        duration.TotalMilliseconds);
-                }
-            }
-        }
-
         [Event(eventId: 1, Level = EventLevel.Informational, Message = "Realizing service '{0}'")]
         private void RealizingService(string serviceType, string expectedImplementationType, string callSiteType) => WriteEvent(1, serviceType, expectedImplementationType, callSiteType);
 
         [Event(eventId: 2, Level = EventLevel.Informational, Message = "Realized service '{0}' using implementation type '{1}' in {3}ms")]
         private void RealizedService(string serviceType, string implementationType, string callSiteType, double durationInMilliseconds) => WriteEvent(2, serviceType, implementationType, callSiteType, durationInMilliseconds);
 
-        [Event(eventId: 3, Level = EventLevel.Informational, Message = "Resolving service '{0}'")]
-        private void ResolvingService(string serviceType) => WriteEvent(3, serviceType);
-
-        [Event(eventId: 4, Level = EventLevel.Informational, Message = "Resolved service '{0}' using implementation type '{1}' in {2}ms")]
-        private void ResolvedService(string serviceType, string implementationType, double durationInMilliseconds) => WriteEvent(4, serviceType, implementationType, durationInMilliseconds);
-
-        [Event(eventId: 5, Level = EventLevel.Verbose, Message = "Service Provider Scope started")]
+        [Event(eventId: 3, Level = EventLevel.Verbose, Message = "Service Provider Scope started")]
         internal void ScopeStarted()
+        {
+            if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                WriteEvent(4);
+            }
+        }
+
+        [Event(eventId: 5, Level = EventLevel.Verbose, Message = "Service Provider Scope ended")]
+        internal void ScopeEnded()
         {
             if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
@@ -112,16 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
-        [Event(eventId: 6, Level = EventLevel.Verbose, Message = "Service Provider Scope ended")]
-        internal void ScopeEnded()
-        {
-            if(IsEnabled(EventLevel.Verbose, EventKeywords.None))
-            {
-                WriteEvent(6);
-            }
-        }
-
-        [Event(eventId: 7, Level = EventLevel.Verbose, Message = "Disposed service '{0}'")]
-        private void DisposedService(string serviceType) => WriteEvent(7, serviceType);
+        [Event(eventId: 6, Level = EventLevel.Verbose, Message = "Disposed service '{0}'")]
+        private void DisposedService(string serviceType) => WriteEvent(6, serviceType);
     }
 }
