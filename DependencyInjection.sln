@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26814.0
+VisualStudioVersion = 15.0.27019.1
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D26F6F80-63EE-4081-A814-EF3DBABE24D9}"
 	ProjectSection(SolutionItems) = preProject
@@ -60,6 +60,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.Extensions.Activa
 		shared\Microsoft.Extensions.ActivatorUtilities.Sources\ObjectFactory.cs = shared\Microsoft.Extensions.ActivatorUtilities.Sources\ObjectFactory.cs
 		shared\Microsoft.Extensions.ActivatorUtilities.Sources\sharedsources.props = shared\Microsoft.Extensions.ActivatorUtilities.Sources\sharedsources.props
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{6BB8B568-C9F6-4919-9A09-504714BE8475}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -136,7 +138,7 @@ Global
 		{20201277-5461-49EF-811B-63ED3CD274EF} = {88B347C1-CCEC-4827-9564-FFF07C9BF7C7}
 		{4E959D3B-2E0D-4296-B22C-D428DED294F0} = {D26F6F80-63EE-4081-A814-EF3DBABE24D9}
 		{B9395B0F-E8E3-4913-BABF-E71A76F21231} = {D26F6F80-63EE-4081-A814-EF3DBABE24D9}
-		{2AB56E17-8ADC-4763-B298-79BFECC351A8} = {88B347C1-CCEC-4827-9564-FFF07C9BF7C7}
+		{2AB56E17-8ADC-4763-B298-79BFECC351A8} = {6BB8B568-C9F6-4919-9A09-504714BE8475}
 		{483CFA4B-18DB-404D-BCA0-E39E6734733F} = {39447DAF-CDD6-456F-B473-1E9A9D21ADF5}
 		{B3C89BF1-5232-40C6-99AD-B7A67611207A} = {4AF469F9-F632-4F4A-AA1D-63094E932023}
 		{D9306F3C-ADE0-4874-98C2-3E82576F88A6} = {4AF469F9-F632-4F4A-AA1D-63094E932023}

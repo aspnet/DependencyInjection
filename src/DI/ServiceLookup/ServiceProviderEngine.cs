@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -51,7 +52,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (callSite != null)
             {
                 _callback?.OnCreate(callSite);
-                return RealizeService(callSite);
+
+                DependencyInjectionEventSource.Log.RealizingService(callSite);
+
+                var instance = RealizeService(callSite);
+
+                // REVIEW: NEED TO REPLACE WITH ValueStopwatch!
+                DependencyInjectionEventSource.Log.RealizedService(callSite, instance, TimeSpan.Zero);
+
+                return instance;
             }
 
             return _ => null;
