@@ -13,15 +13,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private readonly EventCounter _serviceRealizationDuration;
         private readonly EventCounter _servicesRealized;
-        private readonly EventCounter _servicesResolved;
-        private readonly EventCounter _callSiteDepth;
 
         private DependencyInjectionEventSource()
         {
             _serviceRealizationDuration = new EventCounter("ServiceRealizationDuration", this);
             _servicesRealized = new EventCounter("ServicesRealized", this);
-            _servicesResolved = new EventCounter("ServicesResolved", this);
-            _callSiteDepth = new EventCounter("CallSiteDepth", this);
         }
 
         [NonEvent]
@@ -90,6 +86,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Event(eventId: 6, Level = EventLevel.Verbose, Message = "Disposed service '{0}'")]
-        private void DisposedService(string serviceType) => WriteEvent(6, serviceType);
+        private void DisposedService(string implementationType) => WriteEvent(6, implementationType);
     }
 }
