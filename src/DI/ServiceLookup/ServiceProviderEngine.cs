@@ -53,12 +53,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 _callback?.OnCreate(callSite);
 
-                DependencyInjectionEventSource.Log.RealizingService(callSite);
+                var timer = DependencyInjectionEventSource.Log.RealizingService(callSite);
 
                 var instance = RealizeService(callSite);
 
                 // REVIEW: NEED TO REPLACE WITH ValueStopwatch!
-                DependencyInjectionEventSource.Log.RealizedService(callSite, instance, TimeSpan.Zero);
+                DependencyInjectionEventSource.Log.RealizedService(callSite, instance, timer);
 
                 return instance;
             }

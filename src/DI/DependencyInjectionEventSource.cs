@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [NonEvent]
-        public void RealizingService(IServiceCallSite callSite)
+        public ValueStopwatch RealizingService(IServiceCallSite callSite)
         {
             if (IsEnabled(EventLevel.Informational, EventKeywords.None))
             {
@@ -27,15 +28,20 @@ namespace Microsoft.Extensions.DependencyInjection
                     callSite.ServiceType.AssemblyQualifiedName,
                     callSite.ImplementationType?.AssemblyQualifiedName ?? string.Empty,
                     callSite.GetType().AssemblyQualifiedName);
+                return ValueStopwatch.StartNew();
             }
+            return default;
         }
 
         [NonEvent]
-        public void RealizedService(IServiceCallSite callSite, object instance, TimeSpan duration)
+        public void RealizedService(IServiceCallSite callSite, object instance, ValueStopwatch timer)
         {
             if (IsEnabled())
             {
-                _serviceRealizationDuration.WriteMetric((float)duration.TotalMilliseconds);
+                // REVIEW, TODO: Replace with the below when it finishes in Universe
+                //var duration = timer.IsActive ? timer.GetElapsedTime().TotalMilliseconds : 0.0;
+                var duration = timer.GetElapsedTime().TotalMilliseconds;
+                _serviceRealizationDuration.WriteMetric((float)duration);
                 _servicesRealized.WriteMetric(1.0f);
 
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
@@ -45,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         callSite.ServiceType.AssemblyQualifiedName,
                         instanceType.AssemblyQualifiedName,
                         callSite.GetType().AssemblyQualifiedName,
-                        duration.TotalMilliseconds);
+                        duration);
                 }
             }
         }
