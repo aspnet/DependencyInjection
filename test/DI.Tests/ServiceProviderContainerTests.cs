@@ -74,18 +74,57 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 $"'{typeof(DependOnNonexistentService)}'.", ex.Message);
         }
 
+        public static IEnumerable<object[]> ServiceProviderWithUnresolvableTypes()
+        {
+            // GenericTypeDefintion, Abstract GenericTypeDefintion
+            yield return new object[]
+            {
+                typeof(IFakeOpenGenericService<>),
+                typeof(AbstractFakeOpenGenericService<>),
+                "Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeOpenGenericService",
+                "Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderContainerTests+AbstractFakeOpenGenericService"
+            };
+
+            // GenericTypeDefintion, Interface GenericTypeDefintion
+            yield return new object[]
+            {
+                typeof(ICollection<>),
+                typeof(IList<>),
+                "System.Collections.Generic.ICollection",
+                "System.Collections.Generic.IList"
+            };
+
+            // Implementation type is GenericTypeDefintion
+            yield return new object[]
+            {
+                typeof(IList<int>),
+                typeof(List<>),
+                "System.Collections.Generic.IList<int>",
+                "System.Collections.Generic.List"
+            };
+
+            // Implementation type is Abstract
+            yield return new object[]
+            {
+                typeof(IFakeService),
+                typeof(AbstractClass),
+                "Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeService",
+                "Microsoft.Extensions.DependencyInjection.Tests.Fakes.AbstractClass"
+            };
+
+            // Implementation type is Interface
+            yield return new object[]
+            {
+                typeof(IFakeEveryService),
+                typeof(IFakeService),
+                "Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeEveryService",
+                "Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeService"
+            };
+        }
+
         [Theory]
-        // GenericTypeDefintion, Abstract GenericTypeDefintion
-        [InlineData(typeof(IFakeOpenGenericService<>), typeof(AbstractFakeOpenGenericService<>))]
-        // GenericTypeDefintion, Interface GenericTypeDefintion
-        [InlineData(typeof(ICollection<>), typeof(IList<>))]
-        // Implementation type is GenericTypeDefintion
-        [InlineData(typeof(IList<int>), typeof(List<>))]
-        // Implementation type is Abstract
-        [InlineData(typeof(IFakeService), typeof(AbstractClass))]
-        // Implementation type is Interface
-        [InlineData(typeof(IFakeEveryService), typeof(IFakeService))]
-        public void CreatingServiceProviderWithUnresolvableTypesThrows(Type serviceType, Type implementationType)
+        [MemberData(nameof(ServiceProviderWithUnresolvableTypes))]
+        public void CreatingServiceProviderWithUnresolvableTypesThrows(Type serviceType, Type implementationType, string serviceTypeName, string implementationTypeName)
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
@@ -94,7 +133,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Act and Assert
             var exception = Assert.Throws<ArgumentException>(() => serviceCollection.BuildServiceProvider());
             Assert.Equal(
-                $"Cannot instantiate implementation type '{implementationType}' for service type '{serviceType}'.",
+                $"Cannot instantiate implementation type '{implementationTypeName}' for service type '{serviceTypeName}'.",
                 exception.Message);
         }
 

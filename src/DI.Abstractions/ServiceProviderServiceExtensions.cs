@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection.Abstractions;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var service = provider.GetService(serviceType);
             if (service == null)
             {
-                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(serviceType));
+                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(TypeNameHelper.GetTypeDisplayName(serviceType)));
             }
 
             return service;
