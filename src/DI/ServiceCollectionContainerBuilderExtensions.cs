@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionContainerBuilderExtensions
     {
         /// <summary>
-        /// Creates an <see cref="ServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>.
+        /// Creates a <see cref="ServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> containing service descriptors.</param>
         /// <returns>The <see cref="ServiceProvider"/>.</returns>
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Creates an <see cref="ServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>
+        /// Creates a <see cref="ServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>
         /// optionaly enabling scope validation.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> containing service descriptors.</param>
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Creates an <see cref="ServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>
+        /// Creates a <see cref="ServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>
         /// optionaly enabling scope validation.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> containing service descriptors.</param>
