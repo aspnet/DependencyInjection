@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
@@ -57,6 +58,59 @@ namespace Microsoft.Extensions.DependencyInjection
             // Assert
             var result = Assert.Single(serviceCollection);
             Assert.Same(result, descriptor2);
+        }
+
+        [Fact]
+        public void Replace_ChangesImplementationType()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            serviceCollection.Replace<IFakeService, FakeOneMultipleService>();
+
+            // Assert
+            var result = Assert.Single(serviceCollection);
+            Assert.Equal(ServiceLifetime.Singleton, result.Lifetime);
+            Assert.Equal(typeof(FakeOneMultipleService), result.ImplementationType);
+        }
+
+        [Fact]
+        public void Replace_ThrowsIfNoServiceRegistered()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(() =>
+                serviceCollection.Replace<IFakeService, FakeOneMultipleService>());
+
+            // Assert
+            Assert.Equal("serviceType", exception.ParamName);
+            Assert.Contains(typeof(IFakeService).FullName, exception.Message);
+        }
+
+        [Fact]
+        public void TryGetDescriptors_GetsAllRegisteredDescriptors()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            serviceCollection.AddScoped<IFakeScopedService, FakeService>();
+            serviceCollection.AddSingleton<IFakeService, FakeOneMultipleService>();
+
+            // Act
+            var result = serviceCollection.TryGetDescriptors<IFakeService>(out var descriptors);
+
+            // Assert
+            Assert.True(result, "Did not find any matching descriptors.");
+            Assert.Equal(2, descriptors.Count);
+            Assert.All(descriptors, descriptor =>
+            {
+                Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+                Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+            });
         }
     }
 }
