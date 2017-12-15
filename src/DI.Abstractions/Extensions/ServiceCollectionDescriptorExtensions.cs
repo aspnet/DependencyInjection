@@ -685,6 +685,110 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
         }
 
         /// <summary>
+        /// Replaces all registrations for <typeparamref name="TService"/> with
+        /// new registrations using <typeparamref name="TImplementation"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the services to replace.</typeparam>
+        /// <typeparam name="TImplementation">The new implementation type.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        public static IServiceCollection Replace<TService, TImplementation>(this IServiceCollection services)
+            where TImplementation : TService
+        {
+            return services.Replace<TService>(typeof(TImplementation));
+        }
+
+        /// <summary>
+        /// Replaces all registrations for <typeparamref name="TService"/> with
+        /// new registrations using <paramref name="implementationType"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the services to replace.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="implementationType">The new implementation type.</param>
+        public static IServiceCollection Replace<TService>(this IServiceCollection services, Type implementationType)
+        {
+            return services.Replace(typeof(TService), implementationType);
+        }
+
+        /// <summary>
+        /// Replaces all registrations for <paramref name="serviceType"/> with
+        /// new registrations using <paramref name="implementationType"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="serviceType">The type of the services to replace.</param>
+        /// <param name="implementationType">The new implementation type.</param>
+        public static IServiceCollection Replace(this IServiceCollection services, Type serviceType, Type implementationType)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationType == null)
+            {
+                throw new ArgumentNullException(nameof(implementationType));
+            }
+
+            if (!services.TryGetDescriptors(serviceType, out var descriptors))
+            {
+                throw new ArgumentException(Resources.FormatNoServiceRegistered(serviceType), nameof(serviceType));
+            }
+
+            foreach (var descriptor in descriptors)
+            {
+                var index = services.IndexOf(descriptor);
+
+                // Copy the old descriptor, but replace its implementation type.
+                var newDescriptor = ServiceDescriptor.Describe(
+                    descriptor.ServiceType,
+                    implementationType,
+                    descriptor.Lifetime);
+
+                services.Insert(index, newDescriptor);
+
+                services.Remove(descriptor);
+            }
+
+            return services;
+        }
+
+        /// <summary>
+        /// Tries to get all registered descriptors with the specified <typeparamref name="TService"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the services to get.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="descriptors">The matching <see cref="ServiceDescriptor"/>s.</param>
+        public static bool TryGetDescriptors<TService>(this IServiceCollection services, out ICollection<ServiceDescriptor> descriptors)
+        {
+            return services.TryGetDescriptors(typeof(TService), out descriptors);
+        }
+
+        /// <summary>
+        /// Tries to get all registered descriptors with the specified <paramref name="serviceType"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="serviceType">The type of the services to get.</param>
+        /// <param name="descriptors">The matching <see cref="ServiceDescriptor"/>s.</param>
+        public static bool TryGetDescriptors(this IServiceCollection services, Type serviceType, out ICollection<ServiceDescriptor> descriptors)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            return (descriptors = services.Where(service => service.ServiceType == serviceType).ToList()).Count > 0;
+        }
+
+        /// <summary>
         /// Removes all services of type <typeparamef name="T"/> in <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
