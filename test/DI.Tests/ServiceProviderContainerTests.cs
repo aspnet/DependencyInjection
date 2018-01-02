@@ -84,7 +84,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         // Implementation type is Abstract
         [InlineData(typeof(IFakeService), typeof(AbstractClass))]
         // Implementation type is Interface
-        [InlineData(typeof(IFakeEveryService), typeof(IFakeService))]
+        [InlineData(typeof(IFakeService), typeof(IFakeService))]
         public void CreatingServiceProviderWithUnresolvableTypesThrows(Type serviceType, Type implementationType)
         {
             // Arrange

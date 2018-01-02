@@ -94,6 +94,20 @@ namespace Microsoft.Extensions.DependencyInjection.Abstractions
         internal static string FormatTryAddIndistinguishableTypeToEnumerable(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("TryAddIndistinguishableTypeToEnumerable"), p0, p1);
 
+        /// <summary>
+        /// Implementation type '{0}' cann't be assigned to service type '{1}'.
+        /// </summary>
+        internal static string WrongImplemetationType
+        {
+            get => GetString("WrongImplemetationType");
+        }
+
+        /// <summary>
+        /// Implementation type '{0}' cann't be assigned to service type '{1}'.
+        /// </summary>
+        internal static string FormatWrongImplemetationType(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("WrongImplemetationType"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

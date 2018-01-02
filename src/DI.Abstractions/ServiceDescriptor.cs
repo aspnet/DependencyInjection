@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -34,6 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
+            ValidateImplementationType(serviceType, implementationType);
+
             ImplementationType = implementationType;
         }
 
@@ -57,6 +61,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(instance));
             }
+
+            ValidateImplementationType(serviceType, instance.GetType());
 
             ImplementationInstance = instance;
         }
@@ -126,8 +132,32 @@ namespace Microsoft.Extensions.DependencyInjection
                 return typeArguments[1];
             }
 
-            Debug.Assert(false, "ImplementationType, ImplementationInstance or ImplementationFactory must be non null");
+            Debug.Fail("ImplementationType, ImplementationInstance or ImplementationFactory must be non null");
             return null;
+        }
+
+        private static bool IsValidateImplementationType(Type serviceType, Type implementationType)
+        {
+            if (serviceType.IsAssignableFrom(implementationType))
+            {
+                return true;
+            }
+
+            // skip open generic validation
+            if (serviceType.IsGenericTypeDefinition || implementationType.IsGenericTypeDefinition)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void ValidateImplementationType(Type serviceType, Type implementationType)
+        {
+            if (!IsValidateImplementationType(serviceType, implementationType))
+            {
+                throw new ArgumentException(Resources.FormatWrongImplemetationType(implementationType, serviceType));
+            }
         }
 
         /// <summary>
