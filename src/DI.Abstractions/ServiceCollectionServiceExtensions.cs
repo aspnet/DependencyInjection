@@ -87,7 +87,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient<TService, TImplementation>(this IServiceCollection services)
-            where TService : class
             where TImplementation : class, TService
         {
             if (services == null)
@@ -185,7 +184,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddTransient<TService, TImplementation>(
             this IServiceCollection services,
             Func<IServiceProvider, TImplementation> implementationFactory)
-            where TService : class
             where TImplementation : class, TService
         {
             if (services == null)
@@ -280,7 +278,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Scoped"/>
         public static IServiceCollection AddScoped<TService, TImplementation>(this IServiceCollection services)
-            where TService : class
             where TImplementation : class, TService
         {
             if (services == null)
@@ -378,7 +375,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddScoped<TService, TImplementation>(
             this IServiceCollection services,
             Func<IServiceProvider, TImplementation> implementationFactory)
-            where TService : class
             where TImplementation : class, TService
         {
             if (services == null)
@@ -472,7 +468,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton<TService, TImplementation>(this IServiceCollection services)
-            where TService : class
             where TImplementation : class, TService
         {
             if (services == null)
@@ -570,7 +565,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddSingleton<TService, TImplementation>(
             this IServiceCollection services,
             Func<IServiceProvider, TImplementation> implementationFactory)
-            where TService : class
             where TImplementation : class, TService
         {
             if (services == null)
