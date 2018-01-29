@@ -23,6 +23,35 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         }
 
         [Fact]
+        public void GetService_Throws_WhenTransientIsInjectedIntoSingleton()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFoo, Foo>();
+            serviceCollection.AddTransient<IBar, Bar>();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
+            Assert.Equal($"Cannot consume transient service '{typeof(IBar)}' from singleton '{typeof(IFoo)}'.", exception.Message);
+        }
+
+        [Fact]
+        public void GetService_Throws_WhenTransientIsInjectedIntoSingletonThroughScoped()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFoo, Foo>();
+            serviceCollection.AddScoped<IBar, Bar>();
+            serviceCollection.AddTransient<IBaz, Baz>();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
+            Assert.Equal($"Cannot consume scoped service '{typeof(IBar)}' from singleton '{typeof(IFoo)}'.", exception.Message);
+        }
+
+        [Fact]
         public void GetService_Throws_WhenScopedIsInjectedIntoSingletonThroughTransient()
         {
             // Arrange
@@ -34,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             // Act + Assert
             var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
-            Assert.Equal($"Cannot consume scoped service '{typeof(IBaz)}' from singleton '{typeof(IFoo)}'.", exception.Message);
+            Assert.Equal($"Cannot consume transient service '{typeof(IBar)}' from singleton '{typeof(IFoo)}'.", exception.Message);
         }
 
         [Fact]

@@ -43,6 +43,25 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Type VisitTransient(TransientCallSite transientCallSite, CallSiteValidatorState state)
         {
+            if (state.Singleton != null)
+            {
+                throw new InvalidOperationException(Resources.FormatCaptiveDependencyException(
+                    transientCallSite.ServiceType,
+                    state.Singleton.ServiceType,
+                    nameof(ServiceLifetime.Transient).ToLowerInvariant(),
+                    nameof(ServiceLifetime.Singleton).ToLowerInvariant()
+                    ));
+            }
+
+            if (state.Scoped != null)
+            {
+                throw new InvalidOperationException(Resources.FormatCaptiveDependencyException(
+                    transientCallSite.ServiceType,
+                    state.Singleton.ServiceType,
+                    nameof(ServiceLifetime.Transient).ToLowerInvariant(),
+                    nameof(ServiceLifetime.Scoped).ToLowerInvariant()
+                    ));
+            }
             return VisitCallSite(transientCallSite.ServiceCallSite, state);
         }
 
@@ -88,6 +107,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 return null;
             }
+
+            state.Scoped = scopedCallSite;
             if (state.Singleton != null)
             {
                 throw new InvalidOperationException(Resources.FormatScopedInSingletonException(
@@ -113,6 +134,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal struct CallSiteValidatorState
         {
             public SingletonCallSite Singleton { get; set; }
+
+            public ScopedCallSite Scoped { get; set; }
         }
     }
 }

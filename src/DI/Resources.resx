@@ -150,4 +150,7 @@
   <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
     <value>Cannot resolve {1} service '{0}' from root provider.</value>
   </data>
+  <data name="CaptiveDependencyException" xml:space="preserve">
+    <value>Cannot consume {2} service '{0}' from {3} '{1}'.</value>
+  </data>
 </root>

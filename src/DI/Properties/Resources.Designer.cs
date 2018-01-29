@@ -150,6 +150,20 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static string FormatDirectScopedResolvedFromRootException(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectScopedResolvedFromRootException"), p0, p1);
 
+        /// <summary>
+        /// Cannot consume {2} service '{0}' from {3} '{1}'.
+        /// </summary>
+        internal static string CaptiveDependencyException
+        {
+            get => GetString("CaptiveDependencyException");
+        }
+
+        /// <summary>
+        /// Cannot consume {2} service '{0}' from {3} '{1}'.
+        /// </summary>
+        internal static string FormatCaptiveDependencyException(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("CaptiveDependencyException"), p0, p1, p2, p3);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
