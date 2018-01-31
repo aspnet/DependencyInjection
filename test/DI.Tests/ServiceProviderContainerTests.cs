@@ -173,7 +173,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             scope.Dispose();
 
             Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<IFakeService>());
-            //Chec that resolution from root works
+            //Check that resolution from root works
             Assert.NotNull(provider.CreateScope());
         }
 
