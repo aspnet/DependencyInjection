@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(IServiceScope));
+                ThrowHelper.ThrowObjectDisposedException();
             }
 
             return Engine.GetService(serviceType, this);

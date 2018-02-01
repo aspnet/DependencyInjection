@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -56,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (_disposed)
             {
-                ThrowObjectDisposedException();
+                ThrowHelper.ThrowObjectDisposedException();
             }
 
             var realizedService = RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
@@ -68,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (_disposed)
             {
-                ThrowObjectDisposedException();
+                ThrowHelper.ThrowObjectDisposedException();
             }
 
             return new ServiceProviderEngineScope(this);
@@ -85,12 +84,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             return _ => null;
         }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void ThrowObjectDisposedException()
-        {
-            throw new ObjectDisposedException(nameof(IServiceProvider));
-        }
-
     }
 }
