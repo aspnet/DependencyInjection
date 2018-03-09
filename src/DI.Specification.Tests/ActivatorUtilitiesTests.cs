@@ -195,7 +195,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var type = typeof(ClassWithAmbiguousCtors);
             var expectedMessage = $"Multiple constructors accepting all given argument types have been found in type '{type}'. " +
-                "There should only be one applicable constructor.";
+                                  "There should only be one applicable constructor.";
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -203,6 +203,24 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Assert
             Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Theory]
+        [InlineData("", "string")]
+        [InlineData(5, "IFakeService, int")]
+        public void TypeActivatorCreateInstanceUsesFirstMathchedConstructor(object value, string ctor)
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+            var type = typeof(ClassWithAmbiguousCtors);
+
+            // Act
+            var instance = ActivatorUtilities.CreateInstance(serviceProvider, type, value);
+
+            // Assert
+            Assert.Equal(ctor, ((ClassWithAmbiguousCtors)instance).CtorUsed);
         }
 
         [Fact]
