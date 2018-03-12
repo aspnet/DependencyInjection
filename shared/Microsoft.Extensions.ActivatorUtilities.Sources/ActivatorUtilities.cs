@@ -41,19 +41,20 @@ namespace Microsoft.Extensions.Internal
         public static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
         {
             int bestLength = -1;
-            bool seenPreferred = false;
+            var seenPreferred = false;
 
             ConstructorMatcher bestMatcher = null;
 
             if (!instanceType.GetTypeInfo().IsAbstract)
             {
-                foreach (var matcher in instanceType
+                foreach (var constructor in instanceType
                     .GetTypeInfo()
                     .DeclaredConstructors
-                    .Where(c => !c.IsStatic && c.IsPublic)
-                    .Select(constructor => new ConstructorMatcher(constructor)))
+                    .Where(c => !c.IsStatic && c.IsPublic))
                 {
-                    var length = matcher.Match(parameters, out var isPreferred);
+                    var matcher = new ConstructorMatcher(constructor);
+                    var isPreferred = constructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute), false);
+                    var length = matcher.Match(parameters);
 
                     if (isPreferred)
                     {
@@ -269,7 +270,7 @@ namespace Microsoft.Extensions.Internal
                     continue;
                 }
 
-                if (constructor.GetCustomAttribute<ActivatorUtilitiesConstructorAttribute>() != null)
+                if (constructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute), false))
                 {
                     if (seenPreferred)
                     {
@@ -341,10 +342,8 @@ namespace Microsoft.Extensions.Internal
                 _parameterValues = new object[_parameters.Length];
             }
 
-            public int Match(object[] givenParameters, out bool isPreferred)
+            public int Match(object[] givenParameters)
             {
-                isPreferred = _constructor.GetCustomAttribute<ActivatorUtilitiesConstructorAttribute>() != null;
-
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
                 for (var givenIndex = 0; givenIndex != givenParameters.Length; givenIndex++)
@@ -419,12 +418,12 @@ namespace Microsoft.Extensions.Internal
 
         private static void ThrowMultipleCtorsMarkedWithAttributeException()
         {
-            throw new InvalidOperationException("Multiple constructors were marked with " + nameof(ActivatorUtilitiesConstructorAttribute));
+            throw new InvalidOperationException($"Multiple constructors were marked with {nameof(ActivatorUtilitiesConstructorAttribute)}.");
         }
 
         private static void ThrowMarkedCtorDoesNotTakeAllProvidedArguments()
         {
-            throw new InvalidOperationException("Constructor marked with " + nameof(ActivatorUtilitiesConstructorAttribute) + " does not accept all given argument types.");
+            throw new InvalidOperationException($"Constructor marked with {nameof(ActivatorUtilitiesConstructorAttribute)} does not accept all given argument types.");
         }
     }
 }

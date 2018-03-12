@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
             CtorUsed = "IFakeService, string";
         }
 
-        public ClassWithAmbiguousCtorsAndAttribute(IFakeService service,  IFakeService service2, string data)
+        public ClassWithAmbiguousCtorsAndAttribute(IFakeService service, IFakeOuterService service2, string data)
         {
             CtorUsed = "IFakeService, IFakeService, string";
         }

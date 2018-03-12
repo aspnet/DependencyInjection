@@ -195,7 +195,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var type = typeof(ClassWithAmbiguousCtors);
             var expectedMessage = $"Multiple constructors accepting all given argument types have been found in type '{type}'. " +
-                                  "There should only be one applicable constructor.";
+                "There should only be one applicable constructor.";
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithMultipleMarkedCtors>(createFunc, null, "hello"));
 
             // Assert
-            Assert.Equal("Multiple constructors were marked with ActivatorUtilitiesConstructorAttribute", exception.Message);
+            Assert.Equal("Multiple constructors were marked with ActivatorUtilitiesConstructorAttribute.", exception.Message);
         }
 
         [Theory]
