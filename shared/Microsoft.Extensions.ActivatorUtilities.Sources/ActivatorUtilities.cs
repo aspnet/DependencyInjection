@@ -217,8 +217,8 @@ namespace Microsoft.Extensions.Internal
             matchingConstructor = null;
             parameterMap = null;
 
-            if (TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap) &&
-                TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap))
+            if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap) &&
+                !TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap))
             {
                 var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
                 throw new InvalidOperationException(message);
@@ -243,8 +243,7 @@ namespace Microsoft.Extensions.Internal
                 {
                     if (matchingConstructor != null)
                     {
-                        throw new InvalidOperationException(
-                            $"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
+                        throw new InvalidOperationException($"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
                     }
 
                     matchingConstructor = constructor;
@@ -425,7 +424,7 @@ namespace Microsoft.Extensions.Internal
 
         private static void ThrowMarkedCtorDoesNotTakeAllProvidedArguments()
         {
-            throw new InvalidOperationException("Constructor marked with " + nameof(ActivatorUtilitiesConstructorAttribute) + " accept all given argument types.");
+            throw new InvalidOperationException("Constructor marked with " + nameof(ActivatorUtilitiesConstructorAttribute) + " does not accept all given argument types.");
         }
     }
 }

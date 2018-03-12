@@ -225,7 +225,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
         [Theory]
         [MemberData(nameof(CreateInstanceFuncs))]
-        public void TypeActivatorCreateInstanceUsesMarkedConstructor(CreateInstanceFunc createFunc)
+        public void TypeActivatorUsesMarkedConstructor(CreateInstanceFunc createFunc)
         {
             // Arrange
             var serviceCollection = new TestServiceCollection();
@@ -237,6 +237,28 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Assert
             Assert.Equal("IFakeService, string", instance.CtorUsed);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorThrowsOnMultipleMarkedCtors(CreateInstanceFunc createFunc)
+        {
+            // Act
+            var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithMultipleMarkedCtors>(createFunc, null, "hello"));
+
+            // Assert
+            Assert.Equal("Multiple constructors were marked with ActivatorUtilitiesConstructorAttribute", exception.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorThrowsWhenMarkedCtorDoesntAcceptArguments(CreateInstanceFunc createFunc)
+        {
+            // Act
+            var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithAmbiguousCtorsAndAttribute>(createFunc, null, 0, "hello"));
+
+            // Assert
+            Assert.Equal("Constructor marked with ActivatorUtilitiesConstructorAttribute does not accept all given argument types.", exception.Message);
         }
 
         [Fact]
