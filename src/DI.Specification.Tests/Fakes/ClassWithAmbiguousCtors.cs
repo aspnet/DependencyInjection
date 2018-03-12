@@ -38,4 +38,30 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
         public int Data2 { get; }
         public string CtorUsed { get; set; }
     }
+
+    public class ClassWithAmbiguousCtorsAndAttribute
+    {
+        public ClassWithAmbiguousCtorsAndAttribute(string data)
+        {
+            CtorUsed = "string";
+        }
+
+        [ActivatorUtilitiesConstructor]
+        public ClassWithAmbiguousCtorsAndAttribute(IFakeService service, string data)
+        {
+            CtorUsed = "IFakeService, string";
+        }
+
+        public ClassWithAmbiguousCtorsAndAttribute(IFakeService service,  IFakeService service2, string data)
+        {
+            CtorUsed = "IFakeService, IFakeService, string";
+        }
+
+        public IFakeService FakeService { get; }
+
+        public string Data1 { get; }
+
+        public int Data2 { get; }
+        public string CtorUsed { get; set; }
+    }
 }

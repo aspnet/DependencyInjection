@@ -41,6 +41,8 @@ namespace Microsoft.Extensions.Internal
         public static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
         {
             int bestLength = -1;
+            bool seenPreferred = false;
+
             ConstructorMatcher bestMatcher = null;
 
             if (!instanceType.GetTypeInfo().IsAbstract)
@@ -51,16 +53,28 @@ namespace Microsoft.Extensions.Internal
                     .Where(c => !c.IsStatic && c.IsPublic)
                     .Select(constructor => new ConstructorMatcher(constructor)))
                 {
-                    var length = matcher.Match(parameters);
-                    if (length == -1)
+                    var length = matcher.Match(parameters, out var isPreferred);
+
+                    if (isPreferred)
                     {
-                        continue;
+                        if (seenPreferred)
+                        {
+                            ThrowMultipleCtorsMarkedWithAttributeException();
+                        }
+
+                        if (length == -1)
+                        {
+                            ThrowMarkedCtorDoesNotTakeAllProvidedArguments();
+                        }
                     }
-                    if (bestLength < length)
+
+                    if (isPreferred || bestLength < length)
                     {
                         bestLength = length;
                         bestMatcher = matcher;
                     }
+
+                    seenPreferred |= isPreferred;
                 }
             }
 
@@ -203,6 +217,21 @@ namespace Microsoft.Extensions.Internal
             matchingConstructor = null;
             parameterMap = null;
 
+            if (TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap) &&
+                TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor, ref parameterMap))
+            {
+                var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        // Tries to find constructor based on provided argument types
+        private static bool TryFindMatchingConstructor(
+            Type instanceType,
+            Type[] argumentTypes,
+            ref ConstructorInfo matchingConstructor,
+            ref int?[] parameterMap)
+        {
             foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
             {
                 if (constructor.IsStatic || !constructor.IsPublic)
@@ -214,7 +243,8 @@ namespace Microsoft.Extensions.Internal
                 {
                     if (matchingConstructor != null)
                     {
-                        throw new InvalidOperationException($"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
+                        throw new InvalidOperationException(
+                            $"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
                     }
 
                     matchingConstructor = constructor;
@@ -222,11 +252,43 @@ namespace Microsoft.Extensions.Internal
                 }
             }
 
-            if (matchingConstructor == null)
+            return matchingConstructor != null;
+        }
+
+        // Tries to find constructor marked with ActivatorUtilitiesConstructorAttribute
+        private static bool TryFindPreferredConstructor(
+            Type instanceType,
+            Type[] argumentTypes,
+            ref ConstructorInfo matchingConstructor,
+            ref int?[] parameterMap)
+        {
+            var seenPreferred = false;
+            foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
             {
-                var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
-                throw new InvalidOperationException(message);
+                if (constructor.IsStatic || !constructor.IsPublic)
+                {
+                    continue;
+                }
+
+                if (constructor.GetCustomAttribute<ActivatorUtilitiesConstructorAttribute>() != null)
+                {
+                    if (seenPreferred)
+                    {
+                        ThrowMultipleCtorsMarkedWithAttributeException();
+                    }
+
+                    if (!TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out int?[] tempParameterMap))
+                    {
+                        ThrowMarkedCtorDoesNotTakeAllProvidedArguments();
+                    }
+
+                    matchingConstructor = constructor;
+                    parameterMap = tempParameterMap;
+                    seenPreferred = true;
+                }
             }
+
+            return matchingConstructor != null;
         }
 
         // Creates an injective parameterMap from givenParameterTypes to assignable constructorParameters.
@@ -280,8 +342,10 @@ namespace Microsoft.Extensions.Internal
                 _parameterValues = new object[_parameters.Length];
             }
 
-            public int Match(object[] givenParameters)
+            public int Match(object[] givenParameters, out bool isPreferred)
             {
+                isPreferred = _constructor.GetCustomAttribute<ActivatorUtilitiesConstructorAttribute>() != null;
+
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
                 for (var givenIndex = 0; givenIndex != givenParameters.Length; givenIndex++)
@@ -352,6 +416,16 @@ namespace Microsoft.Extensions.Internal
                     throw;
                 }
             }
+        }
+
+        private static void ThrowMultipleCtorsMarkedWithAttributeException()
+        {
+            throw new InvalidOperationException("Multiple constructors were marked with " + nameof(ActivatorUtilitiesConstructorAttribute));
+        }
+
+        private static void ThrowMarkedCtorDoesNotTakeAllProvidedArguments()
+        {
+            throw new InvalidOperationException("Constructor marked with " + nameof(ActivatorUtilitiesConstructorAttribute) + " accept all given argument types.");
         }
     }
 }

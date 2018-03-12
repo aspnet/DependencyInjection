@@ -223,6 +223,22 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Equal(ctor, ((ClassWithAmbiguousCtors)instance).CtorUsed);
         }
 
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorCreateInstanceUsesMarkedConstructor(CreateInstanceFunc createFunc)
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            // Act
+            var instance = CreateInstance<ClassWithAmbiguousCtorsAndAttribute>(createFunc, serviceProvider, "hello");
+
+            // Assert
+            Assert.Equal("IFakeService, string", instance.CtorUsed);
+        }
+
         [Fact]
         public void GetServiceOrCreateInstanceRegisteredServiceTransient()
         {
