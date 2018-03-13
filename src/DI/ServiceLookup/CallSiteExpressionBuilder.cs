@@ -6,21 +6,228 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
+    class CallSiteMethodBuilderContext
+    {
+        public TypeBuilder TypeBuilder { get; set; }
+        public ILGenerator Generator { get; set; }
+        public ILGenerator CtorGenerator { get; set; }
+        public List<object> CtorArgs { get; set; }
+    }
+
+
+    internal class CallSiteMethodBuilder : CallSiteVisitor<CallSiteMethodBuilderContext, Expression>
+    {
+        private readonly CallSiteRuntimeResolver _runtimeResolver;
+
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
+        private readonly ServiceProviderEngineScope _rootScope;
+
+        public CallSiteMethodBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope)
+        {
+            if (runtimeResolver == null)
+            {
+                throw new ArgumentNullException(nameof(runtimeResolver));
+            }
+            _runtimeResolver = runtimeResolver;
+            _serviceScopeFactory = serviceScopeFactory;
+            _rootScope = rootScope;
+        }
+
+        protected override Expression VisitTransient(TransientCallSite transientCallSite, CallSiteMethodBuilderContext argument)
+        {
+            VisitCallSite(transientCallSite.ServiceCallSite, argument);
+
+            var implType = transientCallSite.ServiceCallSite.ImplementationType;
+            if (implType != null && !typeof(IDisposable).GetTypeInfo().IsAssignableFrom(implType.GetTypeInfo()))
+            {
+                return null;
+            }
+
+            var propp = argument.TypeBuilder.DefineField("engineScope", typeof(ServiceProviderEngineScope), FieldAttributes.Public);
+            // this
+            argument.Generator.Emit(OpCodes.Ldarg_0);
+            //      .engineScope
+            argument.Generator.Emit(OpCodes.Ldfld, propp);
+            //                  .CaptureDisposable
+            argument.Generator.Emit(OpCodes.Call, CallSiteExpressionBuilder.CaptureDisposableMethodInfo);
+            return null;
+        }
+
+        protected override Expression VisitConstructor(ConstructorCallSite constructorCallSite, CallSiteMethodBuilderContext argument)
+        {
+            foreach (var parameterCallSite in constructorCallSite.ParameterCallSites)
+            {
+                VisitCallSite(parameterCallSite, argument);
+            }
+            argument.Generator.Emit(OpCodes.Call, constructorCallSite.ConstructorInfo);
+            return null;
+        }
+
+        protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, CallSiteMethodBuilderContext argument)
+        {
+            return VisitCallSite(singletonCallSite.ServiceCallSite, argument);
+        }
+
+        protected override Expression VisitScoped(ScopedCallSite scopedCallSite, CallSiteMethodBuilderContext argument)
+        {
+            return VisitCallSite(scopedCallSite.ServiceCallSite, argument);
+        }
+
+        protected override Expression VisitConstant(ConstantCallSite constantCallSite, CallSiteMethodBuilderContext argument)
+        {
+            var field = DefineConstantField(argument, null, constantCallSite.ServiceType, constantCallSite.DefaultValue);
+
+            argument.Generator.Emit(OpCodes.Ldfld, field);
+
+            return null;
+        }
+
+        protected override Expression VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, CallSiteMethodBuilderContext argument)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, CallSiteMethodBuilderContext argument)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, CallSiteMethodBuilderContext argument)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Expression VisitIEnumerable(IEnumerableCallSite enumerableCallSite, CallSiteMethodBuilderContext argument)
+        {
+            if (enumerableCallSite.ServiceCallSites.Length == 0)
+            {
+                argument.Generator.Emit(OpCodes.Call, CallSiteExpressionBuilder.ArrayEmptyMethodInfo.MakeGenericMethod(enumerableCallSite.ItemType));
+            }
+            else
+            {
+                // push length
+                argument.Generator.Emit(OpCodes.Ldc_I4, enumerableCallSite.ServiceCallSites.Length);
+                // new ItemType[length]
+                argument.Generator.Emit(OpCodes.Newarr, enumerableCallSite.ItemType);
+                for (int i = 0; i < enumerableCallSite.ServiceCallSites.Length; i++)
+                {
+                    // push index
+                    argument.Generator.Emit(OpCodes.Ldc_I4, i);
+                    // create parameter
+                    VisitCallSite(enumerableCallSite.ServiceCallSites[i], argument);
+                    argument.Generator.Emit(OpCodes.Stelem, enumerableCallSite.ItemType);
+                }
+            }
+
+            return null;
+        }
+
+        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, CallSiteMethodBuilderContext argument)
+        {
+            var factoryField = DefineConstantField(argument, null, factoryCallSite.Factory.GetType(), factoryCallSite.Factory);
+            // this
+            argument.Generator.Emit(OpCodes.Ldarg_0);
+            //      ._factoryFieldN
+            argument.Generator.Emit(OpCodes.Ldfld, factoryField);
+            //                       provider
+            argument.Generator.Emit(OpCodes.Ldarg_1);
+            //                     (         )
+            argument.Generator.Emit(OpCodes.Call, CallSiteExpressionBuilder.InvokeFactoryMethodInfo);
+            return null;
+        }
+
+
+        protected FieldBuilder DefineConstantField(CallSiteMethodBuilderContext argument, string name, Type type, object value)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                name = "_field_" + argument.CtorArgs.Count;
+            }
+
+            var field = argument.TypeBuilder.DefineField(name, type, FieldAttributes.Private);
+
+            //         args
+            argument.CtorGenerator.Emit(OpCodes.Ldarg_1);
+            //              i
+            argument.CtorGenerator.Emit(OpCodes.Ldc_I4, argument.CtorArgs.Count);
+            //             [ ]
+            argument.CtorGenerator.Emit(OpCodes.Ldelem, typeof(object));
+            // field =
+            argument.CtorGenerator.Emit(OpCodes.Stfld, field);
+
+            return field;
+        }
+
+
+        public Func<ServiceProviderEngineScope, object> Build(IServiceCallSite callSite)
+        {
+            if (callSite is SingletonCallSite singletonCallSite)
+            {
+                // If root call site is singleton we can return Func calling
+                // _runtimeResolver.Resolve directly and avoid Expression generation
+                if (TryResolveSingletonValue(singletonCallSite, out var value))
+                {
+                    return scope => value;
+                }
+
+                return scope => _runtimeResolver.Resolve(callSite, scope);
+            }
+
+            return BuildType(callSite);
+        }
+
+        private Func<ServiceProviderEngineScope, object> BuildType(IServiceCallSite callSite)
+        {
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(
+                new AssemblyName("_resolver_" + callSite.ServiceType), AssemblyBuilderAccess.RunAndCollect);
+            var typeBuilder = assemblyBuilder.DefineDynamicModule("main").DefineType("Resolver");
+            var ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new [] {typeof(object[] )});
+            var resolveMethod = typeBuilder.DefineMethod(
+                "ResolveService", MethodAttributes.Public, CallingConventions.HasThis, typeof(object), new [] { typeof(IServiceProvider) });
+
+            var context = new CallSiteMethodBuilderContext()
+            {
+                Generator = resolveMethod.GetILGenerator(),
+                CtorArgs = new List<object>(),
+                CtorGenerator = ctorBuilder.GetILGenerator(),
+                TypeBuilder = typeBuilder
+            };
+
+            VisitCallSite(callSite, context);
+            var typeInfo = typeBuilder.GetTypeInfo();
+
+            var asType = typeInfo.AsType();
+            var instance = Activator.CreateInstance(asType, new object[] { context.CtorArgs.ToArray() });
+            return (Func<ServiceProviderEngineScope, object>)Delegate.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), instance, resolveMethod);
+        }
+
+        private bool TryResolveSingletonValue(SingletonCallSite singletonCallSite, out object value)
+        {
+            lock (_rootScope.ResolvedServices)
+            {
+                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.CacheKey, out value);
+            }
+        }
+    }
+
     internal class CallSiteExpressionBuilder : CallSiteVisitor<CallSiteExpressionBuilderContext, Expression>
     {
-        private static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProviderEngineScope, object, object>>((a, b) => a.CaptureDisposable(b));
-        private static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<object, object>, object, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
-        private static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<object, object>, object, object>>((a, b, c) => a.Add(b, c));
-        private static readonly MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
-        private static readonly MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
-        private static readonly MethodInfo CallSiteRuntimeResolverResolve =
+        internal static readonly MethodInfo InvokeFactoryMethodInfo = GetMethodInfo<Action<Func<IServiceProvider, object>, IServiceProvider>>((a, b) => a.Invoke(b));
+        internal static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProviderEngineScope, object, object>>((a, b) => a.CaptureDisposable(b));
+        internal static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<object, object>, object, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
+        internal static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<object, object>, object, object>>((a, b, c) => a.Add(b, c));
+        internal static readonly MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
+        internal static readonly MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
+        internal static readonly MethodInfo CallSiteRuntimeResolverResolve =
             GetMethodInfo<Func<CallSiteRuntimeResolver, IServiceCallSite, ServiceProviderEngineScope, object>>((r, c, p) => r.Resolve(c, p));
 
-        private static readonly MethodInfo ArrayEmptyMethodInfo = typeof(Array).GetMethod(nameof(Array.Empty));
+        internal static readonly MethodInfo ArrayEmptyMethodInfo = typeof(Array).GetMethod(nameof(Array.Empty));
 
         private static readonly ParameterExpression ScopeParameter = Expression.Parameter(typeof(ServiceProviderEngineScope));
 
@@ -166,7 +373,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private Expression TryCaptureDisposible(Type implType, ParameterExpression scope, Expression service)
         {
-
             if (implType != null &&
                 !typeof(IDisposable).GetTypeInfo().IsAssignableFrom(implType.GetTypeInfo()))
             {
@@ -180,10 +386,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitConstructor(ConstructorCallSite callSite, CallSiteExpressionBuilderContext context)
         {
             var parameters = callSite.ConstructorInfo.GetParameters();
-            return Expression.New(
-                callSite.ConstructorInfo,
-                callSite.ParameterCallSites.Select((c, index) =>
-                        Convert(VisitCallSite(c, context), parameters[index].ParameterType)));
+            var parameterExpressions = new Expression[callSite.ParameterCallSites.Length];
+            for (int i = 0; i < parameterExpressions.Length; i++)
+            {
+                parameterExpressions[i] = Convert(VisitCallSite(callSite.ParameterCallSites[i], context), parameters[i].ParameterType);
+            }
+            return Expression.New(callSite.ConstructorInfo, parameterExpressions);
         }
 
         private static Expression Convert(Expression expression, Type type)
@@ -199,6 +407,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitScoped(ScopedCallSite callSite, CallSiteExpressionBuilderContext context)
         {
+            return BuildScopedExpression(callSite, context, VisitCallSite(callSite.ServiceCallSite, context));
+        }
+
+        // Move off the main stack
+        private Expression BuildScopedExpression(ScopedCallSite callSite, CallSiteExpressionBuilderContext context, Expression service)
+        {
             var keyExpression = Expression.Constant(
                 callSite.CacheKey,
                 typeof(object));
@@ -213,7 +427,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 keyExpression,
                 resolvedVariable);
 
-            var service = VisitCallSite(callSite.ServiceCallSite, context);
             var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, context.ScopeParameter, service);
 
             var assignExpression = Expression.Assign(
@@ -228,7 +441,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var blockExpression = Expression.Block(
                 typeof(object),
-                new[] {
+                new[]
+                {
                     resolvedVariable
                 },
                 Expression.IfThen(

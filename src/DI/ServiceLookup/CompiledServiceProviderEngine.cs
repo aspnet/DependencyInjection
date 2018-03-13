@@ -19,4 +19,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return realizedService;
         }
     }
+
+    internal class ILEmitServiceProviderEngine : ServiceProviderEngine
+    {
+        private CallSiteMethodBuilder ILBuilder;
+        public ILEmitServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : base(serviceDescriptors, callback)
+        {
+            ILBuilder = new CallSiteMethodBuilder(RuntimeResolver, this, Root);
+        }
+
+        protected override Func<ServiceProviderEngineScope, object> RealizeService(IServiceCallSite callSite)
+        {
+            var realizedService = ILBuilder.Build(callSite);
+            RealizedServices[callSite.ServiceType] = realizedService;
+            return realizedService;
+        }
+    }
 }

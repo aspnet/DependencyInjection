@@ -32,8 +32,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 case ServiceProviderMode.Runtime:
                     _engine = new RuntimeServiceProviderEngine(serviceDescriptors, callback);
                     break;
-                case ServiceProviderMode.Compiled:
+                case ServiceProviderMode.Expressions:
                     _engine = new CompiledServiceProviderEngine(serviceDescriptors, callback);
+                    break;
+                case ServiceProviderMode.ILEmit:
+                    _engine = new ILEmitServiceProviderEngine(serviceDescriptors, callback);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(options.Mode));
