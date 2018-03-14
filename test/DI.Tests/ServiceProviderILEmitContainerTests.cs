@@ -3,32 +3,12 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection.Specification;
-using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
-using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
-    public class ServiceProviderILEmitContainerTests
+    public class ServiceProviderILEmitContainerTests: DependencyInjectionSpecificationTests
     {
-
-        protected IServiceProvider CreateServiceProvider(IServiceCollection collection) =>
+        protected override IServiceProvider CreateServiceProvider(IServiceCollection collection) =>
             collection.BuildServiceProvider(new ServiceProviderOptions() { Mode = ServiceProviderMode.ILEmit});
-
-        [Fact]
-        public void TransientServiceCanBeResolvedFromProvider()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var provider = CreateServiceProvider(collection);
-
-            // Act
-            var service1 = provider.GetService<IFakeService>();
-            var service2 = provider.GetService<IFakeService>();
-
-            // Assert
-            Assert.NotNull(service1);
-            Assert.NotSame(service1, service2);
-        }
     }
 }

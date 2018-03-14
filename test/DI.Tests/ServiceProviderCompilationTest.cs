@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,16 +10,14 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class ServiceProviderCompilationTest
     {
-        [Theory]
-        [MemberData(nameof(Depth))]
-        public async Task CompilesInLimitedStackSpace(int size)
+        [Fact]
+        public async Task CompilesInLimitedStackSpace()
         {
-            Thread.Sleep(300);
             // Arrange
             var serviceCollection = new ServiceCollection();
             CompilationTestDataProvider.Register(serviceCollection);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions { Mode = ServiceProviderMode.Compiled });
+            var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act + Assert
 
@@ -30,7 +26,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 {
                     try
                     {
-                        tsc.SetResult(serviceProvider.GetService(Type.GetType(typeof(I999).FullName.Replace("999", size.ToString()))));
+                        object service = null;
+                        for (int i = 0; i < 10; i++)
+                        {
+                            service = serviceProvider.GetService<I160>();
+                        }
+                        tsc.SetResult(service);
                     }
                     catch (Exception ex)
                     {
@@ -41,7 +42,5 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             thread.Join();
             await tsc.Task;
         }
-
-        public static IEnumerable<object[]> Depth => Enumerable.Range(0, 999).Select(i => new object[] { i });
     }
 }

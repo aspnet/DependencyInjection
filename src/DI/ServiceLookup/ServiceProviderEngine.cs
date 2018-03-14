@@ -22,7 +22,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             Root = new ServiceProviderEngineScope(this);
             RuntimeResolver = new CallSiteRuntimeResolver();
-            ExpressionBuilder = new CallSiteExpressionBuilder(RuntimeResolver, this, Root);
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
             CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
             CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());
@@ -34,8 +33,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal CallSiteFactory CallSiteFactory { get; }
 
         protected CallSiteRuntimeResolver RuntimeResolver { get; }
-
-        protected CallSiteExpressionBuilder ExpressionBuilder { get; }
 
         public ServiceProviderEngineScope Root { get; }
 

@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     _engine = new RuntimeServiceProviderEngine(serviceDescriptors, callback);
                     break;
                 case ServiceProviderMode.Expressions:
-                    _engine = new CompiledServiceProviderEngine(serviceDescriptors, callback);
+                    _engine = new ExpressionsServiceProviderEngine(serviceDescriptors, callback);
                     break;
                 case ServiceProviderMode.ILEmit:
                     _engine = new ILEmitServiceProviderEngine(serviceDescriptors, callback);
