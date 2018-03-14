@@ -102,7 +102,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             argument.Generator.Emit(OpCodes.Ldarg_0);
             argument.Generator.Emit(OpCodes.Ldfld, RootField);
 
-
             argument.Generator.Emit(OpCodes.Callvirt, ExpressionResolverBuilder.CallSiteRuntimeResolverResolve);
             return null;
         }
@@ -120,7 +119,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Duplicate cache key
             argument.Generator.Emit(OpCodes.Dup);
             // and store to local
-            argument.Generator.Emit(OpCodes.Stloc, cacheKeyLocal);
+            StLoc(argument.Generator, cacheKeyLocal.LocalIndex);
 
             // Load address of local
             argument.Generator.Emit(OpCodes.Ldloca, resultLocal.LocalIndex);
@@ -129,7 +128,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Jump to create new if nothing in cache
             argument.Generator.Emit(OpCodes.Brtrue, endLabel);
-
 
             var shouldCapture = BeginCaptureDisposable(scopedCallSite.ServiceCallSite.ImplementationType, argument);
 
@@ -140,21 +138,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 EndCaptureDisposable(argument);
             }
 
-
             // Store return value into var
             argument.Generator.Emit(OpCodes.Stloc, resultLocal.LocalIndex);
 
             argument.Generator.Emit(OpCodes.Ldloc_0);
             // Load cache key
-            argument.Generator.Emit(OpCodes.Ldloc, cacheKeyLocal.LocalIndex);
+            LdLoc(argument.Generator, cacheKeyLocal.LocalIndex);
             // Load value
-            argument.Generator.Emit(OpCodes.Ldloc, resultLocal.LocalIndex);
+            LdLoc(argument.Generator, resultLocal.LocalIndex);
 
             argument.Generator.Emit(OpCodes.Callvirt, ExpressionResolverBuilder.AddMethodInfo);
 
             // Load result and return it
             argument.Generator.MarkLabel(endLabel);
-            argument.Generator.Emit(OpCodes.Ldloc, resultLocal.LocalIndex);
+            LdLoc(argument.Generator, resultLocal.LocalIndex);
 
             return null;
         }
@@ -216,13 +213,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitFactory(FactoryCallSite factoryCallSite, ILEmitResolverBuilderContext argument)
         {
+            if (argument.Factories == null)
+            {
+                argument.Factories = new List<Func<IServiceProvider, object>>();
+            }
+
             // this
             argument.Generator.Emit(OpCodes.Ldarg_0);
             //      .Factories
             argument.Generator.Emit(OpCodes.Ldfld, FactoriesField);
 
             //                 i
-            argument.Generator.Emit(OpCodes.Ldc_I4, argument.Constants.Count);
+            argument.Generator.Emit(OpCodes.Ldc_I4, argument.Factories.Count);
             //                [ ]
             argument.Generator.Emit(OpCodes.Ldelem, typeof(Func<IServiceProvider, object>));
 
@@ -238,6 +240,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private void AddConstant(ILEmitResolverBuilderContext argument, object value)
         {
+            if (argument.Constants == null)
+            {
+                argument.Constants = new List<object>();
+            }
+
             argument.Generator.Emit(OpCodes.Ldarg_0);
             argument.Generator.Emit(OpCodes.Ldfld, ConstantsField);
 
@@ -249,10 +256,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private Func<ServiceProviderEngineScope, object> BuildType(IServiceCallSite callSite)
         {
-            var dynamicMethod = new DynamicMethod("ResolveService", MethodAttributes.Public | MethodAttributes.Static , CallingConventions.Standard, typeof(object), new [] {typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) }, GetType(), true);
-            var context2 = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator());
+            var dynamicMethod = new DynamicMethod("ResolveService", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(object), new [] {typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) }, GetType(), true);
 
-#if SAVE_ASSEMBLY
+            var info = ScopeDetector.Instance.CollectGenerationInfo(callSite);
+            var context2 = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator(info.Size), info);
+
+#if SAVE_ASSEMBLY || NET461
             var assemblyName = "Test" + DateTime.Now.Ticks;
 
             var fileName = "Test" + DateTime.Now.Ticks;
@@ -264,7 +273,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 "ResolveService", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(object),
                 new[] { typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) });
 
-            GenerateIL(callSite, method.GetILGenerator());
+            GenerateMethodBody(callSite, method.GetILGenerator(), info);
             type.CreateTypeInfo();
             assembly.Save(assemblyName+".dll");
 #endif
@@ -272,16 +281,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return (Func<ServiceProviderEngineScope, object>)dynamicMethod.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), context2);
         }
 
-        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(IServiceCallSite callSite, ILGenerator generator)
+        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(IServiceCallSite callSite, ILGenerator generator, GenerationInfo info)
         {
             var context = new ILEmitResolverBuilderContext()
             {
                 Generator = generator,
-                Constants = new List<object>(),
-                Factories = new List<Func<IServiceProvider, object>>()
+                Constants = null,
+                Factories = null
             };
-
-            var hasScopes = ScopeDetector.Instance.HasScopedServices(callSite);
+            var hasScopes = info.HasScope;
             if (hasScopes)
             {
                 // Has to be first local defined
@@ -312,7 +320,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 var resultLocal = context.Generator.DeclareLocal(typeof(object));
 
-                context.Generator.Emit(OpCodes.Stloc, resultLocal);
+                StLoc(context.Generator, resultLocal.LocalIndex);
                 context.Generator.BeginFinallyBlock();
 
                 var postExitLabel = context.Generator.DefineLabel();
@@ -327,14 +335,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                 context.Generator.EndExceptionBlock();
 
-                context.Generator.Emit(OpCodes.Ldloc, resultLocal);
+                LdLoc(context.Generator, resultLocal.LocalIndex);
             }
 
             context.Generator.Emit(OpCodes.Ret);
             return new ILEmitResolverBuilderRuntimeContext
             {
-                Constants = context.Constants.ToArray(),
-                Factories = context.Factories.ToArray(),
+                Constants = context.Constants?.ToArray(),
+                Factories = context.Factories?.ToArray(),
                 Root = _rootScope,
                 RuntimeResolver = _runtimeResolver,
                 ScopeFactory = _serviceScopeFactory
@@ -366,5 +374,50 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             argument.Generator.Emit(OpCodes.Callvirt, ExpressionResolverBuilder.CaptureDisposableMethodInfo);
         }
 
+        private void LdLoc(ILGenerator generator, int index)
+        {
+            switch (index)
+            {
+                case 0: generator.Emit(OpCodes.Ldloc_0);
+                    return;
+                case 1: generator.Emit(OpCodes.Ldloc_1);
+                    return;
+                case 2: generator.Emit(OpCodes.Ldloc_2);
+                    return;
+                case 3: generator.Emit(OpCodes.Ldloc_3);
+                    return;
+            }
+
+            if (index < byte.MaxValue)
+            {
+                generator.Emit(OpCodes.Ldloc_S, (byte)index);
+                return;
+            }
+
+            generator.Emit(OpCodes.Ldloc, index);
+        }
+
+        private void StLoc(ILGenerator generator, int index)
+        {
+            switch (index)
+            {
+                case 0: generator.Emit(OpCodes.Stloc_0);
+                    return;
+                case 1: generator.Emit(OpCodes.Stloc_1);
+                    return;
+                case 2: generator.Emit(OpCodes.Stloc_2);
+                    return;
+                case 3: generator.Emit(OpCodes.Stloc_3);
+                    return;
+            }
+
+            if (index < byte.MaxValue)
+            {
+                generator.Emit(OpCodes.Stloc_S, (byte)index);
+                return;
+            }
+
+            generator.Emit(OpCodes.Stloc, index);
+        }
     }
 }

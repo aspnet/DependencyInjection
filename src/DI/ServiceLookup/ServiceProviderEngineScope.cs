@@ -18,9 +18,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public ServiceProviderEngineScope(ServiceProviderEngine engine)
         {
             Engine = engine;
+            ResolvedServices = new Dictionary<object, object>();
         }
 
-        internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
+        internal Dictionary<object, object> ResolvedServices { get; }
 
         public ServiceProviderEngine Engine { get; }
 

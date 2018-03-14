@@ -19,16 +19,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             _createServiceAccessor = CreateServiceAccessor;
             _callback = callback;
-
             Root = new ServiceProviderEngineScope(this);
             RuntimeResolver = new CallSiteRuntimeResolver();
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
             CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
             CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());
+
+            RealizedServices = new ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>>(new ReferenceEqualsEqualityComparer<Type>());
         }
 
-        internal ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>> RealizedServices { get; } =
-            new ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>>();
+        internal ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>> RealizedServices { get; }
 
         internal CallSiteFactory CallSiteFactory { get; }
 

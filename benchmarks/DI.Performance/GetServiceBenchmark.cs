@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         [Params("Expressions", "Dynamic", "Runtime", "ILEmit")]
         public string Mode {
             set {
-                _mode = Enum.Parse<ServiceProviderMode>(value);
+                _mode = (ServiceProviderMode)Enum.Parse(typeof(ServiceProviderMode), value);
             }
         }
 
