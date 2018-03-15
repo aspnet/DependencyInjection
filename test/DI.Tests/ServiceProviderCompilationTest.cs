@@ -10,13 +10,18 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public class ServiceProviderCompilationTest
     {
-        [Fact]
-        public async Task CompilesInLimitedStackSpace()
+        [Theory]
+#if DEBUG
+        [InlineData(typeof(I150))]
+#else
+        [InlineData(typeof(I350))]
+#endif
+        public async Task CompilesInLimitedStackSpace(Type serviceType)
         {
             // Arrange
+            var stackSize = 256 * 1024;
             var serviceCollection = new ServiceCollection();
             CompilationTestDataProvider.Register(serviceCollection);
-
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act + Assert
@@ -29,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                         object service = null;
                         for (int i = 0; i < 10; i++)
                         {
-                            service = serviceProvider.GetService<I160>();
+                            service = serviceProvider.GetService(serviceType);
                         }
                         tsc.SetResult(service);
                     }
@@ -37,7 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                     {
                         tsc.SetException(ex);
                     }
-                }, 256 * 1024);
+                }, stackSize);
+
             thread.Start();
             thread.Join();
             await tsc.Task;
