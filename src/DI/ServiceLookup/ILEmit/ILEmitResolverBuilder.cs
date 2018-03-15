@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             var dynamicMethod = new DynamicMethod("ResolveService", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(object), new [] {typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) }, GetType(), true);
 
-            var info = ScopeDetector.Instance.CollectGenerationInfo(callSite);
+            var info = ILEmitCallSiteAnalyzer.Instance.CollectGenerationInfo(callSite);
             var context2 = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator(info.Size), info);
 
 #if SAVE_ASSEMBLY
@@ -281,7 +281,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return (Func<ServiceProviderEngineScope, object>)dynamicMethod.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), context2);
         }
 
-        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(IServiceCallSite callSite, ILGenerator generator, GenerationInfo info)
+        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(IServiceCallSite callSite, ILGenerator generator, ILEmitCallSiteAnalysisResult info)
         {
             var context = new ILEmitResolverBuilderContext()
             {
