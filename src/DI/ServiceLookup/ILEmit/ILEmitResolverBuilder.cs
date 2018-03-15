@@ -10,7 +10,7 @@ using System.Reflection.Emit;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal sealed class ILEmitResolverBuilder : CallSiteVisitor<ILEmitResolverBuilderContext, Expression>, IResolverBuilder
+    internal sealed class ILEmitResolverBuilder : CallSiteVisitor<ILEmitResolverBuilderContext, Expression>
     {
         private static readonly MethodInfo ResolvedServicesGetter = typeof(ServiceProviderEngineScope).GetProperty(
             nameof(ServiceProviderEngineScope.ResolvedServices), BindingFlags.Instance | BindingFlags.NonPublic).GetMethod;
@@ -261,7 +261,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var info = ScopeDetector.Instance.CollectGenerationInfo(callSite);
             var context2 = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator(info.Size), info);
 
-#if SAVE_ASSEMBLY || NET461
+#if SAVE_ASSEMBLY
             var assemblyName = "Test" + DateTime.Now.Ticks;
 
             var fileName = "Test" + DateTime.Now.Ticks;
