@@ -12,17 +12,23 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
     {
         [Theory]
 #if DEBUG
-        [InlineData(typeof(I150))]
+        [InlineData(ServiceProviderMode.Dynamic, typeof(I150))]
+        [InlineData(ServiceProviderMode.Runtime, typeof(I150))]
+        [InlineData(ServiceProviderMode.ILEmit, typeof(I150))]
+        [InlineData(ServiceProviderMode.Expressions, typeof(I150))]
 #else
-        [InlineData(typeof(I350))]
+        [InlineData(ServiceProviderMode.Dynamic, typeof(I350))]
+        [InlineData(ServiceProviderMode.Runtime, typeof(I350))]
+        [InlineData(ServiceProviderMode.ILEmit, typeof(I350))]
+        [InlineData(ServiceProviderMode.Expressions, typeof(I350))]
 #endif
-        public async Task CompilesInLimitedStackSpace(Type serviceType)
+        private async Task CompilesInLimitedStackSpace(ServiceProviderMode mode, Type serviceType)
         {
             // Arrange
             var stackSize = 256 * 1024;
             var serviceCollection = new ServiceCollection();
             CompilationTestDataProvider.Register(serviceCollection);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { Mode = mode });
 
             // Act + Assert
 
