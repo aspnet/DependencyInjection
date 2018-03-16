@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal struct ILEmitCallSiteAnalysisResult
+    internal readonly struct ILEmitCallSiteAnalysisResult
     {
         public ILEmitCallSiteAnalysisResult(int size) : this()
         {
@@ -20,21 +20,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public bool HasScope;
 
-        public ILEmitCallSiteAnalysisResult Add(ILEmitCallSiteAnalysisResult other)
+        public ILEmitCallSiteAnalysisResult Add(in ILEmitCallSiteAnalysisResult other)
         {
             return new ILEmitCallSiteAnalysisResult()
             {
                 Size = Size + other.Size,
                 HasScope = HasScope | other.HasScope
-            };
-        }
-
-        public ILEmitCallSiteAnalysisResult Add(byte size)
-        {
-            return new ILEmitCallSiteAnalysisResult()
-            {
-                Size = Size + size,
-                HasScope = HasScope
             };
         }
     }

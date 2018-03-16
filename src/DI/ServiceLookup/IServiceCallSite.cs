@@ -13,6 +13,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         Type ServiceType { get; }
         Type ImplementationType { get; }
         CallSiteKind Kind { get; }
-
     }
 }

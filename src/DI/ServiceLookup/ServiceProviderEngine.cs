@@ -24,8 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
             CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
             CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());
-
-            RealizedServices = new ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>>(new ReferenceEqualsEqualityComparer<Type>());
+            RealizedServices = new ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>>();
         }
 
         internal ConcurrentDictionary<Type, Func<ServiceProviderEngineScope, object>> RealizedServices { get; }
