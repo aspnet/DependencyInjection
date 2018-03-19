@@ -272,7 +272,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private Func<ServiceProviderEngineScope, object> BuildType(IServiceCallSite callSite)
         {
-            // We need to skit visibility checks because services/constructors might be private
+            // We need to skip visibility checks because services/constructors might be private
             var dynamicMethod = new DynamicMethod("ResolveService",
                 attributes: MethodAttributes.Public | MethodAttributes.Static,
                 callingConvention: CallingConventions.Standard,
@@ -312,6 +312,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 Constants = null,
                 Factories = null
             };
+
+            // try
+            // {
+            //    Monitor.Enter(scope.ResolvedServices, out var lockTaken);
+            //    return [ create value ]
+            // }
+            // finally
+            // {
+            //    if (lockTaken) Monitor.Exit(scope.ResolvedServices);
+            // }
+
+
             var hasScopes = info.HasScope;
             if (hasScopes)
             {
@@ -395,6 +407,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static void EndCaptureDisposable(ILEmitResolverBuilderContext argument)
         {
+            // Call CaptureDisposabl we expect calee and arguments to be on the stackcontext.Generator.BeginExceptionBlock
             argument.Generator.Emit(OpCodes.Callvirt, ExpressionResolverBuilder.CaptureDisposableMethodInfo);
         }
 
