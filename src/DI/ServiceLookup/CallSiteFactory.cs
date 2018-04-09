@@ -197,7 +197,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 Debug.Assert(descriptor.ImplementationType != null, "descriptor.ImplementationType != null");
 
-                var closedType = descriptor.ImplementationType.MakeGenericType(serviceType.GenericTypeArguments);
+                Type closedType;
+                try
+                {
+                    closedType = descriptor.ImplementationType.MakeGenericType(serviceType.GenericTypeArguments);
+                }
+                catch
+                {
+                    // This is the only way to reliably test generic constraints. See https://stackoverflow.com/questions/4864496/checking-if-an-object-meets-a-generic-parameter-constraint/4864565#4864565
+                    return null;
+                }
                 var constructorCallSite = CreateConstructorCallSite(serviceType, closedType, callSiteChain);
 
                 return ApplyLifetime(constructorCallSite, Tuple.Create(descriptor, serviceType), descriptor.Lifetime);
