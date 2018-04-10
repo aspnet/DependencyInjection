@@ -289,26 +289,27 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var typeDefinition = constraint.GetGenericTypeDefinition();
                 if (typeDefinition.GetTypeInfo().GenericTypeParameters.Length == genericArguments.Length)
                 {
+                    Type genericType;
                     try
                     {
-                        var genericType = typeDefinition.MakeGenericType(genericArguments);
-                        var constraintArguments = constraint.GetTypeInfo().GenericTypeArguments;
-
-                        for (var i = 0; i < constraintArguments.Length; i++)
-                        {
-                            var constraintArgument = constraintArguments[i].GetTypeInfo();
-                            if (!constraintArgument.IsGenericParameter && !constraintArgument.IsAssignableFrom(genericArguments[i].GetTypeInfo()))
-                            {
-                                return false;
-                            }
-                        }
-
-                        return genericType == parameter;
+                        genericType = typeDefinition.MakeGenericType(genericArguments);
                     }
                     catch (Exception)
                     {
                         return false;
                     }
+                    var constraintArguments = constraint.GetTypeInfo().GenericTypeArguments;
+
+                    for (var i = 0; i < constraintArguments.Length; i++)
+                    {
+                        var constraintArgument = constraintArguments[i].GetTypeInfo();
+                        if (!constraintArgument.IsGenericParameter && !constraintArgument.IsAssignableFrom(genericArguments[i].GetTypeInfo()))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return genericType == parameter;
                 }
             }
 
