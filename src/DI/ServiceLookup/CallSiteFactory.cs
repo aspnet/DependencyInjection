@@ -281,7 +281,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                        .Any(p => ParameterEqualsConstraint(p, constraint));
         }
 
-        //[SuppressMessage("Microsoft.Design", "CA1031", Justification = "Implementing a real TryMakeGenericType is not worth the effort.")]
         private static bool ParameterEqualsConstraint(Type parameter, Type constraint)
         {
             var genericArguments = parameter.GenericTypeArguments;
