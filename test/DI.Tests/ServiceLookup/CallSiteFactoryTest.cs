@@ -143,6 +143,40 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Assert.Null(nonMatchingCallSite);
         }
 
+        [Fact]
+        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyNewGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithNewConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+
+            // Act
+            var nonMatchingType = typeof(IFakeOpenGenericService<TypeWithNoPublicConstructors>);
+            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
+
+            // Assert
+            Assert.Null(nonMatchingCallSite);
+        }
+
+        [Fact]
+        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyInterfaceGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithInterfaceConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+
+            // Act
+            var nonMatchingType = typeof(IFakeOpenGenericService<int>);
+            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
+
+            // Assert
+            Assert.Null(nonMatchingCallSite);
+        }
+
         public static TheoryData CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParametersData =>
             new TheoryData<Type, Func<Type, object>, Type[]>
             {

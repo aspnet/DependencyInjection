@@ -230,7 +230,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 if ((specialConstraints & GenericParameterAttributes.DefaultConstructorConstraint)
 				    == GenericParameterAttributes.DefaultConstructorConstraint)
                 {
-                    if (!parameterTypeInfo.IsValueType && parameterTypeInfo.DeclaredConstructors.All(c => c.GetParameters().Length != 0))
+                    if (!parameterTypeInfo.IsValueType && parameterTypeInfo.DeclaredConstructors.Where(c => c.IsPublic).All(c => c.GetParameters().Length != 0))
                     {
                         return false;
                     }
