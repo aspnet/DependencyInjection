@@ -177,6 +177,45 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Assert.Null(nonMatchingCallSite);
         }
 
+        [Theory]
+        [InlineData(typeof(IFakeOpenGenericService<int>), default(int), new[] { typeof(FakeOpenGenericService<int>), typeof(TypeWithStructConstraint<int>), typeof(TypeWithNewConstraint<int>) })]
+        [InlineData(typeof(IFakeOpenGenericService<string>), "", new[] { typeof(FakeOpenGenericService<string>), typeof(TypeWithClassConstraint<string>), typeof(TypeWithInterfaceConstraint<string>) })]
+        public void CreateCallSite_ReturnsMatchingTypesThatMatchCorrectConstraints(Type closedServiceType, object value, Type[] matchingImplementationTypes)
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+
+            var noConstraintImplementationType = typeof(FakeOpenGenericService<>);
+            var noConstraintDescriptor = new ServiceDescriptor(serviceType, noConstraintImplementationType, ServiceLifetime.Transient);
+
+            var structImplementationType = typeof(TypeWithStructConstraint<>);
+            var structDescriptor = new ServiceDescriptor(serviceType, structImplementationType, ServiceLifetime.Transient);
+
+            var classImplementationType = typeof(TypeWithClassConstraint<>);
+            var classDescriptor = new ServiceDescriptor(serviceType, classImplementationType, ServiceLifetime.Transient);
+
+            var newImplementationType = typeof(TypeWithNewConstraint<>);
+            var newDescriptor = new ServiceDescriptor(serviceType, newImplementationType, ServiceLifetime.Transient);
+
+            var interfaceImplementationType = typeof(TypeWithInterfaceConstraint<>);
+            var interfaceDescriptor = new ServiceDescriptor(serviceType, interfaceImplementationType, ServiceLifetime.Transient);
+
+            var serviceValueType = closedServiceType.GenericTypeArguments[0];
+            var serviceValueDescriptor = new ServiceDescriptor(serviceValueType, value);
+
+            var callSiteFactory = GetCallSiteFactory(noConstraintDescriptor, structDescriptor, classDescriptor, newDescriptor, interfaceDescriptor, serviceValueDescriptor);
+
+            var collectionType = typeof(IEnumerable<>).MakeGenericType(closedServiceType);
+
+            // Act
+            var callSite = callSiteFactory(collectionType);
+
+            // Assert
+            var enumerableCall = Assert.IsType<IEnumerableCallSite>(callSite);
+            Assert.Equal(matchingImplementationTypes.Length, enumerableCall.ServiceCallSites.Length);
+            Assert.Equal(enumerableCall.ServiceCallSites.Select(scs => scs.ImplementationType).ToArray(), matchingImplementationTypes);
+        }
+
         public static TheoryData CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParametersData =>
             new TheoryData<Type, Func<Type, object>, Type[]>
             {
