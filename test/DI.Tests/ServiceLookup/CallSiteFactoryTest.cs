@@ -109,6 +109,23 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Assert.IsType<CreateInstanceCallSite>(transientCall.ServiceCallSite);
         }
 
+        [Fact]
+        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyStructGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithStructConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+
+            // Act
+            var nonMatchingType = typeof(IFakeOpenGenericService<object>);
+            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
+
+            // Assert
+            Assert.Null(nonMatchingCallSite);
+        }
+
         public static TheoryData CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParametersData =>
             new TheoryData<Type, Func<Type, object>, Type[]>
             {

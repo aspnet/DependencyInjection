@@ -295,7 +295,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     {
                         genericType = typeDefinition.MakeGenericType(genericArguments);
                     }
-					catch (ArgumentException)
+                    catch (ArgumentException)
                     {
                         return false;
                     }
