@@ -228,7 +228,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var specialConstraints = argumentDefinitionTypeInfo.GenericParameterAttributes;
 
                 if ((specialConstraints & GenericParameterAttributes.DefaultConstructorConstraint)
-                    != GenericParameterAttributes.None)
+				    == GenericParameterAttributes.DefaultConstructorConstraint)
                 {
                     if (!parameterTypeInfo.IsValueType && parameterTypeInfo.DeclaredConstructors.All(c => c.GetParameters().Length != 0))
                     {
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 }
 
                 if ((specialConstraints & GenericParameterAttributes.ReferenceTypeConstraint)
-                    != GenericParameterAttributes.None)
+				    == GenericParameterAttributes.ReferenceTypeConstraint)
                 {
                     if (parameterTypeInfo.IsValueType)
                     {
@@ -246,7 +246,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 }
 
                 if ((specialConstraints & GenericParameterAttributes.NotNullableValueTypeConstraint)
-                    != GenericParameterAttributes.None)
+				    == GenericParameterAttributes.NotNullableValueTypeConstraint)
                 {
                     if (!parameterTypeInfo.IsValueType ||
                         (parameterTypeInfo.IsGenericType && IsGenericTypeDefinedBy(parameter, typeof(Nullable<>))))
@@ -261,8 +261,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static bool IsGenericTypeDefinedBy(Type type, Type openGeneric)
         {
-            return !type.GetTypeInfo().ContainsGenericParameters
-                       && type.GetTypeInfo().IsGenericType
+			var typeInfo = type.GetTypeInfo();
+			return !typeInfo.ContainsGenericParameters
+                       && typeInfo.IsGenericType
                        && type.GetGenericTypeDefinition() == openGeneric;
         }
 
