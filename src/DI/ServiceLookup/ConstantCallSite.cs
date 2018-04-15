@@ -9,13 +9,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         internal object DefaultValue { get; }
 
-        public ConstantCallSite(Type serviceType, object defaultValue)
+        public ConstantCallSite(Type serviceType, object defaultValue): base(new ResultCache(ServiceLifetime.Singleton, null))
         {
             DefaultValue = defaultValue;
         }
 
-        public Type ServiceType => DefaultValue.GetType();
-        public Type ImplementationType => DefaultValue.GetType();
-        public CallSiteKind Kind { get; } = CallSiteKind.Constant;
+        public override Type ServiceType => DefaultValue.GetType();
+        public override Type ImplementationType => DefaultValue.GetType();
+        public override CallSiteKind Kind { get; } = CallSiteKind.Constant;
     }
 }

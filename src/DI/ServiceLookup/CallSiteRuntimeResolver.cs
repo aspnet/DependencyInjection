@@ -10,18 +10,25 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return VisitCallSite(callSite, scope);
         }
 
-        protected override object VisitTransient(TransientCallSite transientCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitTransient(IServiceCallSite transientCallSite, ServiceProviderEngineScope scope)
         {
-            return scope.CaptureDisposable(
-                VisitCallSite(transientCallSite.ServiceCallSite, scope));
+            return scope.CaptureDisposable(base.VisitTransient(transientCallSite, scope));
         }
 
         protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
         {
-            object[] parameterValues = new object[constructorCallSite.ParameterCallSites.Length];
-            for (var index = 0; index < parameterValues.Length; index++)
+            object[] parameterValues;
+            if (constructorCallSite.ParameterCallSites.Length == 0)
             {
-                parameterValues[index] = VisitCallSite(constructorCallSite.ParameterCallSites[index], scope);
+                parameterValues = Array.Empty<object>();
+            }
+            else
+            {
+                parameterValues = new object[constructorCallSite.ParameterCallSites.Length];
+                for (var index = 0; index < parameterValues.Length; index++)
+                {
+                    parameterValues[index] = VisitCallSite(constructorCallSite.ParameterCallSites[index], scope);
+                }
             }
 
             try
@@ -36,20 +43,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitSingleton(IServiceCallSite singletonCallSite, ServiceProviderEngineScope scope)
         {
             return VisitScoped(singletonCallSite, scope.Engine.Root);
         }
 
-        protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitScoped(IServiceCallSite scopedCallSite, ServiceProviderEngineScope scope)
         {
             lock (scope.ResolvedServices)
             {
-                if (!scope.ResolvedServices.TryGetValue(scopedCallSite.CacheKey, out var resolved))
+                if (!scope.ResolvedServices.TryGetValue(scopedCallSite.Cache.Key, out var resolved))
                 {
-                    resolved = VisitCallSite(scopedCallSite.ServiceCallSite, scope);
+                    resolved = base.VisitScoped(scopedCallSite, scope);
                     scope.CaptureDisposable(resolved);
-                    scope.ResolvedServices.Add(scopedCallSite.CacheKey, resolved);
+                    scope.ResolvedServices.Add(scopedCallSite.Cache.Key, resolved);
                 }
                 return resolved;
             }
@@ -58,20 +65,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProviderEngineScope scope)
         {
             return constantCallSite.DefaultValue;
-        }
-
-        protected override object VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ServiceProviderEngineScope scope)
-        {
-            try
-            {
-                return Activator.CreateInstance(createInstanceCallSite.ImplementationType);
-            }
-            catch (Exception ex) when (ex.InnerException != null)
-            {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                // The above line will always throw, but the compiler requires we throw explicitly.
-                throw;
-            }
         }
 
         protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProviderEngineScope scope)

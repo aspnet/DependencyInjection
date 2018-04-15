@@ -54,11 +54,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Func<ServiceProviderEngineScope, object> Build(IServiceCallSite callSite)
         {
-            if (callSite is SingletonCallSite singletonCallSite)
+            if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
             {
                 // If root call site is singleton we can return Func calling
                 // _runtimeResolver.Resolve directly and avoid Expression generation
-                if (TryResolveSingletonValue(singletonCallSite, out var value))
+                if (TryResolveSingletonValue(callSite, out var value))
                 {
                     return scope => value;
                 }
@@ -69,11 +69,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return BuildExpression(callSite).Compile();
         }
 
-        private bool TryResolveSingletonValue(SingletonCallSite singletonCallSite, out object value)
+        private bool TryResolveSingletonValue(IServiceCallSite singletonCallSite, out object value)
         {
             lock (_rootScope.ResolvedServices)
             {
-                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.CacheKey, out value);
+                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.Cache.Key, out value);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(serviceExpression, ScopeParameter);
         }
 
-        protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitSingleton(IServiceCallSite singletonCallSite, CallSiteExpressionBuilderContext context)
         {
             if (TryResolveSingletonValue(singletonCallSite, out var value))
             {
@@ -116,11 +116,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitConstant(ConstantCallSite constantCallSite, CallSiteExpressionBuilderContext context)
         {
             return Expression.Constant(constantCallSite.DefaultValue);
-        }
-
-        protected override Expression VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, CallSiteExpressionBuilderContext context)
-        {
-            return Expression.New(createInstanceCallSite.ImplementationType);
         }
 
         protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, CallSiteExpressionBuilderContext context)
@@ -155,14 +150,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         callSite.ItemType)));
         }
 
-        protected override Expression VisitTransient(TransientCallSite callSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitTransient(IServiceCallSite callSite, CallSiteExpressionBuilderContext context)
         {
-            var implType = callSite.ServiceCallSite.ImplementationType;
+            var implType = callSite.ImplementationType;
             // Elide calls to GetCaptureDisposable if the implementation type isn't disposable
             return TryCaptureDisposible(
                 implType,
                 context.ScopeParameter,
-                VisitCallSite(callSite.ServiceCallSite, context));
+                base.VisitTransient(callSite, context));
         }
 
         private Expression TryCaptureDisposible(Type implType, ParameterExpression scope, Expression service)
@@ -180,10 +175,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitConstructor(ConstructorCallSite callSite, CallSiteExpressionBuilderContext context)
         {
             var parameters = callSite.ConstructorInfo.GetParameters();
-            var parameterExpressions = new Expression[callSite.ParameterCallSites.Length];
-            for (int i = 0; i < parameterExpressions.Length; i++)
+            Expression[] parameterExpressions;
+            if (callSite.ParameterCallSites.Length == 0)
             {
-                parameterExpressions[i] = Convert(VisitCallSite(callSite.ParameterCallSites[i], context), parameters[i].ParameterType);
+                parameterExpressions = Array.Empty<Expression>();
+            }
+            else
+            {
+                parameterExpressions = new Expression[callSite.ParameterCallSites.Length];
+                for (int i = 0; i < parameterExpressions.Length; i++)
+                {
+                    parameterExpressions[i] = Convert(VisitCallSite(callSite.ParameterCallSites[i], context), parameters[i].ParameterType);
+                }
             }
             return Expression.New(callSite.ConstructorInfo, parameterExpressions);
         }
@@ -199,16 +202,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.Convert(expression, type);
         }
 
-        protected override Expression VisitScoped(ScopedCallSite callSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitScoped(IServiceCallSite callSite, CallSiteExpressionBuilderContext context)
         {
-            return BuildScopedExpression(callSite, context, VisitCallSite(callSite.ServiceCallSite, context));
+            return BuildScopedExpression(callSite, context, base.VisitScoped(callSite, context));
         }
 
         // Move off the main stack
-        private Expression BuildScopedExpression(ScopedCallSite callSite, CallSiteExpressionBuilderContext context, Expression service)
+        private Expression BuildScopedExpression(IServiceCallSite callSite, CallSiteExpressionBuilderContext context, Expression service)
         {
             var keyExpression = Expression.Constant(
-                callSite.CacheKey,
+                callSite.Cache.Key,
                 typeof(object));
 
             var resolvedVariable = Expression.Variable(typeof(object), "resolved");

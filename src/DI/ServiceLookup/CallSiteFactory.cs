@@ -166,6 +166,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (serviceType == descriptor.ServiceType)
             {
+                var lifetime = new ResultCache(descriptor.Lifetime, descriptor);
+
                 IServiceCallSite callSite;
                 if (descriptor.ImplementationInstance != null)
                 {
@@ -173,18 +175,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 }
                 else if (descriptor.ImplementationFactory != null)
                 {
-                    callSite = new FactoryCallSite(descriptor.ServiceType, descriptor.ImplementationFactory);
+                    callSite = new FactoryCallSite(lifetime, descriptor.ServiceType, descriptor.ImplementationFactory);
                 }
                 else if (descriptor.ImplementationType != null)
                 {
-                    callSite = CreateConstructorCallSite(descriptor.ServiceType, descriptor.ImplementationType, callSiteChain);
+                    callSite = CreateConstructorCallSite(lifetime, descriptor.ServiceType, descriptor.ImplementationType, callSiteChain);
                 }
                 else
                 {
                     throw new InvalidOperationException("Invalid service descriptor");
                 }
 
-                return ApplyLifetime(callSite, descriptor, descriptor.Lifetime);
+                return callSite;
             }
 
             return null;
@@ -196,37 +198,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 serviceType.GetGenericTypeDefinition() == descriptor.ServiceType)
             {
                 Debug.Assert(descriptor.ImplementationType != null, "descriptor.ImplementationType != null");
-
+                var lifetime = new ResultCache(descriptor.Lifetime, Tuple.Create(descriptor, serviceType));
                 var closedType = descriptor.ImplementationType.MakeGenericType(serviceType.GenericTypeArguments);
-                var constructorCallSite = CreateConstructorCallSite(serviceType, closedType, callSiteChain);
-
-                return ApplyLifetime(constructorCallSite, Tuple.Create(descriptor, serviceType), descriptor.Lifetime);
+                return CreateConstructorCallSite(lifetime, serviceType, closedType, callSiteChain);
             }
 
             return null;
         }
 
-        private IServiceCallSite ApplyLifetime(IServiceCallSite serviceCallSite, object cacheKey, ServiceLifetime descriptorLifetime)
-        {
-            if (serviceCallSite is ConstantCallSite)
-            {
-                return serviceCallSite;
-            }
-
-            switch (descriptorLifetime)
-            {
-                case ServiceLifetime.Transient:
-                    return new TransientCallSite(serviceCallSite);
-                case ServiceLifetime.Scoped:
-                    return new ScopedCallSite(serviceCallSite, cacheKey);
-                case ServiceLifetime.Singleton:
-                    return new SingletonCallSite(serviceCallSite, cacheKey);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(descriptorLifetime));
-            }
-        }
-
-        private IServiceCallSite CreateConstructorCallSite(Type serviceType, Type implementationType, CallSiteChain callSiteChain)
+        private IServiceCallSite CreateConstructorCallSite(ResultCache lifetime, Type serviceType, Type implementationType,
+            CallSiteChain callSiteChain)
         {
             callSiteChain.Add(serviceType, implementationType);
 
@@ -247,7 +228,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var parameters = constructor.GetParameters();
                 if (parameters.Length == 0)
                 {
-                    return new CreateInstanceCallSite(serviceType, implementationType);
+                    return new ConstructorCallSite(lifetime, serviceType, constructor);
                 }
 
                 parameterCallSites = CreateArgumentCallSites(
@@ -257,7 +238,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     parameters,
                     throwIfCallSiteNotFound: true);
 
-                return new ConstructorCallSite(serviceType, constructor, parameterCallSites);
+                return new ConstructorCallSite(lifetime, serviceType, constructor, parameterCallSites);
             }
 
             Array.Sort(constructors,
@@ -316,9 +297,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             else
             {
                 Debug.Assert(parameterCallSites != null);
-                return parameterCallSites.Length == 0 ?
-                    (IServiceCallSite)new CreateInstanceCallSite(serviceType, implementationType) :
-                    new ConstructorCallSite(serviceType, bestConstructor, parameterCallSites);
+                return new ConstructorCallSite(lifetime, serviceType, bestConstructor, parameterCallSites);
             }
         }
 

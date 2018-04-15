@@ -11,16 +11,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal ConstructorInfo ConstructorInfo { get; }
         internal IServiceCallSite[] ParameterCallSites { get; }
 
-        public ConstructorCallSite(Type serviceType, ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites)
+        public ConstructorCallSite(ResultCache cache, Type serviceType, ConstructorInfo constructorInfo) : this(cache, serviceType, constructorInfo, Array.Empty<IServiceCallSite>())
+        {
+        }
+
+        public ConstructorCallSite(ResultCache cache, Type serviceType, ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites) : base(cache)
         {
             ServiceType = serviceType;
             ConstructorInfo = constructorInfo;
             ParameterCallSites = parameterCallSites;
         }
 
-        public Type ServiceType { get; }
+        public override Type ServiceType { get; }
 
-        public Type ImplementationType => ConstructorInfo.DeclaringType;
-        public CallSiteKind Kind { get; } = CallSiteKind.Constructor;
+        public override Type ImplementationType => ConstructorInfo.DeclaringType;
+        public override CallSiteKind Kind { get; } = CallSiteKind.Constructor;
     }
 }

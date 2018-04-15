@@ -11,14 +11,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal Type ItemType { get; }
         internal IServiceCallSite[] ServiceCallSites { get; }
 
-        public IEnumerableCallSite(Type itemType, IServiceCallSite[] serviceCallSites)
+        public IEnumerableCallSite(Type itemType, IServiceCallSite[] serviceCallSites) : base(new ResultCache(ServiceLifetime.Transient, null))
         {
             ItemType = itemType;
             ServiceCallSites = serviceCallSites;
         }
 
-        public Type ServiceType => typeof(IEnumerable<>).MakeGenericType(ItemType);
-        public Type ImplementationType  => ItemType.MakeArrayType();
-        public CallSiteKind Kind { get; } = CallSiteKind.IEnumerable;
+        public override Type ServiceType => typeof(IEnumerable<>).MakeGenericType(ItemType);
+        public override Type ImplementationType  => ItemType.MakeArrayType();
+        public override CallSiteKind Kind { get; } = CallSiteKind.IEnumerable;
     }
 }

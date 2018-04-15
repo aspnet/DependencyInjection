@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         internal static ILEmitCallSiteAnalyzer Instance { get; } = new ILEmitCallSiteAnalyzer();
 
-        protected override ILEmitCallSiteAnalysisResult VisitTransient(TransientCallSite transientCallSite, object argument) => VisitCallSite(transientCallSite.ServiceCallSite, argument);
+        protected override ILEmitCallSiteAnalysisResult VisitTransient(IServiceCallSite transientCallSite, object argument) => base.VisitTransient(transientCallSite, argument);
 
         protected override ILEmitCallSiteAnalysisResult VisitConstructor(ConstructorCallSite constructorCallSite, object argument)
         {
@@ -32,16 +32,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return result;
         }
 
-        protected override ILEmitCallSiteAnalysisResult VisitSingleton(SingletonCallSite singletonCallSite, object argument) => VisitCallSite(singletonCallSite.ServiceCallSite, argument);
+        protected override ILEmitCallSiteAnalysisResult VisitSingleton(IServiceCallSite singletonCallSite, object argument) => base.VisitSingleton(singletonCallSite, argument);
 
-        protected override ILEmitCallSiteAnalysisResult VisitScoped(ScopedCallSite scopedCallSite, object argument)
+        protected override ILEmitCallSiteAnalysisResult VisitScoped(IServiceCallSite scopedCallSite, object argument)
         {
-            return new ILEmitCallSiteAnalysisResult(ScopedILSize, hasScope: true).Add(VisitCallSite(scopedCallSite.ServiceCallSite, argument));
+            return new ILEmitCallSiteAnalysisResult(ScopedILSize, hasScope: true).Add(base.VisitScoped(scopedCallSite, argument));
         }
 
         protected override ILEmitCallSiteAnalysisResult VisitConstant(ConstantCallSite constantCallSite, object argument) => new ILEmitCallSiteAnalysisResult(ConstantILSize);
-
-        protected override ILEmitCallSiteAnalysisResult VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, object argument) => new ILEmitCallSiteAnalysisResult(ConstructorILSize);
 
         protected override ILEmitCallSiteAnalysisResult VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, object argument) => new ILEmitCallSiteAnalysisResult(ServiceProviderSize);
 

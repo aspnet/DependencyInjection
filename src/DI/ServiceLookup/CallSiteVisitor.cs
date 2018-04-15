@@ -6,6 +6,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         protected virtual TResult VisitCallSite(IServiceCallSite callSite, TArgument argument)
         {
+            switch (callSite.Cache.Location)
+            {
+                case CallSiteResultCacheLocation.Root:
+                    return VisitSingleton(callSite, argument);
+                case CallSiteResultCacheLocation.Scope:
+                    return VisitScoped(callSite, argument);
+                case CallSiteResultCacheLocation.None:
+                    return VisitTransient(callSite, argument);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected virtual TResult VisitCallSiteMain(IServiceCallSite callSite, TArgument argument)
+        {
             switch (callSite.Kind)
             {
                 case CallSiteKind.Factory:
@@ -14,16 +29,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     return VisitIEnumerable((IEnumerableCallSite)callSite, argument);
                 case CallSiteKind.Constructor:
                     return VisitConstructor((ConstructorCallSite)callSite, argument);
-                case CallSiteKind.Transient:
-                    return VisitTransient((TransientCallSite)callSite, argument);
-                case CallSiteKind.Singleton:
-                    return VisitSingleton((SingletonCallSite)callSite, argument);
-                case CallSiteKind.Scope:
-                    return VisitScoped((ScopedCallSite)callSite, argument);
                 case CallSiteKind.Constant:
                     return VisitConstant((ConstantCallSite)callSite, argument);
-                case CallSiteKind.CreateInstance:
-                    return VisitCreateInstance((CreateInstanceCallSite)callSite, argument);
                 case CallSiteKind.ServiceProvider:
                     return VisitServiceProvider((ServiceProviderCallSite)callSite, argument);
                 case CallSiteKind.ServiceScopeFactory:
@@ -33,17 +40,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected abstract TResult VisitTransient(TransientCallSite transientCallSite, TArgument argument);
+        protected virtual TResult VisitTransient(IServiceCallSite callSite, TArgument argument)
+        {
+            return VisitCallSiteMain(callSite, argument);
+        }
 
         protected abstract TResult VisitConstructor(ConstructorCallSite constructorCallSite, TArgument argument);
 
-        protected abstract TResult VisitSingleton(SingletonCallSite singletonCallSite, TArgument argument);
+        protected virtual TResult VisitSingleton(IServiceCallSite callSite, TArgument argument)
+        {
+            return VisitCallSiteMain(callSite, argument);
+        }
 
-        protected abstract TResult VisitScoped(ScopedCallSite scopedCallSite, TArgument argument);
+        protected virtual TResult VisitScoped(IServiceCallSite callSite, TArgument argument)
+        {
+            return VisitCallSiteMain(callSite, argument);
+        }
 
         protected abstract TResult VisitConstant(ConstantCallSite constantCallSite, TArgument argument);
-
-        protected abstract TResult VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, TArgument argument);
 
         protected abstract TResult VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, TArgument argument);
 
