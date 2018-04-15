@@ -6,16 +6,16 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ConstructorCallSite : IServiceCallSite
+    internal class ConstructorCallSite : ServiceCallSite
     {
         internal ConstructorInfo ConstructorInfo { get; }
-        internal IServiceCallSite[] ParameterCallSites { get; }
+        internal ServiceCallSite[] ParameterCallSites { get; }
 
-        public ConstructorCallSite(ResultCache cache, Type serviceType, ConstructorInfo constructorInfo) : this(cache, serviceType, constructorInfo, Array.Empty<IServiceCallSite>())
+        public ConstructorCallSite(ResultCache cache, Type serviceType, ConstructorInfo constructorInfo) : this(cache, serviceType, constructorInfo, Array.Empty<ServiceCallSite>())
         {
         }
 
-        public ConstructorCallSite(ResultCache cache, Type serviceType, ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites) : base(cache)
+        public ConstructorCallSite(ResultCache cache, Type serviceType, ConstructorInfo constructorInfo, ServiceCallSite[] parameterCallSites) : base(cache)
         {
             ServiceType = serviceType;
             ConstructorInfo = constructorInfo;

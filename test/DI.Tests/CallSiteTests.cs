@@ -311,12 +311,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             }
         }
 
-        private static object Invoke(IServiceCallSite callSite, ServiceProviderEngine provider)
+        private static object Invoke(ServiceCallSite callSite, ServiceProviderEngine provider)
         {
             return CallSiteRuntimeResolver.Resolve(callSite, provider.Root);
         }
 
-        private static Func<ServiceProviderEngineScope, object> CompileCallSite(IServiceCallSite callSite, ServiceProviderEngine engine)
+        private static Func<ServiceProviderEngineScope, object> CompileCallSite(ServiceCallSite callSite, ServiceProviderEngine engine)
         {
             return new ExpressionResolverBuilder(CallSiteRuntimeResolver, engine, engine.Root).Build(callSite);
         }

@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class FactoryCallSite : IServiceCallSite
+    internal class FactoryCallSite : ServiceCallSite
     {
         public Func<IServiceProvider, object> Factory { get; }
 

@@ -5,11 +5,11 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ConstantCallSite : IServiceCallSite
+    internal class ConstantCallSite : ServiceCallSite
     {
         internal object DefaultValue { get; }
 
-        public ConstantCallSite(Type serviceType, object defaultValue): base(new ResultCache(ServiceLifetime.Singleton, null))
+        public ConstantCallSite(Type serviceType, object defaultValue): base(ResultCache.None)
         {
             DefaultValue = defaultValue;
         }

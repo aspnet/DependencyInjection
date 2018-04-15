@@ -4,22 +4,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal abstract class CallSiteVisitor<TArgument, TResult>
     {
-        protected virtual TResult VisitCallSite(IServiceCallSite callSite, TArgument argument)
+        protected virtual TResult VisitCallSite(ServiceCallSite callSite, TArgument argument)
         {
             switch (callSite.Cache.Location)
             {
                 case CallSiteResultCacheLocation.Root:
-                    return VisitSingleton(callSite, argument);
+                    return VisitRootCache(callSite, argument);
                 case CallSiteResultCacheLocation.Scope:
-                    return VisitScoped(callSite, argument);
+                    return VisitScopeCache(callSite, argument);
+                case CallSiteResultCacheLocation.Dispose:
+                    return VisitDisposeCache(callSite, argument);
                 case CallSiteResultCacheLocation.None:
-                    return VisitTransient(callSite, argument);
+                    return VisitNoCache(callSite, argument);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        protected virtual TResult VisitCallSiteMain(IServiceCallSite callSite, TArgument argument)
+        protected virtual TResult VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
         {
             switch (callSite.Kind)
             {
@@ -40,22 +42,27 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected virtual TResult VisitTransient(IServiceCallSite callSite, TArgument argument)
+        protected virtual TResult VisitNoCache(ServiceCallSite callSite, TArgument argument)
+        {
+            return VisitCallSiteMain(callSite, argument);
+        }
+
+        protected virtual TResult VisitDisposeCache(ServiceCallSite callSite, TArgument argument)
+        {
+            return VisitCallSiteMain(callSite, argument);
+        }
+
+        protected virtual TResult VisitRootCache(ServiceCallSite callSite, TArgument argument)
+        {
+            return VisitCallSiteMain(callSite, argument);
+        }
+
+        protected virtual TResult VisitScopeCache(ServiceCallSite callSite, TArgument argument)
         {
             return VisitCallSiteMain(callSite, argument);
         }
 
         protected abstract TResult VisitConstructor(ConstructorCallSite constructorCallSite, TArgument argument);
-
-        protected virtual TResult VisitSingleton(IServiceCallSite callSite, TArgument argument)
-        {
-            return VisitCallSiteMain(callSite, argument);
-        }
-
-        protected virtual TResult VisitScoped(IServiceCallSite callSite, TArgument argument)
-        {
-            return VisitCallSiteMain(callSite, argument);
-        }
 
         protected abstract TResult VisitConstant(ConstantCallSite constantCallSite, TArgument argument);
 

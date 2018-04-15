@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     /// <summary>
     /// Summary description for IServiceCallSite
     /// </summary>
-    internal abstract class IServiceCallSite
+    internal abstract class ServiceCallSite
     {
-        public IServiceCallSite(ResultCache cache)
+        public ServiceCallSite(ResultCache cache)
         {
             Cache = cache;
         }
@@ -25,27 +25,37 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         Root,
         Scope,
+        Dispose,
         None
     }
 
     internal struct ResultCache
     {
+        public static ResultCache None { get; } = new ResultCache(CallSiteResultCacheLocation.None, null);
+
         public ResultCache(CallSiteResultCacheLocation lifetime, object cacheKey)
         {
             Location = lifetime;
             Key = cacheKey;
         }
 
-
         public ResultCache(ServiceLifetime lifetime, object cacheKey)
         {
+            if (lifetime != ServiceLifetime.Transient && cacheKey == null)
+            {
+                throw new ArgumentNullException(nameof(cacheKey));
+            }
+
             switch (lifetime)
             {
                 case ServiceLifetime.Singleton:
                     Location = CallSiteResultCacheLocation.Root;
                     break;
                 case ServiceLifetime.Scoped:
-                    Location = CallSiteResultCacheLocation.Root;
+                    Location = CallSiteResultCacheLocation.Scope;
+                    break;
+                case ServiceLifetime.Transient:
+                    Location = CallSiteResultCacheLocation.Dispose;
                     break;
                 default:
                     Location = CallSiteResultCacheLocation.None;

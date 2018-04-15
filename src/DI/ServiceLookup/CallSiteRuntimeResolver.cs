@@ -5,14 +5,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope, object>
     {
-        public object Resolve(IServiceCallSite callSite, ServiceProviderEngineScope scope)
+        public object Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
         {
             return VisitCallSite(callSite, scope);
         }
 
-        protected override object VisitTransient(IServiceCallSite transientCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitDisposeCache(ServiceCallSite transientCallSite, ServiceProviderEngineScope scope)
         {
-            return scope.CaptureDisposable(base.VisitTransient(transientCallSite, scope));
+            return scope.CaptureDisposable(base.VisitDisposeCache(transientCallSite, scope));
         }
 
         protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
@@ -43,18 +43,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitSingleton(IServiceCallSite singletonCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitRootCache(ServiceCallSite singletonCallSite, ServiceProviderEngineScope scope)
         {
-            return VisitScoped(singletonCallSite, scope.Engine.Root);
+            return VisitScopeCache(singletonCallSite, scope.Engine.Root);
         }
 
-        protected override object VisitScoped(IServiceCallSite scopedCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitScopeCache(ServiceCallSite scopedCallSite, ServiceProviderEngineScope scope)
         {
             lock (scope.ResolvedServices)
             {
                 if (!scope.ResolvedServices.TryGetValue(scopedCallSite.Cache.Key, out var resolved))
                 {
-                    resolved = base.VisitScoped(scopedCallSite, scope);
+                    resolved = base.VisitScopeCache(scopedCallSite, scope);
                     scope.CaptureDisposable(resolved);
                     scope.ResolvedServices.Add(scopedCallSite.Cache.Key, resolved);
                 }

@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public object GetService(Type serviceType) => GetService(serviceType, Root);
 
-        protected abstract Func<ServiceProviderEngineScope, object> RealizeService(IServiceCallSite callSite);
+        protected abstract Func<ServiceProviderEngineScope, object> RealizeService(ServiceCallSite callSite);
 
         public void Dispose()
         {

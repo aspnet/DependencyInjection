@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceScopeFactoryCallSite : IServiceCallSite
+    internal class ServiceScopeFactoryCallSite : ServiceCallSite
     {
-        public ServiceScopeFactoryCallSite() : base(new ResultCache(ServiceLifetime.Singleton, null))
+        public ServiceScopeFactoryCallSite() : base(ResultCache.None)
         {
         }
 

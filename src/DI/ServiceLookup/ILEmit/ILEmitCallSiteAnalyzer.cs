@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         internal static ILEmitCallSiteAnalyzer Instance { get; } = new ILEmitCallSiteAnalyzer();
 
-        protected override ILEmitCallSiteAnalysisResult VisitTransient(IServiceCallSite transientCallSite, object argument) => base.VisitTransient(transientCallSite, argument);
+        protected override ILEmitCallSiteAnalysisResult VisitDisposeCache(ServiceCallSite transientCallSite, object argument) => base.VisitDisposeCache(transientCallSite, argument);
 
         protected override ILEmitCallSiteAnalysisResult VisitConstructor(ConstructorCallSite constructorCallSite, object argument)
         {
@@ -32,11 +32,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return result;
         }
 
-        protected override ILEmitCallSiteAnalysisResult VisitSingleton(IServiceCallSite singletonCallSite, object argument) => base.VisitSingleton(singletonCallSite, argument);
+        protected override ILEmitCallSiteAnalysisResult VisitRootCache(ServiceCallSite singletonCallSite, object argument) => base.VisitRootCache(singletonCallSite, argument);
 
-        protected override ILEmitCallSiteAnalysisResult VisitScoped(IServiceCallSite scopedCallSite, object argument)
+        protected override ILEmitCallSiteAnalysisResult VisitScopeCache(ServiceCallSite scopedCallSite, object argument)
         {
-            return new ILEmitCallSiteAnalysisResult(ScopedILSize, hasScope: true).Add(base.VisitScoped(scopedCallSite, argument));
+            return new ILEmitCallSiteAnalysisResult(ScopedILSize, hasScope: true).Add(base.VisitScopeCache(scopedCallSite, argument));
         }
 
         protected override ILEmitCallSiteAnalysisResult VisitConstant(ConstantCallSite constantCallSite, object argument) => new ILEmitCallSiteAnalysisResult(ConstantILSize);
@@ -57,6 +57,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override ILEmitCallSiteAnalysisResult VisitFactory(FactoryCallSite factoryCallSite, object argument) => new ILEmitCallSiteAnalysisResult(FactoryILSize);
 
-        public ILEmitCallSiteAnalysisResult CollectGenerationInfo(IServiceCallSite callSite) => VisitCallSite(callSite, null);
+        public ILEmitCallSiteAnalysisResult CollectGenerationInfo(ServiceCallSite callSite) => VisitCallSite(callSite, null);
     }
 }

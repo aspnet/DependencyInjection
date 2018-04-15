@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _rootScope = rootScope;
         }
 
-        public Func<ServiceProviderEngineScope, object> Build(IServiceCallSite callSite)
+        public Func<ServiceProviderEngineScope, object> Build(ServiceCallSite callSite)
         {
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
             {
@@ -63,12 +63,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return BuildType(callSite);
         }
 
-        protected override Expression VisitTransient(IServiceCallSite transientCallSite, ILEmitResolverBuilderContext argument)
+        protected override Expression VisitDisposeCache(ServiceCallSite transientCallSite, ILEmitResolverBuilderContext argument)
         {
             // RuntimeScope.CaptureDisposables([create value])
             var shouldCapture = BeginCaptureDisposable(transientCallSite.ImplementationType, argument);
 
-            base.VisitTransient(transientCallSite, argument);
+            base.VisitDisposeCache(transientCallSite, argument);
 
             if (shouldCapture)
             {
@@ -88,9 +88,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitSingleton(IServiceCallSite singletonCallSite, ILEmitResolverBuilderContext argument)
+        protected override Expression VisitRootCache(ServiceCallSite callSite, ILEmitResolverBuilderContext argument)
         {
-            if (TryResolveSingletonValue(singletonCallSite, out var value))
+            if (TryResolveSingletonValue(callSite, out var value))
             {
                 AddConstant(argument, value);
                 return null;
@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             argument.Generator.Emit(OpCodes.Ldarg_0);
             argument.Generator.Emit(OpCodes.Ldfld, RuntimeResolverField);
 
-            AddConstant(argument, singletonCallSite);
+            AddConstant(argument, callSite);
 
             argument.Generator.Emit(OpCodes.Ldarg_0);
             argument.Generator.Emit(OpCodes.Ldfld, RootField);
@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitScoped(IServiceCallSite scopedCallSite, ILEmitResolverBuilderContext argument)
+        protected override Expression VisitScopeCache(ServiceCallSite scopedCallSite, ILEmitResolverBuilderContext argument)
         {
 
             // var cacheKey = scopedCallSite.CacheKey;
@@ -147,7 +147,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var shouldCapture = BeginCaptureDisposable(scopedCallSite.ImplementationType, argument);
 
-            base.VisitScoped(scopedCallSite, argument);
+            base.VisitScopeCache(scopedCallSite, argument);
 
             if (shouldCapture)
             {
@@ -263,7 +263,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
 
-        private Func<ServiceProviderEngineScope, object> BuildType(IServiceCallSite callSite)
+        private Func<ServiceProviderEngineScope, object> BuildType(ServiceCallSite callSite)
         {
             // We need to skip visibility checks because services/constructors might be private
             var dynamicMethod = new DynamicMethod("ResolveService",
@@ -297,7 +297,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return (Func<ServiceProviderEngineScope, object>)dynamicMethod.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), runtimeContext);
         }
 
-        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(IServiceCallSite callSite, ILGenerator generator, ILEmitCallSiteAnalysisResult info)
+        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(ServiceCallSite callSite, ILGenerator generator, ILEmitCallSiteAnalysisResult info)
         {
             var context = new ILEmitResolverBuilderContext()
             {
@@ -377,11 +377,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             };
         }
 
-        private bool TryResolveSingletonValue(IServiceCallSite singletonCallSite, out object value)
+        private bool TryResolveSingletonValue(ServiceCallSite callSite, out object value)
         {
             lock (_rootScope.ResolvedServices)
             {
-                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.Cache.Key, out value);
+                return _rootScope.ResolvedServices.TryGetValue(callSite.Cache.Key, out value);
             }
         }
 

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         // Keys are services being resolved via GetService, values - first scoped service in their call site tree
         private readonly ConcurrentDictionary<Type, Type> _scopedServices = new ConcurrentDictionary<Type, Type>();
 
-        public void ValidateCallSite(IServiceCallSite callSite)
+        public void ValidateCallSite(ServiceCallSite callSite)
         {
             var scoped = VisitCallSite(callSite, default);
             if (scoped != null)
@@ -69,13 +69,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return result;
         }
 
-        protected override Type VisitSingleton(IServiceCallSite singletonCallSite, CallSiteValidatorState state)
+        protected override Type VisitRootCache(ServiceCallSite singletonCallSite, CallSiteValidatorState state)
         {
             state.Singleton = singletonCallSite;
-            return base.VisitSingleton(singletonCallSite, state);
+            return base.VisitRootCache(singletonCallSite, state);
         }
 
-        protected override Type VisitScoped(IServiceCallSite scopedCallSite, CallSiteValidatorState state)
+        protected override Type VisitScopeCache(ServiceCallSite scopedCallSite, CallSiteValidatorState state)
         {
             // We are fine with having ServiceScopeService requested by singletons
             if (scopedCallSite is ServiceScopeFactoryCallSite)
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     ));
             }
 
-            base.VisitScoped(scopedCallSite, state);
+            base.VisitScopeCache(scopedCallSite, state);
             return scopedCallSite.ServiceType;
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         internal struct CallSiteValidatorState
         {
-            public IServiceCallSite Singleton { get; set; }
+            public ServiceCallSite Singleton { get; set; }
         }
     }
 }
