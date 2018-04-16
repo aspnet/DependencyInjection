@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -19,6 +20,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private static readonly FieldInfo RootField = typeof(ILEmitResolverBuilderRuntimeContext).GetField(nameof(ILEmitResolverBuilderRuntimeContext.Root));
         private static readonly FieldInfo FactoriesField = typeof(ILEmitResolverBuilderRuntimeContext).GetField(nameof(ILEmitResolverBuilderRuntimeContext.Factories));
         private static readonly FieldInfo ConstantsField = typeof(ILEmitResolverBuilderRuntimeContext).GetField(nameof(ILEmitResolverBuilderRuntimeContext.Constants));
+        private static readonly MethodInfo GetTypeFromHandleMethod = typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle));
+
+        private static readonly ConstructorInfo CacheKeyCtor = typeof(ServiceCacheKey).GetConstructors().First();
 
         private class ILEmitResolverBuilderRuntimeContext
         {
@@ -68,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // RuntimeScope.CaptureDisposables([create value])
             var shouldCapture = BeginCaptureDisposable(transientCallSite.ImplementationType, argument);
 
-            base.VisitDisposeCache(transientCallSite, argument);
+            VisitCallSiteMain(transientCallSite, argument);
 
             if (shouldCapture)
             {
@@ -131,7 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Resolved services would be 0 local
             argument.Generator.Emit(OpCodes.Ldloc_0);
 
-            AddConstant(argument, scopedCallSite.Cache.Key);
+            AddCacheKey(argument, scopedCallSite.Cache.Key);
             // Duplicate cache key
             argument.Generator.Emit(OpCodes.Dup);
             // and store to local
@@ -147,7 +151,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var shouldCapture = BeginCaptureDisposable(scopedCallSite.ImplementationType, argument);
 
-            base.VisitScopeCache(scopedCallSite, argument);
+            VisitCallSiteMain(scopedCallSite, argument);
 
             if (shouldCapture)
             {
@@ -260,6 +264,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             argument.Generator.Emit(OpCodes.Ldc_I4, argument.Constants.Count);
             argument.Generator.Emit(OpCodes.Ldelem, typeof(object));
             argument.Constants.Add(value);
+        }
+
+        private void AddCacheKey(ILEmitResolverBuilderContext argument, ServiceCacheKey key)
+        {
+            // new ServiceCacheKet(typeof(key.Type), key.Slot)
+            argument.Generator.Emit(OpCodes.Ldtoken, key.Type);
+            argument.Generator.Emit(OpCodes.Call, GetTypeFromHandleMethod);
+            argument.Generator.Emit(OpCodes.Ldc_I4, key.Slot);
+            argument.Generator.Emit(OpCodes.Newobj, CacheKeyCtor);
         }
 
 

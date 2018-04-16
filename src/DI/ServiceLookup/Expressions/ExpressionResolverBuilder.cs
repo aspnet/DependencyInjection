@@ -14,8 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         internal static readonly MethodInfo InvokeFactoryMethodInfo = GetMethodInfo<Action<Func<IServiceProvider, object>, IServiceProvider>>((a, b) => a.Invoke(b));
         internal static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProviderEngineScope, object, object>>((a, b) => a.CaptureDisposable(b));
-        internal static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<object, object>, object, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
-        internal static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<object, object>, object, object>>((a, b, c) => a.Add(b, c));
+        internal static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<ServiceCacheKey, object>, ServiceCacheKey, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
+        internal static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<ServiceCacheKey, object>, ServiceCacheKey, object>>((a, b, c) => a.Add(b, c));
         internal static readonly MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
         internal static readonly MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
         internal static readonly MethodInfo CallSiteRuntimeResolverResolve =
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static readonly ParameterExpression ScopeParameter = Expression.Parameter(typeof(ServiceProviderEngineScope));
 
-        private static readonly ParameterExpression ResolvedServices = Expression.Variable(typeof(IDictionary<object, object>), ScopeParameter.Name + "resolvedServices");
+        private static readonly ParameterExpression ResolvedServices = Expression.Variable(typeof(IDictionary<ServiceCacheKey, object>), ScopeParameter.Name + "resolvedServices");
         private static readonly BinaryExpression ResolvedServicesVariableAssignment =
             Expression.Assign(ResolvedServices,
                 Expression.Property(ScopeParameter, nameof(ServiceProviderEngineScope.ResolvedServices)));
@@ -157,7 +157,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return TryCaptureDisposible(
                 implType,
                 context.ScopeParameter,
-                base.VisitDisposeCache(callSite, context));
+                VisitCallSiteMain(callSite, context));
         }
 
         private Expression TryCaptureDisposible(Type implType, ParameterExpression scope, Expression service)
@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitScopeCache(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
         {
-            return BuildScopedExpression(callSite, context, base.VisitScopeCache(callSite, context));
+            return BuildScopedExpression(callSite, context, VisitCallSiteMain(callSite, context));
         }
 
         // Move off the main stack
@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             var keyExpression = Expression.Constant(
                 callSite.Cache.Key,
-                typeof(object));
+                typeof(ServiceCacheKey));
 
             var resolvedVariable = Expression.Variable(typeof(object), "resolved");
 

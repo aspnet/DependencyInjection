@@ -410,7 +410,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var callSiteFactory = new CallSiteFactory(collection.ToArray());
 
-            return type => callSiteFactory.CreateCallSite(type, new CallSiteChain());
+            return type => callSiteFactory.GetCallSite(type, new CallSiteChain());
         }
 
         private static IEnumerable<Type> GetParameters(ConstructorCallSite constructorCallSite) =>

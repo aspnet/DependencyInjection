@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -29,22 +31,45 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         None
     }
 
+    internal struct ServiceCacheKey: IEquatable<ServiceCacheKey>
+    {
+        public Type Type { get; }
+        public int Slot { get; }
+        public static ServiceCacheKey Enpty { get; } = new ServiceCacheKey(null, 0);
+
+        public ServiceCacheKey(Type type, int slot)
+        {
+            Type = type;
+            Slot = slot;
+        }
+
+        public bool Equals(ServiceCacheKey other)
+        {
+            return Type == other.Type && Slot == other.Slot;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Type.GetHashCode() * 397) ^ Slot;
+            }
+        }
+    }
+
     internal struct ResultCache
     {
-        public static ResultCache None { get; } = new ResultCache(CallSiteResultCacheLocation.None, null);
+        public static ResultCache None { get; } = new ResultCache(CallSiteResultCacheLocation.None, ServiceCacheKey.Enpty);
 
-        public ResultCache(CallSiteResultCacheLocation lifetime, object cacheKey)
+        public ResultCache(CallSiteResultCacheLocation lifetime, ServiceCacheKey cacheKey)
         {
             Location = lifetime;
             Key = cacheKey;
         }
 
-        public ResultCache(ServiceLifetime lifetime, object cacheKey)
+        public ResultCache(ServiceLifetime lifetime, Type type, int slot)
         {
-            if (lifetime != ServiceLifetime.Transient && cacheKey == null)
-            {
-                throw new ArgumentNullException(nameof(cacheKey));
-            }
+            Debug.Assert(lifetime == ServiceLifetime.Transient || type != null);
 
             switch (lifetime)
             {
@@ -61,10 +86,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     Location = CallSiteResultCacheLocation.None;
                     break;
             }
-            Key = cacheKey;
+            Key = new ServiceCacheKey(type, slot);
         }
 
         public CallSiteResultCacheLocation Location { get; set; }
-        public object Key { get; set; }
+        public ServiceCacheKey Key { get; set; }
     }
 }

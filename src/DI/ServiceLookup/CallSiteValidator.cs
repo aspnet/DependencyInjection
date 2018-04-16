@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Type VisitRootCache(ServiceCallSite singletonCallSite, CallSiteValidatorState state)
         {
             state.Singleton = singletonCallSite;
-            return base.VisitRootCache(singletonCallSite, state);
+            return VisitCallSiteMain(singletonCallSite, state);
         }
 
         protected override Type VisitScopeCache(ServiceCallSite scopedCallSite, CallSiteValidatorState state)
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     ));
             }
 
-            base.VisitScopeCache(scopedCallSite, state);
+            VisitCallSiteMain(scopedCallSite, state);
             return scopedCallSite.ServiceType;
         }
 

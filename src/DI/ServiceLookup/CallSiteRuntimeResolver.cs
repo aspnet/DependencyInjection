@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitDisposeCache(ServiceCallSite transientCallSite, ServiceProviderEngineScope scope)
         {
-            return scope.CaptureDisposable(base.VisitDisposeCache(transientCallSite, scope));
+            return scope.CaptureDisposable(VisitCallSiteMain(transientCallSite, scope));
         }
 
         protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 if (!scope.ResolvedServices.TryGetValue(scopedCallSite.Cache.Key, out var resolved))
                 {
-                    resolved = base.VisitScopeCache(scopedCallSite, scope);
+                    resolved = VisitCallSiteMain(scopedCallSite, scope);
                     scope.CaptureDisposable(resolved);
                     scope.ResolvedServices.Add(scopedCallSite.Cache.Key, resolved);
                 }

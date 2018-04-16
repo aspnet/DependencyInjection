@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         internal static ILEmitCallSiteAnalyzer Instance { get; } = new ILEmitCallSiteAnalyzer();
 
-        protected override ILEmitCallSiteAnalysisResult VisitDisposeCache(ServiceCallSite transientCallSite, object argument) => base.VisitDisposeCache(transientCallSite, argument);
+        protected override ILEmitCallSiteAnalysisResult VisitDisposeCache(ServiceCallSite transientCallSite, object argument) => VisitCallSiteMain(transientCallSite, argument);
 
         protected override ILEmitCallSiteAnalysisResult VisitConstructor(ConstructorCallSite constructorCallSite, object argument)
         {
@@ -32,11 +32,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return result;
         }
 
-        protected override ILEmitCallSiteAnalysisResult VisitRootCache(ServiceCallSite singletonCallSite, object argument) => base.VisitRootCache(singletonCallSite, argument);
+        protected override ILEmitCallSiteAnalysisResult VisitRootCache(ServiceCallSite singletonCallSite, object argument) => VisitCallSiteMain(singletonCallSite, argument);
 
         protected override ILEmitCallSiteAnalysisResult VisitScopeCache(ServiceCallSite scopedCallSite, object argument)
         {
-            return new ILEmitCallSiteAnalysisResult(ScopedILSize, hasScope: true).Add(base.VisitScopeCache(scopedCallSite, argument));
+            return new ILEmitCallSiteAnalysisResult(ScopedILSize, hasScope: true).Add(VisitCallSiteMain(scopedCallSite, argument));
         }
 
         protected override ILEmitCallSiteAnalysisResult VisitConstant(ConstantCallSite constantCallSite, object argument) => new ILEmitCallSiteAnalysisResult(ConstantILSize);

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -6,6 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         protected virtual TResult VisitCallSite(ServiceCallSite callSite, TArgument argument)
         {
+            RuntimeHelpers.EnsureSufficientExecutionStack();
             switch (callSite.Cache.Location)
             {
                 case CallSiteResultCacheLocation.Root:
