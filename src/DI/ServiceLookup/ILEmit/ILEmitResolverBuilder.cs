@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // }
 
             var resultLocal = argument.Generator.DeclareLocal(scopedCallSite.ServiceType);
-            var cacheKeyLocal = argument.Generator.DeclareLocal(typeof(object));
+            var cacheKeyLocal = argument.Generator.DeclareLocal(typeof(ServiceCacheKey));
             var endLabel = argument.Generator.DefineLabel();
 
             // Resolved services would be 0 local
@@ -290,7 +290,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var info = ILEmitCallSiteAnalyzer.Instance.CollectGenerationInfo(callSite);
             var runtimeContext = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator(info.Size), info);
 
-#if SAVE_ASSEMBLY
+#if NET461
             var assemblyName = "Test" + DateTime.Now.Ticks;
 
             var fileName = "Test" + DateTime.Now.Ticks;
@@ -304,7 +304,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             GenerateMethodBody(callSite, method.GetILGenerator(), info);
             type.CreateTypeInfo();
-            assembly.Save(assemblyName+".dll");
+            assembly.Save(assemblyName + ".dll");
 #endif
 
             return (Func<ServiceProviderEngineScope, object>)dynamicMethod.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), runtimeContext);
