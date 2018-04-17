@@ -20,8 +20,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private readonly ConcurrentDictionary<Type, ServiceCallSite> _callSiteCache = new ConcurrentDictionary<Type, ServiceCallSite>();
         private readonly Dictionary<Type, ServiceDescriptorCacheItem> _descriptorLookup = new Dictionary<Type, ServiceDescriptorCacheItem>();
 
+        private readonly StackGuard _stackGuard;
+
         public CallSiteFactory(IEnumerable<ServiceDescriptor> descriptors)
         {
+            _stackGuard = new StackGuard(allowConcurrency: true);
             _descriptors = descriptors.ToList();
             Populate(descriptors);
         }
@@ -79,6 +82,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private ServiceCallSite CreateCallSite(Type serviceType, CallSiteChain callSiteChain)
         {
+            if (!_stackGuard.TryEnterOnCurrentStack())
+            {
+                return _stackGuard.RunOnEmptyStack((type, chain) => CreateCallSite(type, chain), serviceType, callSiteChain);
+            }
+
             ServiceCallSite callSite;
             try
             {

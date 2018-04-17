@@ -5,9 +5,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal abstract class CallSiteVisitor<TArgument, TResult>
     {
+        private readonly StackGuard _stackGuard;
+
+        protected CallSiteVisitor(bool allowConcurrency)
+        {
+            _stackGuard = new StackGuard(allowConcurrency);
+        }
+
         protected virtual TResult VisitCallSite(ServiceCallSite callSite, TArgument argument)
         {
-            RuntimeHelpers.EnsureSufficientExecutionStack();
+            if (!_stackGuard.TryEnterOnCurrentStack())
+            {
+                return _stackGuard.RunOnEmptyStack((c, a) => VisitCallSite(c, a), callSite, argument);
+            }
+
             switch (callSite.Cache.Location)
             {
                 case CallSiteResultCacheLocation.Root:

@@ -11,6 +11,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         // Keys are services being resolved via GetService, values - first scoped service in their call site tree
         private readonly ConcurrentDictionary<Type, Type> _scopedServices = new ConcurrentDictionary<Type, Type>();
 
+        public CallSiteValidator(bool allowConcurrency) : base(true)
+        {
+        }
+
         public void ValidateCallSite(ServiceCallSite callSite)
         {
             var scoped = VisitCallSite(callSite, default);

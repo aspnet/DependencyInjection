@@ -18,6 +18,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private const int FactoryILSize = 16;
 
+        public ILEmitCallSiteAnalyzer() : base(allowConcurrency: true)
+        {
+        }
+
         internal static ILEmitCallSiteAnalyzer Instance { get; } = new ILEmitCallSiteAnalyzer();
 
         protected override ILEmitCallSiteAnalysisResult VisitDisposeCache(ServiceCallSite transientCallSite, object argument) => VisitCallSiteMain(transientCallSite, argument);

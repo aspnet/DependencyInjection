@@ -3,8 +3,14 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope, object>
+    internal sealed class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope, object>
     {
+
+        // Runtime resolver takes a lock so it can not continue on another thread
+        public CallSiteRuntimeResolver() : base(allowConcurrency: false)
+        {
+        }
+
         public object Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
         {
             return VisitCallSite(callSite, scope);
@@ -50,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitScopeCache(ServiceCallSite scopedCallSite, ServiceProviderEngineScope scope)
         {
-            lock (scope.ResolvedServices)
+            lock (scopedCallSite)
             {
                 if (!scope.ResolvedServices.TryGetValue(scopedCallSite.Cache.Key, out var resolved))
                 {
