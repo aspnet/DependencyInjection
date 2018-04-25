@@ -269,7 +269,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private void AddCacheKey(ILEmitResolverBuilderContext argument, ServiceCacheKey key)
         {
-            // new ServiceCacheKet(typeof(key.Type), key.Slot)
+            // new ServiceCacheKey(typeof(key.Type), key.Slot)
             argument.Generator.Emit(OpCodes.Ldtoken, key.Type);
             argument.Generator.Emit(OpCodes.Call, GetTypeFromHandleMethod);
             argument.Generator.Emit(OpCodes.Ldc_I4, key.Slot);
@@ -291,7 +291,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var info = ILEmitCallSiteAnalyzer.Instance.CollectGenerationInfo(callSite);
             var runtimeContext = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator(info.Size), info);
 
-#if NET461
+#if SAVE_ASSEMBLY
             var assemblyName = "Test" + DateTime.Now.Ticks;
 
             var fileName = "Test" + DateTime.Now.Ticks;

@@ -29,6 +29,20 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 compare = (service1, service2) => service1 == service2;
             }
 
+            // Implementation Type Descriptor
+            yield return new object[]
+            {
+                new[] { new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), lifetime) },
+                typeof(IFakeService),
+                compare,
+            };
+            // Closed Generic Descriptor
+            yield return new object[]
+            {
+                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService), lifetime) },
+                typeof(IFakeOpenGenericService<PocoClass>),
+                compare,
+            };
             // Open Generic Descriptor
             yield return new object[]
             {
@@ -40,45 +54,30 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 typeof(IFakeOpenGenericService<IFakeService>),
                 compare,
             };
+            // Factory Descriptor
+            yield return new object[]
+            {
+                new[] { new ServiceDescriptor(typeof(IFakeService), _ => new FakeService(), lifetime) },
+                typeof(IFakeService),
+                compare,
+            };
 
-            //// Implementation Type Descriptor
-            //yield return new object[]
-            //{
-            //    new[] { new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), lifetime) },
-            //    typeof(IFakeService),
-            //    compare,
-            //};
-            //// Closed Generic Descriptor
-            //yield return new object[]
-            //{
-            //    new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService), lifetime) },
-            //    typeof(IFakeOpenGenericService<PocoClass>),
-            //    compare,
-            //};
-            //// Factory Descriptor
-            //yield return new object[]
-            //{
-            //    new[] { new ServiceDescriptor(typeof(IFakeService), _ => new FakeService(), lifetime) },
-            //    typeof(IFakeService),
-            //    compare,
-            //};
-
-            //if (lifetime == ServiceLifetime.Singleton)
-            //{
-            //    // Instance Descriptor
-            //    yield return new object[]
-            //    {
-            //       new[] { new ServiceDescriptor(typeof(IFakeService), new FakeService()) },
-            //       typeof(IFakeService),
-            //       compare,
-            //    };
-            //}
+            if (lifetime == ServiceLifetime.Singleton)
+            {
+                // Instance Descriptor
+                yield return new object[]
+                {
+                   new[] { new ServiceDescriptor(typeof(IFakeService), new FakeService()) },
+                   typeof(IFakeService),
+                   compare,
+                };
+            }
         }
 
         [Theory]
         [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Singleton)]
-        //[MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Scoped)]
-        //[MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Transient)]
+        [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Scoped)]
+        [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Transient)]
         public void BuiltExpressionWillReturnResolvedServiceWhenAppropriate(
             ServiceDescriptor[] descriptors, Type serviceType, Func<object, object, bool> compare)
         {

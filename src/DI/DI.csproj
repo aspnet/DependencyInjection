@@ -10,7 +10,7 @@
     <DefineConstants Condition="'$(ILEmitBackend)' == 'True'">$(DefineConstants);IL_EMIT</DefineConstants>
 
     <!-- Debug IL generation -->
-    <ILEmitBackendSaveAssemblies>True</ILEmitBackendSaveAssemblies>
+    <ILEmitBackendSaveAssemblies>False</ILEmitBackendSaveAssemblies>
     <DefineConstants Condition="'$(ILEmitBackendSaveAssemblies)' == 'True'">$(DefineConstants);SAVE_ASSEMBLIES</DefineConstants>
   </PropertyGroup>
 
