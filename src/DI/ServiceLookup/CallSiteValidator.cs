@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         // Keys are services being resolved via GetService, values - first scoped service in their call site tree
         private readonly ConcurrentDictionary<Type, Type> _scopedServices = new ConcurrentDictionary<Type, Type>();
 
-        public CallSiteValidator() : base(true)
+        public CallSiteValidator() : base()
         {
         }
 

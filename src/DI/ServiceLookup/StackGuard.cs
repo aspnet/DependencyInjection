@@ -11,16 +11,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal sealed class StackGuard
     {
-        private readonly bool _allowConcurrency;
-
         private const int MaxExecutionStackCount = 1024;
 
         private int _executionStackCount;
 
-        public StackGuard(bool allowConcurrency)
-        {
-            _allowConcurrency = allowConcurrency;
-        }
 
         public bool TryEnterOnCurrentStack()
         {
@@ -40,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
 #endif
 
-            if (_allowConcurrency && _executionStackCount < MaxExecutionStackCount)
+            if (_executionStackCount < MaxExecutionStackCount)
             {
                 return false;
             }

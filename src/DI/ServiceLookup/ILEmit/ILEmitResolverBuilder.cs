@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private readonly ServiceProviderEngineScope _rootScope;
 
         public ILEmitResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope) :
-            base(allowConcurrency: true)
+            base()
         {
             if (runtimeResolver == null)
             {

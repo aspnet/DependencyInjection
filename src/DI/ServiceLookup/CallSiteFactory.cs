@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public CallSiteFactory(IEnumerable<ServiceDescriptor> descriptors)
         {
-            _stackGuard = new StackGuard(allowConcurrency: true);
+            _stackGuard = new StackGuard();
             _descriptors = descriptors.ToList();
             Populate(descriptors);
         }

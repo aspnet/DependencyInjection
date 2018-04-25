@@ -7,9 +7,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         private readonly StackGuard _stackGuard;
 
-        protected CallSiteVisitor(bool allowConcurrency)
+        protected CallSiteVisitor()
         {
-            _stackGuard = new StackGuard(allowConcurrency);
+            _stackGuard = new StackGuard();
         }
 
         protected virtual TResult VisitCallSite(ServiceCallSite callSite, TArgument argument)

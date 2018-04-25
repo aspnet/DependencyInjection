@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private const int FactoryILSize = 16;
 
-        public ILEmitCallSiteAnalyzer() : base(allowConcurrency: true)
+        public ILEmitCallSiteAnalyzer() : base()
         {
         }
 

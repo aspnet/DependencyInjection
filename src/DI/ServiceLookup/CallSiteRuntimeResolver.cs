@@ -1,27 +1,29 @@
 using System;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal sealed class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope, object>
+    internal sealed class CallSiteRuntimeResolver : CallSiteVisitor<RuntimeResolverContext, object>
     {
-
-        // Runtime resolver takes a lock so it can not continue on another thread
-        public CallSiteRuntimeResolver() : base(allowConcurrency: false)
+        public CallSiteRuntimeResolver() : base()
         {
         }
 
         public object Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
         {
-            return VisitCallSite(callSite, scope);
+            return VisitCallSite(callSite, new RuntimeResolverContext
+            {
+                EngineScope = scope
+            });
         }
 
-        protected override object VisitDisposeCache(ServiceCallSite transientCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitDisposeCache(ServiceCallSite transientCallSite, RuntimeResolverContext scope)
         {
-            return scope.CaptureDisposable(VisitCallSiteMain(transientCallSite, scope));
+            return scope.EngineScope.CaptureDisposable(VisitCallSiteMain(transientCallSite, scope));
         }
 
-        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext scope)
         {
             object[] parameterValues;
             if (constructorCallSite.ParameterCallSites.Length == 0)
@@ -49,41 +51,73 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitRootCache(ServiceCallSite singletonCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitRootCache(ServiceCallSite singletonCallSite, RuntimeResolverContext scope)
         {
-            return VisitScopeCache(singletonCallSite, scope.Engine.Root);
+            return VisitCache(singletonCallSite, scope, scope.EngineScope.Engine.Root, RuntimeResolverLock.Root);
         }
 
-        protected override object VisitScopeCache(ServiceCallSite scopedCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitScopeCache(ServiceCallSite singletonCallSite, RuntimeResolverContext scope)
         {
-            lock (scopedCallSite)
+            // Check if we are in the situation where scoped service was promoted to singleton
+            // and we need to lock the root
+            var requiredScope = scope.EngineScope == scope.EngineScope.Engine.Root ?
+                RuntimeResolverLock.Root :
+                RuntimeResolverLock.Scope;
+
+            return VisitCache(singletonCallSite, scope, scope.EngineScope, requiredScope);
+        }
+
+        private object VisitCache(ServiceCallSite scopedCallSite, RuntimeResolverContext scope, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+        {
+            bool lockTaken = false;
+            var resolvedServices = serviceProviderEngine.ResolvedServices;
+
+            if ((scope.AcquiredLocks & lockType) == 0)
             {
-                if (!scope.ResolvedServices.TryGetValue(scopedCallSite.Cache.Key, out var resolved))
+                Monitor.Enter(resolvedServices, ref lockTaken);
+            }
+
+            try
+            {
+                if (!resolvedServices.TryGetValue(scopedCallSite.Cache.Key, out var resolved))
                 {
-                    resolved = VisitCallSiteMain(scopedCallSite, scope);
-                    scope.CaptureDisposable(resolved);
-                    scope.ResolvedServices.Add(scopedCallSite.Cache.Key, resolved);
+                    resolved = VisitCallSiteMain(scopedCallSite, new RuntimeResolverContext
+                    {
+                        EngineScope = serviceProviderEngine,
+                        AcquiredLocks = scope.AcquiredLocks | lockType
+                    });
+
+                    serviceProviderEngine.CaptureDisposable(resolved);
+                    resolvedServices.Add(scopedCallSite.Cache.Key, resolved);
                 }
+
                 return resolved;
+            }
+            finally
+            {
+                if (lockTaken)
+                {
+                    Monitor.Exit(resolvedServices);
+                }
             }
         }
 
-        protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitConstant(ConstantCallSite constantCallSite, RuntimeResolverContext scope)
         {
             return constantCallSite.DefaultValue;
         }
 
-        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, RuntimeResolverContext scope)
         {
-            return scope;
+            return scope.EngineScope;
         }
 
-        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, RuntimeResolverContext scope)
         {
-            return scope.Engine;
+            return scope.EngineScope.Engine;
         }
 
-        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, RuntimeResolverContext scope)
         {
             var array = Array.CreateInstance(
                 enumerableCallSite.ItemType,
@@ -97,9 +131,23 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return array;
         }
 
-        protected override object VisitFactory(FactoryCallSite factoryCallSite, ServiceProviderEngineScope scope)
+        protected override object VisitFactory(FactoryCallSite factoryCallSite, RuntimeResolverContext scope)
         {
-            return factoryCallSite.Factory(scope);
+            return factoryCallSite.Factory(scope.EngineScope);
         }
+    }
+
+    internal struct RuntimeResolverContext
+    {
+        public ServiceProviderEngineScope EngineScope { get; set; }
+
+        public RuntimeResolverLock AcquiredLocks { get; set; }
+    }
+
+    [Flags]
+    internal enum RuntimeResolverLock
+    {
+        Scope = 1,
+        Root = 2
     }
 }
