@@ -375,6 +375,22 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Equal(msg, ex.Message);
         }
 
+        [Theory]
+        [InlineData(typeof(Baz))]
+        [InlineData(typeof(BazReverseCtor))]
+        public void TypeActivatorUsesLongestMatchingCtor(Type bazType)
+        {
+            // Act & Assert
+            var serviceCollection = new TestServiceCollection()
+                .AddSingleton(bazType)
+                .AddSingleton("some other error");
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => ActivatorUtilities.CreateInstance(serviceProvider, bazType));
+            var msg = "some other error";
+            Assert.Equal(msg, ex.Message);
+        }
+
         abstract class AbstractFoo
         {
             // The constructor should be public, since that is checked as well.
@@ -386,6 +402,32 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         class Bar
         {
             public Bar()
+            {
+                throw new InvalidOperationException("some error");
+            }
+        }
+
+        class Baz
+        {
+            public Baz()
+            {
+                throw new InvalidOperationException("some error");
+            }
+
+            public Baz(string message)
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        class BazReverseCtor
+        {
+            public BazReverseCtor(string message)
+            {
+                throw new InvalidOperationException(message);
+            }
+
+            public BazReverseCtor()
             {
                 throw new InvalidOperationException("some error");
             }
