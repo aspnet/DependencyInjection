@@ -3,11 +3,26 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    internal enum ServiceProviderMode
+	/// <summary>
+	/// todo
+	/// </summary>
+    public enum ServiceProviderMode
     {
-        Dynamic,
+		/// <summary>
+		/// todo
+		/// </summary>
+	    Dynamic,
+	    /// <summary>
+	    /// todo
+	    /// </summary>
         Runtime,
+		/// <summary>
+		/// todo
+		/// </summary>
         Expressions,
+		/// <summary>
+		/// todo
+		/// </summary>
         ILEmit
-    }
+	}
 }

@@ -123,7 +123,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Theory]
         [InlineData(ServiceLifetime.Scoped)]
         [InlineData(ServiceLifetime.Transient)]
-        [InlineData(ServiceLifetime.Singleton)]
         public void BuildExpressionAddsDisposableCaptureForDisposableServices(ServiceLifetime lifetime)
         {
             IServiceCollection descriptors = new ServiceCollection();
@@ -145,10 +144,32 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(3, disposables.Count);
         }
 
+	    [Theory]
+	    [InlineData(ServiceLifetime.Singleton)]
+	    public void BuildExpressionDoesNotAddDisposableCaptureForDisposableServices(ServiceLifetime lifetime)
+	    {
+		    IServiceCollection descriptors = new ServiceCollection();
+		    descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceA), typeof(DisposableServiceA), lifetime));
+		    descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceB), typeof(DisposableServiceB), lifetime));
+		    descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceC), typeof(DisposableServiceC), lifetime));
+
+		    var disposables = new List<object>();
+		    var provider = new DynamicServiceProviderEngine(descriptors, null);
+		    provider.Root._captureDisposableCallback = obj =>
+		    {
+			    disposables.Add(obj);
+		    };
+		    var callSite = provider.CallSiteFactory.CreateCallSite(typeof(ServiceC), new CallSiteChain());
+		    var compiledCallSite = CompileCallSite(callSite, provider);
+
+		    var serviceC = (DisposableServiceC)compiledCallSite(provider.Root);
+
+		    Assert.Empty(disposables);
+	    }
+
         [Theory]
         [InlineData(ServiceLifetime.Scoped)]
         [InlineData(ServiceLifetime.Transient)]
-        [InlineData(ServiceLifetime.Singleton)]
         public void BuildExpressionAddsDisposableCaptureForDisposableFactoryServices(ServiceLifetime lifetime)
         {
             IServiceCollection descriptors = new ServiceCollection();
@@ -170,6 +191,30 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             Assert.Equal(3, disposables.Count);
         }
+
+	    [Theory]
+	    [InlineData(ServiceLifetime.Singleton)]
+	    public void BuildExpressionDoesNotAddDisposableCaptureForDisposableFactoryServices(ServiceLifetime lifetime)
+	    {
+		    IServiceCollection descriptors = new ServiceCollection();
+		    descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceA), typeof(DisposableServiceA), lifetime));
+		    descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceB), typeof(DisposableServiceB), lifetime));
+		    descriptors.Add(ServiceDescriptor.Describe(
+			    typeof(ServiceC), p => new DisposableServiceC(p.GetService<ServiceB>()), lifetime));
+
+		    var disposables = new List<object>();
+		    var provider = new DynamicServiceProviderEngine(descriptors, null);
+		    provider.Root._captureDisposableCallback = obj =>
+		    {
+			    disposables.Add(obj);
+		    };
+		    var callSite = provider.CallSiteFactory.CreateCallSite(typeof(ServiceC), new CallSiteChain());
+		    var compiledCallSite = CompileCallSite(callSite, provider);
+
+		    var serviceC = (DisposableServiceC)compiledCallSite(provider.Root);
+
+		    Assert.Empty(disposables);
+	    }
 
         [Theory]
         [InlineData(ServiceLifetime.Scoped)]

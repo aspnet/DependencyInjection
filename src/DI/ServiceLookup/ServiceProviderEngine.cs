@@ -15,12 +15,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private bool _disposed;
 
-        protected ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback)
+        protected ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback, ITrackSingletonServices singletonTracker)
         {
             _createServiceAccessor = CreateServiceAccessor;
             _callback = callback;
             Root = new ServiceProviderEngineScope(this);
-            RuntimeResolver = new CallSiteRuntimeResolver();
+            RuntimeResolver = new CallSiteRuntimeResolver(singletonTracker);
             CallSiteFactory = new CallSiteFactory(serviceDescriptors);
             CallSiteFactory.Add(typeof(IServiceProvider), new ServiceProviderCallSite());
             CallSiteFactory.Add(typeof(IServiceScopeFactory), new ServiceScopeFactoryCallSite());

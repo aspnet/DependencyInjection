@@ -10,14 +10,21 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    public sealed class ServiceProvider : IServiceProvider, IDisposable, IServiceProviderEngineCallback
+    public sealed class ServiceProvider : IServiceProviderWithOptions, IDisposable, IServiceProviderEngineCallback
     {
         private readonly IServiceProviderEngine _engine;
 
         private readonly CallSiteValidator _callSiteValidator;
 
-        internal ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options)
-        {
+		/// <summary>
+		/// todo
+		/// </summary>
+	    public IServiceProviderOptions Options { get; }
+
+	    internal ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderOptions options)
+	    {
+		    Options = options;
+
             IServiceProviderEngineCallback callback = null;
             if (options.ValidateScopes)
             {
@@ -27,18 +34,18 @@ namespace Microsoft.Extensions.DependencyInjection
             switch (options.Mode)
             {
                 case ServiceProviderMode.Dynamic:
-                    _engine = new DynamicServiceProviderEngine(serviceDescriptors, callback);
+                    _engine = new DynamicServiceProviderEngine(serviceDescriptors, callback, options.SingletonTracker);
                     break;
                 case ServiceProviderMode.Runtime:
-                    _engine = new RuntimeServiceProviderEngine(serviceDescriptors, callback);
+                    _engine = new RuntimeServiceProviderEngine(serviceDescriptors, callback, options.SingletonTracker);
                     break;
 #if IL_EMIT
                 case ServiceProviderMode.ILEmit:
-                    _engine = new ILEmitServiceProviderEngine(serviceDescriptors, callback);
+                    _engine = new ILEmitServiceProviderEngine(serviceDescriptors, callback, options.SingletonTracker);
                     break;
 #endif
-                case ServiceProviderMode.Expressions:
-                    _engine = new ExpressionsServiceProviderEngine(serviceDescriptors, callback);
+				case ServiceProviderMode.Expressions:
+                    _engine = new ExpressionsServiceProviderEngine(serviceDescriptors, callback, options.SingletonTracker);
                     break;
                 default:
                     throw new NotSupportedException(nameof(options.Mode));
