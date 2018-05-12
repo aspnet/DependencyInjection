@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Options for configuring various behaviors of the default <see cref="IServiceProvider"/> implementation.
     /// </summary>
-    public class ServiceProviderOptions
-    {
+    public class ServiceProviderOptions : IServiceProviderOptions
+	{
         // Avoid allocating objects in the default case
         internal static readonly ServiceProviderOptions Default = new ServiceProviderOptions();
 
@@ -18,6 +19,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         public bool ValidateScopes { get; set; }
 
-        internal ServiceProviderMode Mode { get; set; } = ServiceProviderMode.Dynamic;
+		/// <summary>
+		/// todo
+		/// </summary>
+        public ServiceProviderMode Mode { get; set; } = ServiceProviderMode.Dynamic;
+
+		/// <summary>
+		/// todo
+		/// </summary>
+	    public ITrackSingletonServices SingletonTracker { get; set; } = new SingletonServiceTracker();
     }
 }

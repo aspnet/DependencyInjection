@@ -5,7 +5,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope, object>
     {
-        public object Resolve(IServiceCallSite callSite, ServiceProviderEngineScope scope)
+	    private readonly ITrackSingletonServices _singletonTracker;
+
+	    public CallSiteRuntimeResolver() : this(new SingletonServiceTracker())
+	    {
+	    }
+
+	    public CallSiteRuntimeResolver(ITrackSingletonServices singletonTracker)
+	    {
+		    _singletonTracker = singletonTracker;
+	    }
+
+	    public object Resolve(IServiceCallSite callSite, ServiceProviderEngineScope scope)
         {
             return VisitCallSite(callSite, scope);
         }
@@ -38,8 +49,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProviderEngineScope scope)
         {
-            return VisitScoped(singletonCallSite, scope.Engine.Root);
-        }
+			lock (_singletonTracker.GetLock())
+			{
+				if (!_singletonTracker.GetResolvedSingletons().TryGetValue(singletonCallSite.CacheKey, out var resolved))
+				{
+					resolved = VisitCallSite(singletonCallSite.ServiceCallSite, scope);
+					_singletonTracker.TrackDisposable(resolved);
+					_singletonTracker.GetResolvedSingletons().Add(singletonCallSite.CacheKey, resolved);
+				}
+				return resolved;
+			}
+		}
 
         protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProviderEngineScope scope)
         {

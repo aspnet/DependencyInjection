@@ -2,7 +2,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    /// <summary>
+	/// <summary>
     /// Provides an extension point for creating a container specific builder and an <see cref="IServiceProvider"/>.
     /// </summary>
     public interface IServiceProviderFactory<TContainerBuilder>

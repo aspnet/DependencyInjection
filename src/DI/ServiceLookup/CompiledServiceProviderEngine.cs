@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         public ExpressionResolverBuilder ExpressionResolverBuilder { get; }
 
-        public CompiledServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : base(serviceDescriptors, callback)
+        public CompiledServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback, ITrackSingletonServices singletonTracker) : base(serviceDescriptors, callback, singletonTracker)
         {
             ExpressionResolverBuilder = new ExpressionResolverBuilder(RuntimeResolver, this, Root);
         }

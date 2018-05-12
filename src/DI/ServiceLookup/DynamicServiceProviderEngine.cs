@@ -10,9 +10,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class DynamicServiceProviderEngine : CompiledServiceProviderEngine
     {
-        public DynamicServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : base(serviceDescriptors, callback)
-        {
-        }
+	    public DynamicServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : this(serviceDescriptors, callback, new SingletonServiceTracker())
+	    {
+	    }
+
+		public DynamicServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback, ITrackSingletonServices singletonTracker) : base(serviceDescriptors, callback, singletonTracker)
+	    {
+	    }
 
         protected override Func<ServiceProviderEngineScope, object> RealizeService(IServiceCallSite callSite)
         {

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     internal class ILEmitServiceProviderEngine : ServiceProviderEngine
     {
         private readonly ILEmitResolverBuilder _expressionResolverBuilder;
-        public ILEmitServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : base(serviceDescriptors, callback)
+        public ILEmitServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback, ITrackSingletonServices singletonTracker) : base(serviceDescriptors, callback, singletonTracker)
         {
             _expressionResolverBuilder = new ILEmitResolverBuilder(RuntimeResolver, this, Root);
         }
