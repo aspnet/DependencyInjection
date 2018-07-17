@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _emptyEnumerable;
         private ServiceProviderMode _mode;
 
+        //[Params("Runtime")]
         [Params("Expressions", "Dynamic", "Runtime", "ILEmit")]
         public string Mode {
             set {
@@ -60,7 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
-        [GlobalSetup(Target = nameof(Scoped))]
+        //[GlobalSetup(Target = nameof(Scoped))]
         public void SetupScoped()
         {
             var services = new ServiceCollection();
@@ -73,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }).CreateScope();
         }
 
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        //[Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Scoped()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
@@ -83,7 +84,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
-        [GlobalSetup(Target = nameof(Singleton))]
+        //[GlobalSetup(Target = nameof(Singleton))]
         public void SetupScopedSingleton()
         {
             var services = new ServiceCollection();
@@ -96,7 +97,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             });
         }
 
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        //[Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Singleton()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
@@ -106,7 +107,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
-        [GlobalSetup(Target = nameof(ServiceScope))]
+        //[GlobalSetup(Target = nameof(ServiceScope))]
         public void ServiceScopeSetup()
         {
             _serviceScope = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
@@ -115,7 +116,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             });
         }
 
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        //[Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void ServiceScope()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
@@ -124,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
-        [GlobalSetup(Target = nameof(ServiceScopeProvider))]
+        //[GlobalSetup(Target = nameof(ServiceScopeProvider))]
         public void ServiceScopeProviderSetup()
         {
             _serviceScopeFactoryProvider = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
@@ -133,7 +134,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             });
         }
 
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        //[Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void ServiceScopeProvider()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
@@ -142,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
-        [GlobalSetup(Target = nameof(EmptyEnumerable))]
+        //[GlobalSetup(Target = nameof(EmptyEnumerable))]
         public void EmptyEnumerableSetup()
         {
             _emptyEnumerable = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
@@ -151,7 +152,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             });
         }
 
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        //[Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void EmptyEnumerable()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
