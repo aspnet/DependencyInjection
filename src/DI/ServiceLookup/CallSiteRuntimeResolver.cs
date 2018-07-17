@@ -24,16 +24,39 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 parameterValues[index] = VisitCallSite(constructorCallSite.ParameterCallSites[index], scope);
             }
 
-            try
+            object result = null;
+            switch (constructorCallSite.ParameterCallSites.Length)
             {
-                return constructorCallSite.ConstructorInfo.Invoke(parameterValues);
+                case 0:
+                    constructorCallSite.ConstructorInfo.InvokeAndCreate(
+                        TypedReference.Create(ref result, constructorCallSite.ImplementationType));
+                    break;
+                case 1:
+                    constructorCallSite.ConstructorInfo.InvokeAndCreate(
+                        TypedReference.Create(ref result, constructorCallSite.ImplementationType),
+                        TypedReference.Create(ref parameterValues[0], constructorCallSite.ParameterCallSites[0].ImplementationType));
+                    break;
+                case 2:
+                    constructorCallSite.ConstructorInfo.InvokeAndCreate(
+                        TypedReference.Create(ref result, constructorCallSite.ImplementationType),
+                        TypedReference.Create(ref parameterValues[0], constructorCallSite.ParameterCallSites[0].ImplementationType),
+                        TypedReference.Create(ref parameterValues[1], constructorCallSite.ParameterCallSites[1].ImplementationType));
+                    break;
+                case 3:
+                    constructorCallSite.ConstructorInfo.InvokeAndCreate(
+                        TypedReference.Create(ref result, constructorCallSite.ImplementationType),
+                        TypedReference.Create(ref parameterValues[0], constructorCallSite.ParameterCallSites[0].ImplementationType),
+                        TypedReference.Create(ref parameterValues[1], constructorCallSite.ParameterCallSites[1].ImplementationType),
+                        TypedReference.Create(ref parameterValues[2], constructorCallSite.ParameterCallSites[2].ImplementationType));
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
-            catch (Exception ex) when (ex.InnerException != null)
-            {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                // The above line will always throw, but the compiler requires we throw explicitly.
-                throw;
-            }
+
+
+
+
+            return result;
         }
 
         protected override object VisitSingleton(SingletonCallSite singletonCallSite, ServiceProviderEngineScope scope)
@@ -62,16 +85,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ServiceProviderEngineScope scope)
         {
-            try
-            {
-                return Activator.CreateInstance(createInstanceCallSite.ImplementationType);
-            }
-            catch (Exception ex) when (ex.InnerException != null)
-            {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                // The above line will always throw, but the compiler requires we throw explicitly.
-                throw;
-            }
+            object result = null;
+            createInstanceCallSite.Constructor.InvokeAndCreate(TypedReference.Create(ref result, createInstanceCallSite.ImplementationType));
+            return result;
         }
 
         protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProviderEngineScope scope)
