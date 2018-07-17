@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <Description>Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.</Description>
-    <TargetFrameworks>netcoreapp2.0;net461;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
     <AssemblyName>Microsoft.Extensions.DependencyInjection</AssemblyName>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
+    <RuntimeFrameworkVersion>2.2.0-preview1-26509-04</RuntimeFrameworkVersion>
+    <NETCoreAppMaximumVersion>2.2</NETCoreAppMaximumVersion>
 
     <ILEmitBackend Condition="$(TargetFramework) != 'netstandard2.0'">True</ILEmitBackend>
     <DefineConstants Condition="'$(ILEmitBackend)' == 'True'">$(DefineConstants);IL_EMIT</DefineConstants>
@@ -27,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.App" Version="2.2.0-preview1-26509-04" />
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
   </ItemGroup>
 

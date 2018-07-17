@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Microsoft.Extensions.DependencyInjection.Performance</RootNamespace>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RuntimeFrameworkVersion>2.2.0-preview1-26509-04</RuntimeFrameworkVersion>
+    <NETCoreAppMaximumVersion>2.2</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>
