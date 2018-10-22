@@ -742,5 +742,55 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 Assert.Equal(service, enumerable[2]);
             }
         }
+
+        [Fact]
+        public void ServicesAreDisposedOnlyOnce_SingletonInRootScope()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddSingleton<FakeService>();
+            collection.AddSingleton<IFakeService>(sp => sp.GetService<FakeService>());
+            var provider = CreateServiceProvider(collection);
+
+            // Act & Assert
+            var service = provider.GetService<IFakeService>();
+            var service2 = provider.GetService<FakeService>();
+
+            (provider as IDisposable).Dispose();
+        }
+
+        [Fact]
+        public void ServicesAreDisposedOnlyOnce_ScopedInScope()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddScoped<FakeService>();
+            collection.AddScoped<IFakeService>(sp => sp.GetService<FakeService>());
+            var provider = CreateServiceProvider(collection);
+
+            // Act & Assert
+            using (var scope = provider.CreateScope())
+            {
+                var service1 = scope.ServiceProvider.GetService<IFakeService>();
+                var service2 = scope.ServiceProvider.GetService<FakeService>();
+            }
+        }
+
+        [Fact]
+        public void ServicesAreDisposedOnlyOnce_TransientInScope()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient<FakeService>();
+            collection.AddTransient<IFakeService>(sp => sp.GetService<FakeService>());
+            var provider = CreateServiceProvider(collection);
+
+            // Act & Assert
+            using (var scope = provider.CreateScope())
+            {
+                var service1 = scope.ServiceProvider.GetService<IFakeService>();
+                var service2 = scope.ServiceProvider.GetService<FakeService>();
+            }
+        }
     }
 }

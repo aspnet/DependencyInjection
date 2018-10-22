@@ -48,10 +48,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 _disposed = true;
                 if (_disposables != null)
                 {
+                    var disposed = new HashSet<IDisposable>();
                     for (var i = _disposables.Count - 1; i >= 0; i--)
                     {
                         var disposable = _disposables[i];
-                        disposable.Dispose();
+                        if (disposed.Add(disposable))
+                            disposable.Dispose();
                     }
 
                     _disposables.Clear();
