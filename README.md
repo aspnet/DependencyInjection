@@ -1,8 +1,8 @@
-DependencyInjection
-===================
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/o6mbbm70k0gddtej/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/DependencyInjection/branch/dev)
+DependencyInjection [Archived]
+==============================
 
-Travis:   [![Travis](https://travis-ci.org/aspnet/DependencyInjection.svg?branch=dev)](https://travis-ci.org/aspnet/DependencyInjection)
+
+**This GitHub project has been archived.** Ongoing development on this project can be found in <https://github.com/aspnet/Extensions>.
 
 Contains common DI abstractions that ASP.NET Core and Entity Framework Core use.
 
@@ -16,6 +16,3 @@ Contains common DI abstractions that ASP.NET Core and Entity Framework Core use.
 * [**StructureMap**](https://github.com/structuremap/StructureMap.Microsoft.DependencyInjection)
 * [**Stashbox**](https://github.com/z4kn4fein/stashbox-extensions-dependencyinjection)
 * [**Unity**](https://www.nuget.org/packages/Unity.Microsoft.DependencyInjection/)
-
-
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
