@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var provider = new DynamicServiceProviderEngine(descriptors, null);
 
-            var callSite1 = provider.CallSiteFactory.CreateCallSite(typeof(ServiceE), new CallSiteChain());
+            var callSite1 = provider.CallSiteFactory.GetCallSite(typeof(ServiceE), new CallSiteChain());
             var compileCallSite = CompileCallSite(callSite1, provider);
 
             Assert.NotNull(compileCallSite);
